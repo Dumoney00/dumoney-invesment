@@ -9,6 +9,7 @@ interface InvestmentCardProps {
   price: number;
   dailyIncome: number;
   viewCount: number;
+  onInvest?: () => void;
 }
 
 const InvestmentCard: React.FC<InvestmentCardProps> = ({
@@ -18,6 +19,7 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
   price,
   dailyIncome,
   viewCount,
+  onInvest
 }) => {
   return (
     <div className="investment-card mb-6">
@@ -47,7 +49,10 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
           </div>
         </div>
         
-        <button className="investment-button w-full mt-3">
+        <button 
+          className="investment-button w-full mt-3"
+          onClick={onInvest}
+        >
           <ShoppingCart size={18} />
           <span>Invest</span>
         </button>
