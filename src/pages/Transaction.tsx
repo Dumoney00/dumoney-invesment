@@ -8,12 +8,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { useAuth } from "@/contexts/AuthContext";
 import Navigation from '@/components/Navigation';
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Wallet, CreditCard, Building, Smartphone } from 'lucide-react';
+import { ArrowLeft, Wallet, CreditCard, Building, Smartphone, Phone } from 'lucide-react';
 import { useForm } from "react-hook-form";
+import PaytmPayment from '@/components/PaytmPayment';
 
 interface TransactionFormValues {
   amount: number;
-  paymentMethod: "upi" | "card" | "bank";
+  paymentMethod: "upi" | "card" | "bank" | "paytm";
   accountDetails: string;
 }
 
@@ -22,6 +23,7 @@ const Transaction: React.FC = () => {
   const navigate = useNavigate();
   const { user, updateUserDeposit, updateUserWithdraw } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showPaytmPayment, setShowPaytmPayment] = useState(false);
   
   const isDeposit = location.pathname === '/deposit';
   const pageTitle = isDeposit ? 'Deposit' : 'Withdraw';
@@ -49,7 +51,7 @@ const Transaction: React.FC = () => {
       return;
     }
     
-    if (!values.accountDetails) {
+    if (values.paymentMethod !== 'paytm' && !values.accountDetails) {
       toast({
         title: "Missing Details",
         description: "Please enter account details",
@@ -65,6 +67,12 @@ const Transaction: React.FC = () => {
         description: "Withdrawals are only available at 11 AM",
         variant: "destructive"
       });
+      return;
+    }
+    
+    // For Paytm payment method, show the Paytm payment component
+    if (isDeposit && values.paymentMethod === 'paytm') {
+      setShowPaytmPayment(true);
       return;
     }
     
@@ -98,7 +106,47 @@ const Transaction: React.FC = () => {
     setIsProcessing(false);
   };
   
+  const handlePaytmSuccess = () => {
+    if (form.getValues().amount) {
+      updateUserDeposit(form.getValues().amount);
+      toast({
+        title: "Deposit Successful via Paytm",
+        description: `$${form.getValues().amount.toFixed(2)} has been added to your account`
+      });
+    }
+    setShowPaytmPayment(false);
+  };
+  
   const presetAmounts = [50, 100, 250, 500, 1000];
+  
+  if (showPaytmPayment) {
+    return (
+      <div className="min-h-screen bg-black pb-24">
+        <header className="bg-[#333333] py-4 relative">
+          <Button 
+            variant="ghost" 
+            className="absolute left-2 top-3 text-gray-300 hover:text-white p-1"
+            onClick={() => setShowPaytmPayment(false)}
+          >
+            <ArrowLeft size={24} />
+          </Button>
+          <h1 className="text-white text-xl text-center font-medium">— Paytm Payment —</h1>
+        </header>
+        
+        <div className="bg-investment-yellow h-2"></div>
+        
+        <div className="p-6">
+          <PaytmPayment 
+            amount={form.getValues().amount} 
+            onSuccess={handlePaytmSuccess}
+            onCancel={() => setShowPaytmPayment(false)}
+          />
+        </div>
+        
+        <Navigation />
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-black pb-24">
@@ -199,13 +247,21 @@ const Transaction: React.FC = () => {
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="grid grid-cols-3 gap-3"
+                      className="grid grid-cols-2 gap-3"
                     >
                       <div className="flex items-center space-x-2 bg-[#222222] p-3 rounded-lg border border-gray-700">
                         <RadioGroupItem value="upi" id="upi" className="text-investment-gold" />
                         <FormLabel htmlFor="upi" className="flex items-center cursor-pointer">
                           <Smartphone className="mr-2 h-5 w-5 text-investment-gold" />
                           <span>UPI</span>
+                        </FormLabel>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2 bg-[#222222] p-3 rounded-lg border border-gray-700">
+                        <RadioGroupItem value="paytm" id="paytm" className="text-investment-gold" />
+                        <FormLabel htmlFor="paytm" className="flex items-center cursor-pointer">
+                          <Phone className="mr-2 h-5 w-5 text-[#00BAF2]" />
+                          <span>Paytm</span>
                         </FormLabel>
                       </div>
                       
@@ -230,24 +286,26 @@ const Transaction: React.FC = () => {
               )}
             />
             
-            {/* Account Details Field */}
-            <div className="space-y-2">
-              <label className="text-gray-300 block">
-                {form.watch("paymentMethod") === "upi" && "UPI ID"}
-                {form.watch("paymentMethod") === "card" && "Card Number"}
-                {form.watch("paymentMethod") === "bank" && "Account Number"}
-              </label>
-              <Input
-                value={form.watch("accountDetails")}
-                onChange={(e) => form.setValue("accountDetails", e.target.value)}
-                className="bg-[#222222] border-gray-700 text-white"
-                placeholder={
-                  form.watch("paymentMethod") === "upi" ? "Enter UPI ID" :
-                  form.watch("paymentMethod") === "card" ? "Enter Card Number" :
-                  "Enter Account Number"
-                }
-              />
-            </div>
+            {/* Account Details Field - Hide for Paytm */}
+            {form.watch("paymentMethod") !== "paytm" && (
+              <div className="space-y-2">
+                <label className="text-gray-300 block">
+                  {form.watch("paymentMethod") === "upi" && "UPI ID"}
+                  {form.watch("paymentMethod") === "card" && "Card Number"}
+                  {form.watch("paymentMethod") === "bank" && "Account Number"}
+                </label>
+                <Input
+                  value={form.watch("accountDetails")}
+                  onChange={(e) => form.setValue("accountDetails", e.target.value)}
+                  className="bg-[#222222] border-gray-700 text-white"
+                  placeholder={
+                    form.watch("paymentMethod") === "upi" ? "Enter UPI ID" :
+                    form.watch("paymentMethod") === "card" ? "Enter Card Number" :
+                    "Enter Account Number"
+                  }
+                />
+              </div>
+            )}
             
             {/* Submit Button */}
             <Button
@@ -258,7 +316,9 @@ const Transaction: React.FC = () => {
               {isProcessing 
                 ? "Processing..." 
                 : isDeposit 
-                  ? "Deposit Funds" 
+                  ? form.watch("paymentMethod") === "paytm"
+                    ? "Continue to Paytm"
+                    : "Deposit Funds" 
                   : "Withdraw Funds"
               }
             </Button>

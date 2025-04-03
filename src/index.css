@@ -34,6 +34,8 @@
     --ring: 35 91% 65%;
 
     --radius: 0.5rem;
+    
+    --paytm-blue: 196 100% 47%;
   }
 }
 
@@ -92,3 +94,4 @@
 .nav-item.active {
   @apply text-investment-gold;
 }
+
