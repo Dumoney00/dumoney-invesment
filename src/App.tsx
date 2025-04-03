@@ -10,6 +10,8 @@ import Products from "./pages/Products";
 import Agent from "./pages/Agent";
 import Investing from "./pages/Investing";
 import Profile from "./pages/Profile";
+import Account from "./pages/Account";
+import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 import AuthForm from "./components/AuthForm";
 import Transaction from "./pages/Transaction";
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/agent" element={<Agent />} />
             <Route path="/investing" element={<Investing />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/auth" element={<AuthForm />} />
             <Route path="/deposit" element={<Transaction />} />
             <Route path="/withdraw" element={<Transaction />} />

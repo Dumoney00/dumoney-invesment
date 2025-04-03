@@ -75,6 +75,7 @@
 .animate-marquee {
   display: inline-block;
   animation: marquee 20s linear infinite;
+  white-space: nowrap;
 }
 
 /* Investment Card Specific Styles */
@@ -95,3 +96,11 @@
   @apply text-investment-gold;
 }
 
+/* Transaction History Styles */
+.transaction-item {
+  @apply border-b border-gray-700 py-3 px-2 flex items-center justify-between;
+}
+
+.transaction-item:last-child {
+  @apply border-b-0;
+}

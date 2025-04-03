@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, LogIn, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ForgotPassword from './ForgotPassword';
 
 const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +13,7 @@ const AuthForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -36,6 +38,38 @@ const AuthForm: React.FC = () => {
       setIsLoading(false);
     }
   };
+  
+  const handleBackFromForgotPassword = () => {
+    setShowForgotPassword(false);
+  };
+  
+  const handleResetSuccess = () => {
+    setShowForgotPassword(false);
+    setIsLogin(true);
+  };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-black pt-12 pb-24">
+        {/* Header */}
+        <header className="bg-[#333333] py-4">
+          <h1 className="text-white text-xl text-center font-medium">
+            — Forgot Password —
+          </h1>
+        </header>
+        
+        {/* Yellow Banner */}
+        <div className="bg-investment-yellow h-2"></div>
+        
+        <div className="max-w-md mx-auto p-5 mt-8">
+          <ForgotPassword 
+            onBack={handleBackFromForgotPassword}
+            onReset={handleResetSuccess}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black pt-12 pb-24">
@@ -111,6 +145,20 @@ const AuthForm: React.FC = () => {
               className="bg-[#222222] border-gray-700 text-white"
             />
           </div>
+          
+          {isLogin && (
+            <div className="text-right">
+              <Button 
+                variant="link" 
+                type="button" 
+                className="p-0 h-auto text-investment-gold"
+                onClick={() => setShowForgotPassword(true)}
+              >
+                Forgot Password?
+              </Button>
+            </div>
+          )}
+          
           <Button 
             type="submit" 
             className="w-full bg-investment-gold hover:bg-investment-gold/90"

@@ -13,6 +13,16 @@ interface User {
   dailyIncome: number;
   investmentQuantity: number;
   ownedProducts: number[];
+  transactions?: TransactionRecord[];
+}
+
+export interface TransactionRecord {
+  id: string;
+  type: "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome";
+  amount: number;
+  timestamp: string;
+  status: "completed" | "pending" | "failed";
+  details?: string;
 }
 
 interface AuthContextType {
@@ -25,6 +35,9 @@ interface AuthContextType {
   updateUserDeposit: (amount: number) => void;
   updateUserWithdraw: (amount: number) => void;
   addOwnedProduct: (productId: number) => void;
+  updateUserProfile: (updates: Partial<User>) => void;
+  resetPassword: (email: string) => Promise<boolean>;
+  addTransaction: (transaction: Omit<TransactionRecord, "id" | "timestamp">) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -66,7 +79,8 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
           totalWithdraw: 0,
           dailyIncome: 0,
           investmentQuantity: 0,
-          ownedProducts: []
+          ownedProducts: [],
+          transactions: []
         };
         
         setUser(mockUser);
@@ -103,7 +117,8 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         totalWithdraw: 0,
         dailyIncome: 0,
         investmentQuantity: 0,
-        ownedProducts: []
+        ownedProducts: [],
+        transactions: []
       };
       
       setUser(mockUser);
@@ -149,6 +164,14 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         totalDeposit: user.totalDeposit + amount,
         balance: user.balance + amount
       });
+      
+      // Add transaction record
+      addTransaction({
+        type: "deposit",
+        amount,
+        status: "completed",
+        details: "Funds added to account"
+      });
     }
   };
 
@@ -159,9 +182,28 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         totalWithdraw: user.totalWithdraw + amount,
         balance: user.balance - amount
       });
+      
+      // Add transaction record
+      addTransaction({
+        type: "withdraw",
+        amount,
+        status: "completed",
+        details: "Funds withdrawn from account"
+      });
+      
       return true;
+    } else {
+      // Failed withdrawal due to insufficient balance
+      if (user) {
+        addTransaction({
+          type: "withdraw",
+          amount,
+          status: "failed",
+          details: "Insufficient balance"
+        });
+      }
+      return false;
     }
-    return false;
   };
 
   const addOwnedProduct = (productId: number) => {
@@ -170,6 +212,52 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         ...user,
         ownedProducts: [...user.ownedProducts, productId],
         investmentQuantity: user.investmentQuantity + 1
+      });
+      
+      // Assuming a fixed price for products (in a real app, this would be determined elsewhere)
+      const productPrice = 100; // Example price
+      
+      // Add transaction record
+      addTransaction({
+        type: "purchase",
+        amount: productPrice,
+        status: "completed",
+        details: `Purchased product ID: ${productId}`
+      });
+    }
+  };
+  
+  const updateUserProfile = (updates: Partial<User>) => {
+    if (user) {
+      setUser({
+        ...user,
+        ...updates
+      });
+    }
+  };
+  
+  const resetPassword = async (email: string) => {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+  
+  const addTransaction = (transactionData: Omit<TransactionRecord, "id" | "timestamp">) => {
+    if (user) {
+      const newTransaction: TransactionRecord = {
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp: new Date().toISOString(),
+        ...transactionData
+      };
+      
+      setUser({
+        ...user,
+        transactions: [newTransaction, ...(user.transactions || [])]
       });
     }
   };
@@ -185,7 +273,10 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
         updateUserBalance,
         updateUserDeposit,
         updateUserWithdraw,
-        addOwnedProduct
+        addOwnedProduct,
+        updateUserProfile,
+        resetPassword,
+        addTransaction
       }}
     >
       {children}
