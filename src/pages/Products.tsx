@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
@@ -10,7 +11,7 @@ import { Input } from "@/components/ui/input";
 const allInvestmentData = [
   {
     id: 1,
-    title: "Catalytic Reforming Reactor #1",
+    title: "Oil Drilling Platform Alpha",
     image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     price: 250.00,
     dailyIncome: 50.00,
@@ -18,7 +19,7 @@ const allInvestmentData = [
   },
   {
     id: 2,
-    title: "Catalytic Reforming Reactor #2",
+    title: "Offshore Oil Rig Beta",
     image: "https://images.unsplash.com/photo-1579784265015-1272f5d28154?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     price: 800.00,
     dailyIncome: 60.00,
@@ -26,31 +27,31 @@ const allInvestmentData = [
   },
   {
     id: 3,
-    title: "Catalytic Reforming Reactor #3",
-    image: "https://images.unsplash.com/photo-1525093127870-67be6104d8a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    title: "Mining Excavator X3000",
+    image: "https://images.unsplash.com/photo-1513293960556-9fcd584f3a3d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     price: 1400.00,
     dailyIncome: 108.00,
     viewCount: 4677,
   },
   {
     id: 4,
-    title: "Catalytic Reforming Reactor #4",
-    image: "https://images.unsplash.com/photo-1578256420811-3a73e8286fb5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    title: "Oil Refinery Module",
+    image: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     price: 5000.00,
     dailyIncome: 417.00,
     viewCount: 4329,
   },
   {
     id: 5,
-    title: "Catalytic Reforming Reactor #5",
-    image: "https://images.unsplash.com/photo-1582561424760-0321d75e81fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    title: "Diamond Mining Equipment",
+    image: "https://images.unsplash.com/photo-1605131545453-2c1838d6dbb7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     price: 3500.00,
     dailyIncome: 280.00,
     viewCount: 2295,
   },
   {
     id: 6,
-    title: "Fractionation Column Alpha",
+    title: "Fracking Station Pro",
     image: "https://images.unsplash.com/photo-1617791160505-6f00504e3519?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     price: 1200.00,
     dailyIncome: 96.00,
@@ -58,16 +59,16 @@ const allInvestmentData = [
   },
   {
     id: 7,
-    title: "Hydrocracking Unit XL",
-    image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    title: "Gold Mining System",
+    image: "https://images.unsplash.com/photo-1638913662295-9630035ef770?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     price: 2800.00,
     dailyIncome: 224.00,
     viewCount: 2514,
   },
   {
     id: 8,
-    title: "Coker Processing System",
-    image: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+    title: "Oil Pipeline Network",
+    image: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     price: 4200.00,
     dailyIncome: 336.00,
     viewCount: 1876,
@@ -140,6 +141,17 @@ const Products: React.FC = () => {
       </header>
       
       <div className="bg-investment-yellow h-2"></div>
+      
+      {/* Marquee for dynamic info */}
+      <div className="overflow-hidden bg-[#222222] py-2 mb-4">
+        <div className="whitespace-nowrap animate-marquee">
+          <span className="text-investment-gold mx-2">
+            New oil rig investments with 8.5% daily returns • Limited mining equipment available • 
+            Market update: Gold prices rise 3.1% • Highest yield: Oil Pipeline Network at 8% daily • 
+            Withdrawal time: 11:00 AM daily • New users get 5% bonus on first investment •
+          </span>
+        </div>
+      </div>
       
       <div className="p-4">
         <div className="relative mb-6">

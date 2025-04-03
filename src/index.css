@@ -61,8 +61,18 @@
   }
 }
 
+@keyframes marquee {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 20s linear infinite;
 }
 
 /* Investment Card Specific Styles */

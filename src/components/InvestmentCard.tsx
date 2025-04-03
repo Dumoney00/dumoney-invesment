@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Eye, ShoppingCart } from 'lucide-react';
+import { Eye, ShoppingCart, Timer } from 'lucide-react';
 
 interface InvestmentCardProps {
   id: number;
@@ -45,7 +45,10 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
           </div>
           <div>
             <p className="text-investment-gold text-xl font-bold">${dailyIncome.toLocaleString()}</p>
-            <p className="text-gray-400 text-xs">Daily income</p>
+            <p className="text-gray-400 text-xs flex items-center gap-1">
+              <Timer size={12} className="text-investment-gold" />
+              Daily income
+            </p>
           </div>
         </div>
         
