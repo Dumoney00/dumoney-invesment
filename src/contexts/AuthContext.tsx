@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { toast } from "@/hooks/use-toast";
 
@@ -62,6 +61,7 @@ export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     }
   }, [user]);
 
+  
   const login = async (email: string, password: string) => {
     try {
       // Simulate API call with timeout
