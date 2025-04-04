@@ -107,7 +107,7 @@ const Investing: React.FC = () => {
         
         toast({
           title: "Income Collected",
-          description: `$${totalDailyIncome.toFixed(2)} has been added to your account`
+          description: `₹${totalDailyIncome.toFixed(2)} has been added to your account`
         });
       } else if (!isAuthenticated) {
         toast({
@@ -153,7 +153,7 @@ const Investing: React.FC = () => {
             <p className="text-white text-sm mb-1">Daily income</p>
             <div className="flex items-center gap-2">
               <DollarSign className="text-white" size={24} />
-              <span className="text-white text-2xl font-bold">{totalDailyIncome.toFixed(2)}</span>
+              <span className="text-white text-2xl font-bold">₹{totalDailyIncome.toFixed(2)}</span>
             </div>
           </div>
           
@@ -191,7 +191,7 @@ const Investing: React.FC = () => {
                     <h3 className="text-white font-medium">{item.title}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <DollarSign className="text-investment-gold" size={16} />
-                      <span className="text-investment-gold">{item.dailyIncome.toFixed(2)}/day</span>
+                      <span className="text-investment-gold">₹{item.dailyIncome.toFixed(2)}/day</span>
                     </div>
                   </div>
                 </div>

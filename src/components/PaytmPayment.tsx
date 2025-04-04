@@ -26,7 +26,7 @@ const PaytmPayment: React.FC<PaytmPaymentProps> = ({ amount, onSuccess, onCancel
       // Simulate successful payment
       toast({
         title: "Payment Initiated",
-        description: `Redirecting to Paytm for payment of $${amount}`,
+        description: `Redirecting to Paytm for payment of ₹${amount}`,
       });
       
       // Simulate another delay to mimic gateway processing
@@ -52,7 +52,7 @@ const PaytmPayment: React.FC<PaytmPaymentProps> = ({ amount, onSuccess, onCancel
         <h3 className="text-lg font-medium">Pay with Paytm</h3>
       </div>
       
-      <p className="text-gray-400">Amount: <span className="text-white font-bold">${amount}</span></p>
+      <p className="text-gray-400">Amount: <span className="text-white font-bold">₹{amount}</span></p>
       
       <div className="flex gap-2">
         <Button

@@ -122,7 +122,7 @@ const TransactionHistory: React.FC = () => {
                 <div>
                   <p className={`font-medium ${getTransactionColor(transaction.type)}`}>
                     {transaction.type === "withdraw" || transaction.type === "purchase" ? "-" : "+"}
-                    ${transaction.amount}
+                    ₹{transaction.amount}
                   </p>
                   <p className="text-xs text-gray-400 md:hidden">{transaction.status}</p>
                 </div>

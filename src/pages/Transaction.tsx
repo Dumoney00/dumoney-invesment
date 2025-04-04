@@ -85,14 +85,14 @@ const Transaction: React.FC = () => {
       updateUserDeposit(values.amount);
       toast({
         title: "Deposit Successful",
-        description: `$${values.amount.toFixed(2)} has been added to your account via ${values.paymentMethod.toUpperCase()}`
+        description: `₹${values.amount.toFixed(2)} has been added to your account via ${values.paymentMethod.toUpperCase()}`
       });
     } else {
       if (user && user.balance >= values.amount) {
         updateUserWithdraw(values.amount);
         toast({
           title: "Withdrawal Successful",
-          description: `$${values.amount.toFixed(2)} has been withdrawn to your ${values.paymentMethod.toUpperCase()} account`
+          description: `₹${values.amount.toFixed(2)} has been withdrawn to your ${values.paymentMethod.toUpperCase()} account`
         });
       } else {
         toast({
@@ -111,7 +111,7 @@ const Transaction: React.FC = () => {
       updateUserDeposit(form.getValues().amount);
       toast({
         title: "Deposit Successful via Paytm",
-        description: `$${form.getValues().amount.toFixed(2)} has been added to your account`
+        description: `₹${form.getValues().amount.toFixed(2)} has been added to your account`
       });
     }
     setShowPaytmPayment(false);
@@ -170,7 +170,7 @@ const Transaction: React.FC = () => {
         <div className="whitespace-nowrap animate-marquee">
           <span className="text-investment-gold mx-2">
             Daily withdrawal time: 11:00 AM • Market update: Oil prices up 2.3% • New mining equipment available! •
-            USD/EUR: 0.91 • BTC: $61,245 • ETH: $3,412 • Daily returns averaging 8.2% •
+            USD/INR: 73.45 • BTC: ₹4,721,865 • ETH: ₹262,970 • Daily returns averaging 8.2% •
           </span>
         </div>
       </div>
@@ -191,7 +191,7 @@ const Transaction: React.FC = () => {
         <div className="bg-[#222222] rounded-lg p-4 mb-6">
           <p className="text-gray-400 text-center text-sm">Available Balance</p>
           <p className="text-investment-gold text-center text-3xl font-bold">
-            ${user?.balance.toFixed(2) || '0.00'}
+            ₹{user?.balance.toFixed(2) || '0.00'}
           </p>
         </div>
         
@@ -231,7 +231,7 @@ const Transaction: React.FC = () => {
                   className="border-gray-700 text-gray-300 hover:bg-[#333333]"
                   onClick={() => form.setValue("amount", preset)}
                 >
-                  ${preset}
+                  ₹{preset}
                 </Button>
               ))}
             </div>

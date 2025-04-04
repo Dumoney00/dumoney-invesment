@@ -40,11 +40,11 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
         
         <div className="flex justify-between mt-2">
           <div>
-            <p className="text-investment-gold text-xl font-bold">${price.toLocaleString()}</p>
+            <p className="text-investment-gold text-xl font-bold">₹{price.toLocaleString()}</p>
             <p className="text-gray-400 text-xs">Price</p>
           </div>
           <div>
-            <p className="text-investment-gold text-xl font-bold">${dailyIncome.toLocaleString()}</p>
+            <p className="text-investment-gold text-xl font-bold">₹{dailyIncome.toLocaleString()}</p>
             <p className="text-gray-400 text-xs flex items-center gap-1">
               <Timer size={12} className="text-investment-gold" />
               Daily income

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
