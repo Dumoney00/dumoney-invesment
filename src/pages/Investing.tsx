@@ -7,6 +7,17 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
 import { TrendingUp, DollarSign } from 'lucide-react';
+import InvestmentCard from '@/components/InvestmentCard';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // This should match the data in Products.tsx
 const investmentData = [
@@ -77,9 +88,10 @@ const investmentData = [
 ];
 
 const Investing: React.FC = () => {
-  const { user, isAuthenticated, updateUserBalance } = useAuth();
+  const { user, isAuthenticated, updateUserBalance, sellOwnedProduct } = useAuth();
   const [userInvestments, setUserInvestments] = useState<typeof investmentData>([]);
   const [lastIncomeTime, setLastIncomeTime] = useState<number | null>(null);
+  const [sellProductId, setSellProductId] = useState<number | null>(null);
   const navigate = useNavigate();
   
   // Load user's owned products
@@ -135,6 +147,41 @@ const Investing: React.FC = () => {
       });
     }
   };
+  
+  // Handle selling a product
+  const handleSellProduct = (productId: number) => {
+    setSellProductId(productId);
+  };
+  
+  // Confirm selling a product
+  const confirmSellProduct = () => {
+    if (sellProductId === null) return;
+    
+    const productToSell = userInvestments.find(item => item.id === sellProductId);
+    if (!productToSell) return;
+    
+    // Calculate sell price (70% of purchase price as an example)
+    const sellPrice = Math.round(productToSell.price * 0.7);
+    
+    const result = sellOwnedProduct(sellProductId, sellPrice);
+    
+    if (result) {
+      toast({
+        title: "Investment Sold",
+        description: `You sold ${productToSell.title} for ₹${sellPrice.toFixed(2)}`
+      });
+    }
+    
+    setSellProductId(null);
+  };
+  
+  // Cancel selling a product
+  const cancelSellProduct = () => {
+    setSellProductId(null);
+  };
+  
+  // Find the product being sold (if any)
+  const productBeingSold = userInvestments.find(item => item.id === sellProductId);
 
   return (
     <div className="min-h-screen bg-black pb-24">
@@ -178,24 +225,19 @@ const Investing: React.FC = () => {
         <h2 className="text-xl text-white font-medium mb-4">— Product List —</h2>
         
         {userInvestments.length > 0 ? (
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             {userInvestments.map((item) => (
-              <div key={item.id} className="bg-[#222222] rounded-lg overflow-hidden">
-                <div className="flex">
-                  <img 
-                    src={item.image} 
-                    alt={item.title} 
-                    className="w-24 h-24 object-cover"
-                  />
-                  <div className="p-3">
-                    <h3 className="text-white font-medium">{item.title}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <DollarSign className="text-investment-gold" size={16} />
-                      <span className="text-investment-gold">₹{item.dailyIncome.toFixed(2)}/day</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <InvestmentCard
+                key={item.id}
+                id={item.id}
+                title={item.title}
+                image={item.image}
+                price={item.price}
+                dailyIncome={item.dailyIncome}
+                viewCount={0}
+                owned={true}
+                onSell={() => handleSellProduct(item.id)}
+              />
             ))}
           </div>
         ) : (
@@ -215,6 +257,41 @@ const Investing: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* Sell Confirmation Dialog */}
+      <AlertDialog open={sellProductId !== null} onOpenChange={(open) => !open && setSellProductId(null)}>
+        <AlertDialogContent className="bg-[#222222] border-gray-700 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Sale</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              {productBeingSold && (
+                <>
+                  Are you sure you want to sell {productBeingSold.title}?
+                  <div className="mt-2 p-3 bg-black/30 rounded-lg">
+                    <p className="flex justify-between">
+                      <span>Original price:</span>
+                      <span className="text-investment-gold">₹{productBeingSold.price.toFixed(2)}</span>
+                    </p>
+                    <p className="flex justify-between">
+                      <span>Sell price (70%):</span>
+                      <span className="text-investment-gold">₹{(productBeingSold.price * 0.7).toFixed(2)}</span>
+                    </p>
+                  </div>
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-700 text-white hover:bg-gray-600">Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmSellProduct}
+              className="bg-investment-gold hover:bg-investment-gold/90 text-white"
+            >
+              Confirm Sale
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <Navigation />
       <FloatingActionButton />

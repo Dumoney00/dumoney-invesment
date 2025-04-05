@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
@@ -75,7 +76,7 @@ const allInvestmentData = [
 ];
 
 const Products: React.FC = () => {
-  const { user, isAuthenticated, updateUserBalance, addOwnedProduct } = useAuth();
+  const { user, isAuthenticated, addOwnedProduct } = useAuth();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredProducts, setFilteredProducts] = useState(allInvestmentData);
   const [sortOption, setSortOption] = useState<string>('default');
@@ -118,8 +119,8 @@ const Products: React.FC = () => {
     }
 
     if (user && user.balance >= product.price) {
-      updateUserBalance(-product.price);
-      addOwnedProduct(product.id);
+      // The price deduction now happens in addOwnedProduct
+      addOwnedProduct(product.id, product.price);
       toast({
         title: "Purchase Successful",
         description: `You have purchased ${product.title}`,
@@ -135,6 +136,7 @@ const Products: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black pb-24">
+      {/* Header */}
       <header className="bg-[#333333] py-4">
         <h1 className="text-white text-xl text-center font-medium">— Products —</h1>
       </header>

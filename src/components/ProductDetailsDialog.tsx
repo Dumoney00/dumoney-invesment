@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Wallet } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -38,6 +38,9 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   // Check if user has enough balance
   const hasEnoughBalance = user && user.balance >= product.price;
   
+  // Calculate new balance after purchase
+  const newBalance = user ? (user.balance - product.price).toFixed(2) : '0.00';
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#222222] border-0 text-white p-0 max-w-md">
@@ -67,12 +70,22 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           
           {/* Show current balance */}
           <div className="bg-black/20 p-3 rounded-lg mb-4">
-            <div className="flex justify-between">
-              <span>Your current balance:</span>
-              <span className={user && user.balance < product.price ? "text-red-500 font-bold" : "text-investment-gold font-bold"}>
+            <div className="flex justify-between items-center mb-2">
+              <span className="flex items-center gap-2">
+                <Wallet size={16} />
+                Your current balance:
+              </span>
+              <span className={hasEnoughBalance ? "text-investment-gold font-bold" : "text-red-500 font-bold"}>
                 ₹{user?.balance.toLocaleString() || '0'}
               </span>
             </div>
+            
+            {hasEnoughBalance && (
+              <div className="flex justify-between items-center text-sm">
+                <span>Balance after purchase:</span>
+                <span className="text-gray-300">₹{newBalance}</span>
+              </div>
+            )}
           </div>
           
           <div className="space-y-4">

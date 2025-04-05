@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { User, TransactionRecord } from "@/types/auth";
 import { 
@@ -13,7 +12,6 @@ export const useAuthProvider = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  // Load user from localStorage on component mount
   useEffect(() => {
     const storedUser = loadUserFromStorage();
     if (storedUser) {
@@ -22,17 +20,14 @@ export const useAuthProvider = () => {
     }
   }, []);
 
-  // Save user to localStorage whenever it changes
   useEffect(() => {
     saveUserToStorage(user);
   }, [user]);
 
   const login = async (email: string, password: string) => {
     try {
-      // Simulate API call with timeout
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      // For demo purposes, create a mock user
       if (email && password) {
         const mockUser = createMockUser(email.split('@')[0], email);
         
@@ -57,7 +52,6 @@ export const useAuthProvider = () => {
 
   const register = async (username: string, email: string, password: string) => {
     try {
-      // Simulate API call with timeout
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       const mockUser = createMockUser(username, email);
@@ -106,7 +100,6 @@ export const useAuthProvider = () => {
         balance: user.balance + amount
       });
       
-      // Add transaction record
       addTransaction({
         type: "deposit",
         amount,
@@ -124,7 +117,6 @@ export const useAuthProvider = () => {
         balance: user.balance - amount
       });
       
-      // Add transaction record
       addTransaction({
         type: "withdraw",
         amount,
@@ -134,7 +126,6 @@ export const useAuthProvider = () => {
       
       return true;
     } else {
-      // Failed withdrawal due to insufficient balance
       if (user) {
         addTransaction({
           type: "withdraw",
@@ -147,25 +138,52 @@ export const useAuthProvider = () => {
     }
   };
 
-  const addOwnedProduct = (productId: number) => {
+  const addOwnedProduct = (productId: number, price: number) => {
     if (user) {
       setUser({
         ...user,
         ownedProducts: [...user.ownedProducts, productId],
-        investmentQuantity: user.investmentQuantity + 1
+        investmentQuantity: user.investmentQuantity + 1,
+        balance: user.balance - price
       });
       
-      // Assuming a fixed price for products (in a real app, this would be determined elsewhere)
-      const productPrice = 100; // Example price
-      
-      // Add transaction record
       addTransaction({
         type: "purchase",
-        amount: productPrice,
+        amount: price,
         status: "completed",
         details: `Purchased product ID: ${productId}`
       });
     }
+  };
+  
+  const sellOwnedProduct = (productId: number, sellPrice: number) => {
+    if (user) {
+      if (!user.ownedProducts.includes(productId)) {
+        showToast(
+          "Sale Failed",
+          "You don't own this product",
+          "destructive"
+        );
+        return false;
+      }
+      
+      setUser({
+        ...user,
+        ownedProducts: user.ownedProducts.filter(id => id !== productId),
+        investmentQuantity: user.investmentQuantity - 1,
+        balance: user.balance + sellPrice
+      });
+      
+      addTransaction({
+        type: "sale",
+        amount: sellPrice,
+        status: "completed",
+        details: `Sold product ID: ${productId}`
+      });
+      
+      return true;
+    }
+    return false;
   };
   
   const updateUserProfile = (updates: Partial<User>) => {
@@ -179,7 +197,6 @@ export const useAuthProvider = () => {
   
   const resetPassword = async (email: string) => {
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       return true;
@@ -209,6 +226,7 @@ export const useAuthProvider = () => {
     updateUserDeposit,
     updateUserWithdraw,
     addOwnedProduct,
+    sellOwnedProduct,
     updateUserProfile,
     resetPassword,
     addTransaction

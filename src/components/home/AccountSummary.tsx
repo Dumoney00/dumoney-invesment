@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User } from '@/types/auth';
-import { Wallet, ArrowDown } from 'lucide-react';
+import { Wallet, ArrowDown, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface AccountSummaryProps {
@@ -30,10 +30,10 @@ const AccountSummary: React.FC<AccountSummaryProps> = ({ user }) => {
         onClick={handleDepositClick}
       >
         <div className="flex items-center gap-2 mb-1">
-          <ArrowDown className="text-white" size={20} />
-          <span className="text-white font-bold text-2xl">₹{user?.totalDeposit?.toFixed(2) || "0.00"}</span>
+          <TrendingUp className="text-white" size={20} />
+          <span className="text-white font-bold text-2xl">{user?.investmentQuantity || "0"}</span>
         </div>
-        <p className="text-white text-sm">Total Deposit</p>
+        <p className="text-white text-sm">Investments</p>
         <div className="absolute right-2 bottom-2 bg-white/20 p-1 rounded-full">
           <span className="text-xs text-white font-bold">+</span>
         </div>

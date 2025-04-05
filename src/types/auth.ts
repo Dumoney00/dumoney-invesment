@@ -31,7 +31,8 @@ export interface AuthContextType {
   updateUserBalance: (amount: number) => void;
   updateUserDeposit: (amount: number) => void;
   updateUserWithdraw: (amount: number) => void;
-  addOwnedProduct: (productId: number) => void;
+  addOwnedProduct: (productId: number, price: number) => void;
+  sellOwnedProduct: (productId: number, sellPrice: number) => boolean;
   updateUserProfile: (updates: Partial<User>) => void;
   resetPassword: (email: string) => Promise<boolean>;
   addTransaction: (transaction: Omit<TransactionRecord, "id" | "timestamp">) => void;
