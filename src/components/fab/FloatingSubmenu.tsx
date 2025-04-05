@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Wallet, ShoppingBag, ChevronUp } from 'lucide-react';
+import { WalletCards, ShoppingBag, ChevronUp } from 'lucide-react';
 import SubMenuButton from './SubMenuButton';
-import { useNavigate } from 'react-router-dom';
 
 interface FloatingSubmenuProps {
   isOpen: boolean;
@@ -15,7 +14,7 @@ const FloatingSubmenu: React.FC<FloatingSubmenuProps> = ({ isOpen, onNavigate })
   return (
     <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-4 animate-fadeIn">
       <SubMenuButton 
-        Icon={Wallet}
+        Icon={WalletCards}
         color="green-600"
         onClick={() => onNavigate('/deposit')}
       />
