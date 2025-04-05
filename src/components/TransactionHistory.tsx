@@ -17,57 +17,8 @@ interface Transaction {
 const TransactionHistory: React.FC = () => {
   const { user } = useAuth();
   
-  // Mock transactions for demonstration
-  const transactions: Transaction[] = [
-    {
-      id: "t1",
-      type: "deposit",
-      amount: 500,
-      timestamp: "2023-07-28T14:32:00Z",
-      status: "completed",
-      details: "Deposit via Paytm"
-    },
-    {
-      id: "t2",
-      type: "purchase",
-      amount: 300,
-      timestamp: "2023-07-27T10:15:00Z",
-      status: "completed",
-      details: "Purchased Oil Mining Equipment"
-    },
-    {
-      id: "t3",
-      type: "dailyIncome",
-      amount: 25,
-      timestamp: "2023-07-26T08:00:00Z",
-      status: "completed",
-      details: "Daily investment return"
-    },
-    {
-      id: "t4",
-      type: "withdraw",
-      amount: 200,
-      timestamp: "2023-07-25T11:05:00Z",
-      status: "completed",
-      details: "Withdrawal to UPI"
-    },
-    {
-      id: "t5",
-      type: "sale",
-      amount: 150,
-      timestamp: "2023-07-24T16:45:00Z",
-      status: "completed",
-      details: "Sold Mining Equipment"
-    },
-    {
-      id: "t6",
-      type: "withdraw",
-      amount: 100,
-      timestamp: "2023-07-23T11:15:00Z",
-      status: "failed",
-      details: "Failed withdrawal - Insufficient balance"
-    }
-  ];
+  // Get actual transactions from user if available
+  const transactions = user?.transactions || [];
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

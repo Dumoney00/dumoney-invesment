@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { WalletCards, ShoppingBag, ChevronUp } from 'lucide-react';
+import { WalletCards, ShoppingBag, ChevronUp, TrendingUp } from 'lucide-react';
 import SubMenuButton from './SubMenuButton';
 
 interface FloatingSubmenuProps {
@@ -20,14 +20,20 @@ const FloatingSubmenu: React.FC<FloatingSubmenuProps> = ({ isOpen, onNavigate })
       />
       
       <SubMenuButton 
-        Icon={ShoppingBag}
+        Icon={TrendingUp}
         color="blue-600"
+        onClick={() => onNavigate('/investing')}
+      />
+      
+      <SubMenuButton 
+        Icon={ShoppingBag}
+        color="purple-600"
         onClick={() => onNavigate('/products')}
       />
       
       <SubMenuButton 
         Icon={ChevronUp}
-        color="purple-600"
+        color="yellow-500"
         onClick={() => onNavigate('/')}
       />
     </div>

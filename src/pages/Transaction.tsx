@@ -28,10 +28,19 @@ const Transaction: React.FC = () => {
   const isDeposit = location.pathname === '/deposit';
   const pageTitle = isDeposit ? 'Deposit' : 'Withdraw';
   
-  // Get current time to display withdrawal timing
+  // Get current time to check withdrawal timing
   const now = new Date();
   const currentHour = now.getHours();
-  const withdrawalOpen = currentHour === 11; // Only open at 11 AM
+  const currentMinute = now.getMinutes();
+  const currentDay = now.getDay(); // 0 is Sunday, 6 is Saturday
+  
+  // Check if withdrawal is allowed (11:00 AM to 11:30 AM, Monday to Friday)
+  const isWithdrawalTime = 
+    currentHour === 11 && 
+    currentMinute >= 0 && 
+    currentMinute <= 30 && 
+    currentDay >= 1 && 
+    currentDay <= 5;
   
   const form = useForm<TransactionFormValues>({
     defaultValues: {
@@ -61,10 +70,10 @@ const Transaction: React.FC = () => {
     }
     
     // For withdrawals, check if within allowed time
-    if (!isDeposit && !withdrawalOpen) {
+    if (!isDeposit && !isWithdrawalTime) {
       toast({
         title: "Withdrawal Unavailable",
-        description: "Withdrawals are only available at 11 AM",
+        description: "Withdrawals are only available from 11:00 AM to 11:30 AM, Monday to Friday",
         variant: "destructive"
       });
       return;
@@ -179,7 +188,8 @@ const Transaction: React.FC = () => {
       <div className="overflow-hidden bg-[#222222] py-2 mb-4">
         <div className="whitespace-nowrap animate-marquee">
           <span className="text-investment-gold mx-2">
-            Daily withdrawal time: 11:00 AM • Market update: Oil prices up 2.3% • New mining equipment available! •
+            Withdrawal time: 11:00 AM to 11:30 AM, Monday to Friday • No withdrawals on weekends • 
+            Market update: Oil prices up 2.3% • New mining equipment available! •
             USD/INR: 73.45 • BTC: ₹4,721,865 • ETH: ₹262,970 • Daily returns averaging 8.2% •
           </span>
         </div>
@@ -208,9 +218,9 @@ const Transaction: React.FC = () => {
         {!isDeposit && (
           <div className="mb-4 px-3 py-2 bg-[#333333] rounded-lg">
             <p className="text-center text-white text-sm">
-              {withdrawalOpen 
+              {isWithdrawalTime 
                 ? "✅ Withdrawals are currently open" 
-                : "⏰ Withdrawals are only available at 11:00 AM"}
+                : "⏰ Withdrawals are only available from 11:00 AM to 11:30 AM, Monday to Friday"}
             </p>
           </div>
         )}
@@ -321,7 +331,7 @@ const Transaction: React.FC = () => {
             <Button
               type="submit"
               className="w-full bg-investment-gold hover:bg-investment-gold/90 py-6 text-lg"
-              disabled={isProcessing || (!isDeposit && !withdrawalOpen)}
+              disabled={isProcessing || (!isDeposit && !isWithdrawalTime)}
             >
               {isProcessing 
                 ? "Processing..." 

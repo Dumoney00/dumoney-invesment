@@ -18,22 +18,26 @@ const AccountSummary: React.FC<AccountSummaryProps> = ({ user }) => {
   return (
     <div className="grid grid-cols-2 gap-4 p-4">
       <div className="bg-gradient-to-r from-investment-gold to-yellow-500 rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <WalletCards className="text-white" size={20} />
-          <span className="text-white font-bold text-2xl">₹{user?.balance?.toFixed(2) || "0.00"}</span>
+        <div className="flex flex-col">
+          <span className="text-white text-sm mb-2">Available balance</span>
+          <div className="flex items-center gap-2">
+            <WalletCards className="text-white" size={20} />
+            <span className="text-white font-bold text-2xl">₹{user?.balance?.toFixed(2) || "0.00"}</span>
+          </div>
         </div>
-        <p className="text-white text-sm">Available balance</p>
       </div>
       
       <div 
         className="bg-gradient-to-r from-investment-gold to-yellow-500 rounded-xl p-4 relative cursor-pointer"
         onClick={handleDepositClick}
       >
-        <div className="flex items-center gap-2 mb-1">
-          <TrendingUp className="text-white" size={20} />
-          <span className="text-white font-bold text-2xl">₹{user?.totalDeposit?.toFixed(2) || "0.00"}</span>
+        <div className="flex flex-col">
+          <span className="text-white text-sm mb-2">Total deposits</span>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="text-white" size={20} />
+            <span className="text-white font-bold text-2xl">₹{user?.totalDeposit?.toFixed(2) || "0.00"}</span>
+          </div>
         </div>
-        <p className="text-white text-sm">Total deposits</p>
         <div className="absolute right-2 bottom-2 bg-white/20 p-1 rounded-full">
           <span className="text-xs text-white font-bold">+</span>
         </div>
