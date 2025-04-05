@@ -87,6 +87,11 @@ const Transaction: React.FC = () => {
         title: "Deposit Successful",
         description: `₹${values.amount.toFixed(2)} has been added to your account via ${values.paymentMethod.toUpperCase()}`
       });
+      
+      // After successful deposit, navigate to the home page to show balance
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
     } else {
       if (user && user.balance >= values.amount) {
         updateUserWithdraw(values.amount);
@@ -113,6 +118,11 @@ const Transaction: React.FC = () => {
         title: "Deposit Successful via Paytm",
         description: `₹${form.getValues().amount.toFixed(2)} has been added to your account`
       });
+      
+      // After successful Paytm deposit, navigate to the home page
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
     }
     setShowPaytmPayment(false);
   };

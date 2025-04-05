@@ -7,6 +7,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProductDetailsDialogProps {
   open: boolean;
@@ -27,10 +28,15 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   product,
   onConfirmInvest
 }) => {
+  const { user } = useAuth();
+  
   // Calculate other metrics
   const hourlyIncome = parseFloat((product.dailyIncome / 24).toFixed(2));
   const cycleDays = 41; // Fixed for now as per the image
   const totalIncome = parseFloat((product.dailyIncome * cycleDays).toFixed(2));
+  
+  // Check if user has enough balance
+  const hasEnoughBalance = user && user.balance >= product.price;
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -57,6 +63,16 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           
           <div className="text-investment-gold text-4xl font-bold mb-6">
             ₹{product.price.toLocaleString()}
+          </div>
+          
+          {/* Show current balance */}
+          <div className="bg-black/20 p-3 rounded-lg mb-4">
+            <div className="flex justify-between">
+              <span>Your current balance:</span>
+              <span className={user && user.balance < product.price ? "text-red-500 font-bold" : "text-investment-gold font-bold"}>
+                ₹{user?.balance.toLocaleString() || '0'}
+              </span>
+            </div>
           </div>
           
           <div className="space-y-4">
@@ -87,10 +103,15 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           </div>
           
           <Button 
-            className="w-full mt-6 py-6 bg-gradient-to-r from-investment-gold to-yellow-500 hover:from-yellow-500 hover:to-investment-gold text-white text-xl font-bold rounded-full"
+            className={`w-full mt-6 py-6 text-white text-xl font-bold rounded-full ${
+              hasEnoughBalance 
+                ? "bg-gradient-to-r from-investment-gold to-yellow-500 hover:from-yellow-500 hover:to-investment-gold" 
+                : "bg-gray-600 cursor-not-allowed"
+            }`}
             onClick={onConfirmInvest}
+            disabled={!hasEnoughBalance}
           >
-            Confirm Invest
+            {hasEnoughBalance ? "Confirm Invest" : "Insufficient Balance"}
           </Button>
         </div>
       </DialogContent>

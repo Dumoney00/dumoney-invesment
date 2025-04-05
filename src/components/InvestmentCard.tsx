@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Eye, ShoppingCart, Timer } from 'lucide-react';
 import ProductDetailsDialog from './ProductDetailsDialog';
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 interface InvestmentCardProps {
   id: number;
@@ -23,8 +25,28 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
   onInvest
 }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const { user, isAuthenticated } = useAuth();
   
   const handleInvestClick = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to invest in products",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if user has enough balance before showing dialog
+    if (user && user.balance < price) {
+      toast({
+        title: "Insufficient Balance",
+        description: `You need ₹${price.toFixed(2)} to invest in this product. Please add funds.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setShowDetails(true);
   };
   
