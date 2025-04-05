@@ -50,10 +50,10 @@ const allInvestmentData = [
   },
   {
     id: 6,
-    title: "Fracking Station Pro",
-    image: "https://images.unsplash.com/photo-1617791160505-6f00504e3519?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
-    price: 1200.00,
-    dailyIncome: 96.00,
+    title: "Fractionation Tower",
+    image: "/lovable-uploads/e3021dfc-cde2-410f-a532-e654c165fdfd.png",
+    price: 1400.00,
+    dailyIncome: 108.00,
     viewCount: 3187,
   },
   {
