@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { AuthContextType } from "@/types/auth";
 import { useAuth } from './useAuth';
-import { useUserTransactions } from './useUserTransactions';
+import { useUserManagement } from './useUserManagement';
 
 export const useAuthProvider = (): AuthContextType => {
   const { 
@@ -23,7 +23,7 @@ export const useAuthProvider = (): AuthContextType => {
     sellOwnedProduct,
     updateUserProfile,
     addTransaction
-  } = useUserTransactions(user, saveUser);
+  } = useUserManagement(user, saveUser);
 
   // Add any effects or additional logic here
   useEffect(() => {
