@@ -13,9 +13,11 @@ export interface User {
   transactions?: TransactionRecord[];
 }
 
+export type TransactionType = "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome";
+
 export interface TransactionRecord {
   id: string;
-  type: "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome";
+  type: TransactionType;
   amount: number;
   timestamp: string;
   status: "completed" | "pending" | "failed";
