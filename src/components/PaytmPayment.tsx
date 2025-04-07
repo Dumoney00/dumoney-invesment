@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Smartphone } from 'lucide-react';
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PaytmPaymentProps {
   amount: number;
@@ -12,6 +13,7 @@ interface PaytmPaymentProps {
 
 const PaytmPayment: React.FC<PaytmPaymentProps> = ({ amount, onSuccess, onCancel }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { updateUserDeposit } = useAuth();
   
   const initiatePayment = async () => {
     setIsLoading(true);
@@ -31,6 +33,15 @@ const PaytmPayment: React.FC<PaytmPaymentProps> = ({ amount, onSuccess, onCancel
       
       // Simulate another delay to mimic gateway processing
       await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Update user wallet directly
+      updateUserDeposit(amount);
+      
+      // Show confirmation toast
+      toast({
+        title: "Payment Successful",
+        description: `₹${amount} has been added to your wallet`,
+      });
       
       // Call success callback
       onSuccess();

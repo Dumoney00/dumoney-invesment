@@ -29,7 +29,7 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
   onSell
 }) => {
   const [showDetails, setShowDetails] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, addOwnedProduct } = useAuth();
   
   const handleActionClick = () => {
     if (!isAuthenticated) {
@@ -54,8 +54,26 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
   };
   
   const handleConfirmInvest = () => {
-    if (onInvest) {
-      onInvest();
+    // Check if user has enough balance
+    if (user && user.balance >= price) {
+      // Debit from wallet and add product to owned products
+      addOwnedProduct(id, price);
+      
+      // Call onInvest callback if provided
+      if (onInvest) {
+        onInvest();
+      }
+      
+      toast({
+        title: "Investment Successful",
+        description: `You have successfully invested in ${title}`,
+      });
+    } else {
+      toast({
+        title: "Insufficient Balance",
+        description: "Please add funds to your wallet to complete this investment",
+        variant: "destructive"
+      });
     }
   };
   

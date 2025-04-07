@@ -91,6 +91,7 @@ const Transaction: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     if (isDeposit) {
+      // Update user wallet
       updateUserDeposit(values.amount);
       toast({
         title: "Deposit Successful",
@@ -121,18 +122,10 @@ const Transaction: React.FC = () => {
   };
   
   const handlePaytmSuccess = () => {
-    if (form.getValues().amount) {
-      updateUserDeposit(form.getValues().amount);
-      toast({
-        title: "Deposit Successful via Paytm",
-        description: `₹${form.getValues().amount.toFixed(2)} has been added to your account`
-      });
-      
-      // After successful Paytm deposit, navigate to the home page
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
-    }
+    // Navigation after payment success (wallet is already updated in PaytmPayment component)
+    setTimeout(() => {
+      navigate('/');
+    }, 1000);
     setShowPaytmPayment(false);
   };
   
