@@ -49,21 +49,11 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
       return;
     }
     
-    // For buying, check balance before showing dialog
-    if (user && user.balance < price) {
-      toast({
-        title: "Insufficient Balance",
-        description: `You need ₹${price.toFixed(2)} to invest in this product. Please add funds.`,
-        variant: "destructive"
-      });
-      return;
-    }
-    
+    // Show product details dialog
     setShowDetails(true);
   };
   
   const handleConfirmInvest = () => {
-    setShowDetails(false);
     if (onInvest) {
       onInvest();
     }

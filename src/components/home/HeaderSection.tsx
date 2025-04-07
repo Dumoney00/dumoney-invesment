@@ -15,10 +15,11 @@ const HeaderSection: React.FC = () => {
         
         {user && (
           <div 
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer flex items-center"
             onClick={() => navigate('/deposit')}
           >
-            <Wallet size={20} className="text-investment-gold" />
+            <Wallet size={20} className="text-investment-gold mr-1" />
+            <span className="text-investment-gold text-sm">₹{user.balance.toLocaleString()}</span>
           </div>
         )}
       </header>
