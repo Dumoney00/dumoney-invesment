@@ -18,29 +18,29 @@ import ActivityFeed from '@/components/home/ActivityFeed';
 // Data for the products and activities
 const investmentData = [{
   id: 1,
-  title: "Catalytic Reforming Reactor #1",
-  image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+  title: "Mining Excavator Alpha",
+  image: "https://images.unsplash.com/photo-1605131545453-2c1838d6dbb7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
   price: 250.00,
   dailyIncome: 50.00,
   viewCount: 6351
 }, {
   id: 2,
-  title: "Catalytic Reforming Reactor #2",
-  image: "https://images.unsplash.com/photo-1579784265015-1272f5d28154?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+  title: "Industrial Drill XL-5000",
+  image: "https://images.unsplash.com/photo-1622022526425-b358809cc649?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
   price: 800.00,
   dailyIncome: 60.00,
   viewCount: 1730
 }, {
   id: 3,
-  title: "Catalytic Reforming Reactor #3",
-  image: "https://images.unsplash.com/photo-1525093127870-67be6104d8a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+  title: "Mining Crusher S3000",
+  image: "https://images.unsplash.com/photo-1513293960556-9fcd584f3a3d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
   price: 1400.00,
   dailyIncome: 108.00,
   viewCount: 4677
 }, {
   id: 4,
-  title: "Catalytic Reforming Reactor #4",
-  image: "https://images.unsplash.com/photo-1578256420811-3a73e8286fb5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+  title: "Gold Mining Processor",
+  image: "https://images.unsplash.com/photo-1638913662295-9630035ef770?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
   price: 5000.00,
   dailyIncome: 417.00,
   viewCount: 4329
