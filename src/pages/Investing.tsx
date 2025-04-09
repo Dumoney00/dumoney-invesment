@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
@@ -26,48 +25,63 @@ const investmentData = [
     title: "Oil Refinery Processing Unit",
     image: "/lovable-uploads/39854854-dee8-4bf0-a045-eff7813c1370.png",
     price: 600.00,
-    dailyIncome: 30.00,
+    dailyIncome: 20.00,
+    cycleDays: 45,
     viewCount: 6351,
+    locked: false,
   },
   {
     id: 2,
     title: "Industrial Gas Processing Plant",
     image: "/lovable-uploads/1541f643-6e7a-4b1f-b83a-533eb61d205f.png",
     price: 1200.00,
-    dailyIncome: 50.00,
+    dailyIncome: 40.00,
+    cycleDays: 45,
     viewCount: 1730,
+    locked: false,
   },
   {
     id: 3,
     title: "Pipeline Network System",
     image: "/lovable-uploads/4b9b18f6-756a-4f3b-aafc-0f0501a3ce42.png",
-    price: 2100.00,
-    dailyIncome: 60.00,
+    price: 2400.00,
+    dailyIncome: 80.00,
+    cycleDays: 45,
     viewCount: 4677,
+    locked: false,
   },
   {
     id: 4,
     title: "Mining Processing Facility",
     image: "/lovable-uploads/5ac44beb-15bc-49ee-8192-f6369f2e9ba1.png",
-    price: 5000.00,
-    dailyIncome: 417.00,
+    price: 4800.00,
+    dailyIncome: 160.00,
+    cycleDays: 45,
     viewCount: 4329,
+    locked: true,
+    requiredProductId: 1,
   },
   {
     id: 5,
     title: "Gold Processing Plant",
     image: "/lovable-uploads/d21fc3fe-5410-4485-b5e2-bfeed3f04d3f.png",
-    price: 3500.00,
-    dailyIncome: 280.00,
+    price: 10000.00,
+    dailyIncome: 500.00,
+    cycleDays: 30,
     viewCount: 2295,
+    locked: true,
+    requiredProductId: 2,
   },
   {
     id: 6,
     title: "Oil Field Equipment",
     image: "/lovable-uploads/cdc5ad7e-14e7-41a9-80df-35f3af265a34.png",
-    price: 1400.00,
-    dailyIncome: 108.00,
+    price: 12000.00,
+    dailyIncome: 900.00,
+    cycleDays: 30,
     viewCount: 3187,
+    locked: true,
+    requiredProductId: 3,
   },
   {
     id: 7,
@@ -234,6 +248,7 @@ const Investing: React.FC = () => {
                 image={item.image}
                 price={item.price}
                 dailyIncome={item.dailyIncome}
+                cycleDays={item.cycleDays}
                 viewCount={0}
                 owned={true}
                 onSell={() => handleSellProduct(item.id)}

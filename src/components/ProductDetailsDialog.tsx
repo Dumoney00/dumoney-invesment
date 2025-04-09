@@ -31,6 +31,7 @@ interface ProductDetailsDialogProps {
     image: string;
     price: number;
     dailyIncome: number;
+    cycleDays?: number;
   };
   onConfirmInvest: () => void;
 }
@@ -47,15 +48,8 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   // Calculate other metrics
   const hourlyIncome = parseFloat((product.dailyIncome / 24).toFixed(2));
   
-  // Set cycle days based on product ID
-  let cycleDays = 41; // default
-  if (product.id === 1) {
-    cycleDays = 30; // 30 days for first product
-  } else if (product.id === 2) {
-    cycleDays = 40; // 40 days for second product
-  } else if (product.id === 3) {
-    cycleDays = 60; // 60 days for third product
-  }
+  // Use provided cycle days or default
+  const cycleDays = product.cycleDays || 45;
   
   const totalIncome = parseFloat((product.dailyIncome * cycleDays).toFixed(2));
   
@@ -193,6 +187,10 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                 <p className="flex justify-between">
                   <span>Daily income:</span>
                   <span className="text-investment-gold">₹{product.dailyIncome.toLocaleString()}</span>
+                </p>
+                <p className="flex justify-between">
+                  <span>Total income ({cycleDays} days):</span>
+                  <span className="text-investment-gold">₹{totalIncome.toLocaleString()}</span>
                 </p>
                 <p className="flex justify-between">
                   <span>Balance after investment:</span>

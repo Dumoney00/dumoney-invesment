@@ -5,7 +5,7 @@ import FloatingActionButton from '@/components/FloatingActionButton';
 import InvestmentCard from '@/components/InvestmentCard';
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Search } from 'lucide-react';
+import { Search, Lock } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 
 const allInvestmentData = [
@@ -14,48 +14,63 @@ const allInvestmentData = [
     title: "Oil Refinery Processing Unit",
     image: "/lovable-uploads/39854854-dee8-4bf0-a045-eff7813c1370.png",
     price: 600.00,
-    dailyIncome: 30.00,
+    dailyIncome: 20.00,
+    cycleDays: 45,
     viewCount: 6351,
+    locked: false,
   },
   {
     id: 2,
     title: "Industrial Gas Processing Plant",
     image: "/lovable-uploads/1541f643-6e7a-4b1f-b83a-533eb61d205f.png",
     price: 1200.00,
-    dailyIncome: 50.00,
+    dailyIncome: 40.00,
+    cycleDays: 45,
     viewCount: 1730,
+    locked: false,
   },
   {
     id: 3,
     title: "Pipeline Network System",
     image: "/lovable-uploads/4b9b18f6-756a-4f3b-aafc-0f0501a3ce42.png",
-    price: 2100.00,
-    dailyIncome: 60.00,
+    price: 2400.00,
+    dailyIncome: 80.00,
+    cycleDays: 45,
     viewCount: 4677,
+    locked: false,
   },
   {
     id: 4,
     title: "Mining Processing Facility",
     image: "/lovable-uploads/5ac44beb-15bc-49ee-8192-f6369f2e9ba1.png",
-    price: 5000.00,
-    dailyIncome: 417.00,
+    price: 4800.00,
+    dailyIncome: 160.00,
+    cycleDays: 45,
     viewCount: 4329,
+    locked: true,
+    requiredProductId: 1,
   },
   {
     id: 5,
     title: "Gold Processing Plant",
     image: "/lovable-uploads/d21fc3fe-5410-4485-b5e2-bfeed3f04d3f.png",
-    price: 3500.00,
-    dailyIncome: 280.00,
+    price: 10000.00,
+    dailyIncome: 500.00,
+    cycleDays: 30,
     viewCount: 2295,
+    locked: true,
+    requiredProductId: 2,
   },
   {
     id: 6,
     title: "Oil Field Equipment",
     image: "/lovable-uploads/cdc5ad7e-14e7-41a9-80df-35f3af265a34.png",
-    price: 1400.00,
-    dailyIncome: 108.00,
+    price: 12000.00,
+    dailyIncome: 900.00,
+    cycleDays: 30,
     viewCount: 3187,
+    locked: true,
+    requiredProductId: 3,
   },
   {
     id: 7,
@@ -82,7 +97,22 @@ const Products: React.FC = () => {
   const [sortOption, setSortOption] = useState<string>('default');
 
   useEffect(() => {
-    const filtered = allInvestmentData.filter(product => 
+    // Create a copy of all products
+    let availableProducts = [...allInvestmentData];
+    
+    // Apply unlock logic based on owned products
+    if (user && user.ownedProducts) {
+      availableProducts = availableProducts.map(product => {
+        if (product.locked && product.requiredProductId && 
+            user.ownedProducts.includes(product.requiredProductId)) {
+          return { ...product, locked: false };
+        }
+        return product;
+      });
+    }
+    
+    // Then apply search filter
+    const filtered = availableProducts.filter(product => 
       product.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
@@ -106,13 +136,22 @@ const Products: React.FC = () => {
     }
     
     setFilteredProducts(sorted);
-  }, [searchTerm, sortOption]);
+  }, [searchTerm, sortOption, user]);
 
   const handleProductPurchase = (product: typeof allInvestmentData[0]) => {
     if (!isAuthenticated) {
       toast({
         title: "Authentication Required",
         description: "Please login to purchase products",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (product.locked) {
+      toast({
+        title: "Product Locked",
+        description: `Complete the required investment first to unlock this product`,
         variant: "destructive"
       });
       return;
@@ -147,8 +186,8 @@ const Products: React.FC = () => {
       <div className="overflow-hidden bg-[#222222] py-2 mb-4">
         <div className="whitespace-nowrap animate-marquee">
           <span className="text-investment-gold mx-2">
-            New oil rig investments with 8.5% daily returns • Limited mining equipment available • 
-            Market update: Gold prices rise 3.1% • Highest yield: Oil Pipeline Network at 8% daily • 
+            New oil rig investments with 6.6% daily returns • Limited mining equipment available • 
+            Market update: Gold prices rise 3.1% • Highest yield: Oil Field Equipment at 7.5% daily • 
             Withdrawal time: 11:00 AM daily • New users get 5% bonus on first investment •
           </span>
         </div>
@@ -190,7 +229,9 @@ const Products: React.FC = () => {
                 image={product.image}
                 price={product.price}
                 dailyIncome={product.dailyIncome}
+                cycleDays={product.cycleDays}
                 viewCount={product.viewCount}
+                locked={product.locked}
                 onInvest={() => handleProductPurchase(product)}
               />
             ))}

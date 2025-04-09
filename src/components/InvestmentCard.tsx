@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Eye, ShoppingCart, DollarSign } from 'lucide-react';
+import { Eye, ShoppingCart, DollarSign, Lock } from 'lucide-react';
 import ProductDetailsDialog from './ProductDetailsDialog';
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -11,8 +11,10 @@ interface InvestmentCardProps {
   image: string;
   price: number;
   dailyIncome: number;
+  cycleDays?: number;
   viewCount: number;
   owned?: boolean;
+  locked?: boolean;
   onInvest?: () => void;
   onSell?: () => void;
 }
@@ -23,8 +25,10 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
   image,
   price,
   dailyIncome,
+  cycleDays = 45,
   viewCount,
   owned = false,
+  locked = false,
   onInvest,
   onSell
 }) => {
@@ -36,6 +40,15 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
       toast({
         title: "Authentication Required",
         description: "Please login to manage investments",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (locked) {
+      toast({
+        title: "Product Locked",
+        description: "Complete the required investment first to unlock this product",
         variant: "destructive"
       });
       return;
@@ -84,7 +97,7 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
           <img 
             src={image} 
             alt={title} 
-            className="w-full h-44 object-cover"
+            className={`w-full h-44 object-cover ${locked ? 'opacity-50' : ''}`}
           />
           <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full flex items-center gap-1">
             <span>{viewCount}</span>
@@ -93,6 +106,14 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
           {owned && (
             <div className="absolute top-4 left-4 bg-investment-gold/90 text-black px-3 py-1 rounded-full text-xs font-medium">
               Owned
+            </div>
+          )}
+          {locked && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <Lock size={36} className="text-white mb-2" />
+              <div className="bg-black/70 text-white text-xs px-3 py-1 rounded-full">
+                Complete previous products
+              </div>
             </div>
           )}
         </div>
@@ -115,13 +136,19 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
           </div>
           
           <button 
-            className={`investment-button w-full mt-3 ${owned ? 'bg-red-500 hover:bg-red-600' : ''}`}
+            className={`investment-button w-full mt-3 ${owned ? 'bg-red-500 hover:bg-red-600' : ''} ${locked ? 'bg-gray-600 cursor-not-allowed' : ''}`}
             onClick={handleActionClick}
+            disabled={locked}
           >
             {owned ? (
               <>
                 <DollarSign size={18} />
                 <span>Sell</span>
+              </>
+            ) : locked ? (
+              <>
+                <Lock size={18} />
+                <span>Locked</span>
               </>
             ) : (
               <>
@@ -133,11 +160,11 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
         </div>
       </div>
       
-      {!owned && (
+      {!owned && !locked && (
         <ProductDetailsDialog
           open={showDetails}
           onOpenChange={setShowDetails}
-          product={{ id, title, image, price, dailyIncome }}
+          product={{ id, title, image, price, dailyIncome, cycleDays }}
           onConfirmInvest={handleConfirmInvest}
         />
       )}
