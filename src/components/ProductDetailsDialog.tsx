@@ -5,6 +5,8 @@ import {
   Dialog,
   DialogContent,
   DialogClose,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,7 +46,17 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   
   // Calculate other metrics
   const hourlyIncome = parseFloat((product.dailyIncome / 24).toFixed(2));
-  const cycleDays = product.id === 1 ? 30 : 41; // 30 days for first product, 41 for others
+  
+  // Set cycle days based on product ID
+  let cycleDays = 41; // default
+  if (product.id === 1) {
+    cycleDays = 30; // 30 days for first product
+  } else if (product.id === 2) {
+    cycleDays = 40; // 40 days for second product
+  } else if (product.id === 3) {
+    cycleDays = 60; // 60 days for third product
+  }
+  
   const totalIncome = parseFloat((product.dailyIncome * cycleDays).toFixed(2));
   
   // Check if user has enough balance
@@ -81,6 +93,9 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="bg-[#222222] border-0 text-white p-0 max-w-md">
+          <DialogTitle className="sr-only">Product Details</DialogTitle>
+          <DialogDescription className="sr-only">View details about this investment product</DialogDescription>
+          
           <DialogClose className="absolute right-2 top-2 z-10 rounded-full bg-black/30 p-1">
             <X className="h-6 w-6 text-white" />
           </DialogClose>
