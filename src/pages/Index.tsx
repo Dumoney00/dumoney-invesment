@@ -18,29 +18,29 @@ import ActivityFeed from '@/components/home/ActivityFeed';
 // Data for the products and activities
 const investmentData = [{
   id: 1,
-  title: "Mining Excavator Alpha",
-  image: "https://images.unsplash.com/photo-1605131545453-2c1838d6dbb7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+  title: "Oil Refinery Processing Unit",
+  image: "/lovable-uploads/39854854-dee8-4bf0-a045-eff7813c1370.png",
   price: 250.00,
   dailyIncome: 50.00,
   viewCount: 6351
 }, {
   id: 2,
-  title: "Industrial Drill XL-5000",
-  image: "https://images.unsplash.com/photo-1622022526425-b358809cc649?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+  title: "Industrial Gas Processing Plant",
+  image: "/lovable-uploads/1541f643-6e7a-4b1f-b83a-533eb61d205f.png",
   price: 800.00,
   dailyIncome: 60.00,
   viewCount: 1730
 }, {
   id: 3,
-  title: "Mining Crusher S3000",
-  image: "https://images.unsplash.com/photo-1513293960556-9fcd584f3a3d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+  title: "Pipeline Network System",
+  image: "/lovable-uploads/4b9b18f6-756a-4f3b-aafc-0f0501a3ce42.png",
   price: 1400.00,
   dailyIncome: 108.00,
   viewCount: 4677
 }, {
   id: 4,
-  title: "Gold Mining Processor",
-  image: "https://images.unsplash.com/photo-1638913662295-9630035ef770?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
+  title: "Mining Processing Facility",
+  image: "/lovable-uploads/5ac44beb-15bc-49ee-8192-f6369f2e9ba1.png",
   price: 5000.00,
   dailyIncome: 417.00,
   viewCount: 4329
