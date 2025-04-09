@@ -65,8 +65,8 @@ const investmentData = [
     id: 6,
     title: "Oil Field Equipment",
     image: "/lovable-uploads/cdc5ad7e-14e7-41a9-80df-35f3af265a34.png",
-    price: 1200.00,
-    dailyIncome: 96.00,
+    price: 1400.00,
+    dailyIncome: 108.00,
     viewCount: 3187,
   },
   {
