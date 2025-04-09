@@ -44,7 +44,7 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   
   // Calculate other metrics
   const hourlyIncome = parseFloat((product.dailyIncome / 24).toFixed(2));
-  const cycleDays = 41; // Fixed as per the reference image
+  const cycleDays = product.id === 1 ? 30 : 41; // 30 days for first product, 41 for others
   const totalIncome = parseFloat((product.dailyIncome * cycleDays).toFixed(2));
   
   // Check if user has enough balance

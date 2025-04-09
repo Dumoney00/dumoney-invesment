@@ -25,8 +25,8 @@ const investmentData = [
     id: 1,
     title: "Oil Refinery Processing Unit",
     image: "/lovable-uploads/39854854-dee8-4bf0-a045-eff7813c1370.png",
-    price: 250.00,
-    dailyIncome: 50.00,
+    price: 600.00,
+    dailyIncome: 30.00,
     viewCount: 6351,
   },
   {
