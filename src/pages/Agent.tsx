@@ -1,23 +1,25 @@
-
 import React, { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Copy, Lock, Users, BadgeDollarSign } from 'lucide-react';
+import { Copy, Users, BadgeDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import TeamMembersList from '@/components/agent/TeamMembersList';
+import { TeamMember, TeamStats } from '@/types/team';
 
 const Agent: React.FC = () => {
-  const {
-    user,
-    isAuthenticated
-  } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Mock data for team stats - in a real app this would come from backend
-  const teamStats = {
-    totalPeople: 0, // Would be fetched from API in real implementation
-    teamInvestment: 0, // Would be fetched from API in real implementation
+  // Mock team members data - in a real app this would come from backend
+  const teamMembers: TeamMember[] = [];
+  
+  // Calculate team stats based on active members (those who purchased)
+  const teamStats: TeamStats = {
+    totalPeople: teamMembers.length,
+    activePeople: teamMembers.filter(member => member.hasPurchased).length,
+    teamInvestment: 0, // Would be calculated from actual purchases in real implementation
   };
 
   // Commission plans data structure
@@ -26,51 +28,51 @@ const Agent: React.FC = () => {
       level: 1,
       requiredMembers: 10,
       reward: 800,
-      unlocked: true,
-      icon: "🔓"
+      unlocked: teamStats.activePeople >= 10,
+      icon: teamStats.activePeople >= 10 ? "🔓" : "🔒"
     },
     {
       level: 2,
       requiredMembers: 25,
       reward: 2000,
-      unlocked: teamStats.totalPeople >= 10,
-      icon: teamStats.totalPeople >= 10 ? "🔓" : "🔒"
+      unlocked: teamStats.activePeople >= 25,
+      icon: teamStats.activePeople >= 25 ? "🔓" : "🔒"
     },
     {
       level: 3,
       requiredMembers: 50,
       reward: 5000,
-      unlocked: teamStats.totalPeople >= 25,
-      icon: teamStats.totalPeople >= 25 ? "🔓" : "🔒"
+      unlocked: teamStats.activePeople >= 50,
+      icon: teamStats.activePeople >= 50 ? "🔓" : "🔒"
     },
     {
       level: 4,
       requiredMembers: 250,
       reward: 15000,
-      unlocked: teamStats.totalPeople >= 50,
-      icon: teamStats.totalPeople >= 50 ? "🔓" : "🔒"
+      unlocked: teamStats.activePeople >= 250,
+      icon: teamStats.activePeople >= 250 ? "🔓" : "🔒"
     },
     {
       level: 5,
       requiredMembers: 500,
       reward: 25000,
-      unlocked: teamStats.totalPeople >= 250,
-      icon: teamStats.totalPeople >= 250 ? "🔓" : "🔒"
+      unlocked: teamStats.activePeople >= 500,
+      icon: teamStats.activePeople >= 500 ? "🔓" : "🔒"
     },
     {
       level: 6,
       requiredMembers: 1000,
       reward: 75000,
-      unlocked: teamStats.totalPeople >= 500,
-      icon: teamStats.totalPeople >= 500 ? "🔓" : "🔒"
+      unlocked: teamStats.activePeople >= 1000,
+      icon: teamStats.activePeople >= 1000 ? "🔓" : "🔒"
     },
     {
       level: 7,
       requiredMembers: 2500,
       reward: 300000,
       monthlySalary: 30000,
-      unlocked: teamStats.totalPeople >= 1000,
-      icon: teamStats.totalPeople >= 1000 ? "🔓" : "🔒"
+      unlocked: teamStats.activePeople >= 2500,
+      icon: teamStats.activePeople >= 2500 ? "🔓" : "🔒"
     }
   ];
 
@@ -102,7 +104,8 @@ const Agent: React.FC = () => {
     }
   };
 
-  return <div className="min-h-screen bg-black pb-24">
+  return (
+    <div className="min-h-screen bg-black pb-24">
       {/* Header */}
       <header className="bg-[#333333] py-4">
         <h1 className="text-white text-xl text-center font-medium">Agent</h1>
@@ -115,15 +118,22 @@ const Agent: React.FC = () => {
         {/* Team Statistics */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl p-4">
-            <p className="text-white text-3xl font-bold mb-1">{teamStats.totalPeople}</p>
-            <p className="text-white">Total people</p>
+            <p className="text-white text-3xl font-bold mb-1">
+              {teamStats.activePeople}/{teamStats.totalPeople}
+            </p>
+            <p className="text-white">Active Members</p>
           </div>
           
           <div className="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl p-4">
-            <p className="text-white font-bold mb-1 text-xl">{teamStats.teamInvestment.toFixed(2)}</p>
+            <p className="text-white font-bold mb-1 text-xl">
+              ₹{teamStats.teamInvestment.toFixed(2)}
+            </p>
             <p className="text-white">Team investment</p>
           </div>
         </div>
+        
+        {/* Team Members List */}
+        <TeamMembersList members={teamMembers} />
         
         {/* Commission Plans Section */}
         <div className="mb-6">
@@ -215,6 +225,8 @@ const Agent: React.FC = () => {
       
       <Navigation />
       <FloatingActionButton />
-    </div>;
+    </div>
+  );
 };
+
 export default Agent;
