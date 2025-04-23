@@ -61,13 +61,6 @@ const Agent: React.FC = () => {
     },
     {
       level: 6,
-      requiredMembers: 1000,
-      reward: 75000,
-      unlocked: teamStats.activePeople >= 1000,
-      icon: teamStats.activePeople >= 1000 ? "🔓" : "🔒"
-    },
-    {
-      level: 7,
       requiredMembers: 2500,
       reward: 300000,
       monthlySalary: 30000,
