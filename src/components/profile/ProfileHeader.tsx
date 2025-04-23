@@ -53,16 +53,7 @@ const ProfileHeader: React.FC = () => {
               </Button>
             </div>
           </div>
-          <div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="border-gray-700 text-gray-300"
-              onClick={() => navigate('/profile/edit')}
-            >
-              Edit
-            </Button>
-          </div>
+          {/* Edit button removed */}
         </div>
       ) : (
         <div className="flex items-center justify-between mb-8">
