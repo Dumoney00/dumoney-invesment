@@ -1,14 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
-import InvestmentCard from '@/components/InvestmentCard';
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Search, Lock } from 'lucide-react';
-import { Input } from "@/components/ui/input";
+import SearchBar from '@/components/products/SearchBar';
+import SortSelector from '@/components/products/SortSelector';
+import ProductsGrid from '@/components/products/ProductsGrid';
+import MarqueeText from '@/components/products/MarqueeText';
+import { Product } from '@/types/products';
 
-const allInvestmentData = [
+const allInvestmentData: Product[] = [
   {
     id: 1,
     title: "Oil Refinery Processing Unit",
@@ -103,10 +104,8 @@ const Products: React.FC = () => {
   const [sortOption, setSortOption] = useState<string>('default');
 
   useEffect(() => {
-    // Create a copy of all products
     let availableProducts = [...allInvestmentData];
     
-    // Apply unlock logic based on owned products
     if (user && user.ownedProducts) {
       availableProducts = availableProducts.map(product => {
         if (product.locked && product.requiredProductId && 
@@ -117,7 +116,6 @@ const Products: React.FC = () => {
       });
     }
     
-    // Then apply search filter
     const filtered = availableProducts.filter(product => 
       product.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -144,7 +142,7 @@ const Products: React.FC = () => {
     setFilteredProducts(sorted);
   }, [searchTerm, sortOption, user]);
 
-  const handleProductPurchase = (product: typeof allInvestmentData[0]) => {
+  const handleProductPurchase = (product: Product) => {
     if (!isAuthenticated) {
       toast({
         title: "Authentication Required",
@@ -164,7 +162,6 @@ const Products: React.FC = () => {
     }
 
     if (user && user.balance >= product.price) {
-      // The price deduction now happens in addOwnedProduct
       addOwnedProduct(product.id, product.price);
       toast({
         title: "Purchase Successful",
@@ -181,72 +178,29 @@ const Products: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black pb-24">
-      {/* Header */}
       <header className="bg-[#333333] py-4">
         <h1 className="text-white text-xl text-center font-medium">— Products —</h1>
       </header>
       
       <div className="bg-investment-yellow h-2"></div>
       
-      {/* Marquee for dynamic info */}
-      <div className="overflow-hidden bg-[#222222] py-2 mb-4">
-        <div className="whitespace-nowrap animate-marquee">
-          <span className="text-investment-gold mx-2">
-            New oil rig investments with 6.6% daily returns • Limited mining equipment available • 
-            Market update: Gold prices rise 3.1% • Highest yield: Oil Field Equipment at 7.5% daily • 
-            Withdrawal time: 11:00 AM daily • New users get 5% bonus on first investment •
-          </span>
-        </div>
-      </div>
+      <MarqueeText />
       
       <div className="p-4">
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-3 text-gray-400" size={18} />
-          <Input
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-[#222222] border-gray-700 text-white"
-          />
-        </div>
+        <SearchBar 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
         
-        <div className="flex justify-end mb-4">
-          <select 
-            value={sortOption} 
-            onChange={(e) => setSortOption(e.target.value)}
-            className="bg-[#222222] text-white border border-gray-700 rounded-md px-3 py-1 text-sm"
-          >
-            <option value="default">Sort By</option>
-            <option value="priceAsc">Price: Low to High</option>
-            <option value="priceDesc">Price: High to Low</option>
-            <option value="incomeAsc">Income: Low to High</option>
-            <option value="incomeDesc">Income: High to Low</option>
-            <option value="popularity">Popularity</option>
-          </select>
-        </div>
+        <SortSelector 
+          value={sortOption}
+          onChange={setSortOption}
+        />
         
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4">
-            {filteredProducts.map(product => (
-              <InvestmentCard 
-                key={product.id}
-                id={product.id}
-                title={product.title}
-                image={product.image}
-                price={product.price}
-                dailyIncome={product.dailyIncome}
-                cycleDays={product.cycleDays}
-                viewCount={product.viewCount}
-                locked={product.locked}
-                onInvest={() => handleProductPurchase(product)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-gray-400 text-center">No products match your search</p>
-          </div>
-        )}
+        <ProductsGrid 
+          products={filteredProducts}
+          onProductPurchase={handleProductPurchase}
+        />
       </div>
       
       <Navigation />
