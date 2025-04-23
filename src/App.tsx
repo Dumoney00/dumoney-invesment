@@ -14,7 +14,6 @@ import Account from "./pages/Account";
 import ChangePassword from "./pages/ChangePassword";
 import NotFound from "./pages/NotFound";
 import AuthForm from "./components/AuthForm";
-import Transaction from "./pages/Transaction";
 import Guide from "./pages/Guide";
 
 const queryClient = new QueryClient();
@@ -35,8 +34,6 @@ const App = () => (
             <Route path="/account" element={<Account />} />
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/auth" element={<AuthForm />} />
-            <Route path="/deposit" element={<Transaction />} />
-            <Route path="/withdraw" element={<Transaction />} />
             <Route path="/guide" element={<Guide />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
