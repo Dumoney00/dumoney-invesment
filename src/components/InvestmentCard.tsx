@@ -121,14 +121,14 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
         <div className="p-2">
           <h3 className="text-white text-sm font-medium truncate">{title}</h3>
           
-          <div className="flex justify-between mt-2">
-            <div>
+          <div className="flex justify-between mt-4 space-x-4">
+            <div className="text-center">
               <p className="text-investment-gold text-xl font-bold">₹{price.toLocaleString()}</p>
               <p className="text-gray-400 text-xs">Price</p>
             </div>
-            <div>
+            <div className="text-center">
               <p className="text-investment-gold text-xl font-bold">₹{dailyIncome.toLocaleString()}</p>
-              <p className="text-gray-400 text-xs flex items-center gap-1">
+              <p className="text-gray-400 text-xs flex items-center justify-center gap-1">
                 <DollarSign size={12} className="text-investment-gold" />
                 Daily income
               </p>
