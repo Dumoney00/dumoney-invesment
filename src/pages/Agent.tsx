@@ -3,7 +3,7 @@ import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Copy, Users, BadgeDollarSign } from 'lucide-react';
+import { Copy, Users, BadgeDollarSign, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TeamMembersList from '@/components/agent/TeamMembersList';
 import { TeamMember, TeamStats } from '@/types/team';
