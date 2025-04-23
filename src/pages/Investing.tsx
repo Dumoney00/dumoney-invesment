@@ -18,14 +18,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// This should match the data in Products.tsx
 const investmentData = [
   {
     id: 1,
     title: "Oil Refinery Processing Unit",
     image: "/lovable-uploads/39854854-dee8-4bf0-a045-eff7813c1370.png",
-    price: 600.00,
-    dailyIncome: 20.00,
+    price: 1200.00,
+    dailyIncome: 40.00,
     cycleDays: 45,
     viewCount: 6351,
     locked: false,
@@ -34,8 +33,8 @@ const investmentData = [
     id: 2,
     title: "Industrial Gas Processing Plant",
     image: "/lovable-uploads/1541f643-6e7a-4b1f-b83a-533eb61d205f.png",
-    price: 1200.00,
-    dailyIncome: 40.00,
+    price: 2400.00,
+    dailyIncome: 80.00,
     cycleDays: 45,
     viewCount: 1730,
     locked: false,
@@ -44,8 +43,8 @@ const investmentData = [
     id: 3,
     title: "Pipeline Network System",
     image: "/lovable-uploads/4b9b18f6-756a-4f3b-aafc-0f0501a3ce42.png",
-    price: 2400.00,
-    dailyIncome: 80.00,
+    price: 4800.00,
+    dailyIncome: 160.00,
     cycleDays: 45,
     viewCount: 4677,
     locked: false,
@@ -54,9 +53,9 @@ const investmentData = [
     id: 4,
     title: "Mining Processing Facility",
     image: "/lovable-uploads/5ac44beb-15bc-49ee-8192-f6369f2e9ba1.png",
-    price: 4800.00,
-    dailyIncome: 160.00,
-    cycleDays: 45,
+    price: 10000.00,
+    dailyIncome: 500.00,
+    cycleDays: 30,
     viewCount: 4329,
     locked: true,
     requiredProductId: 1,
@@ -65,8 +64,8 @@ const investmentData = [
     id: 5,
     title: "Gold Processing Plant",
     image: "/lovable-uploads/d21fc3fe-5410-4485-b5e2-bfeed3f04d3f.png",
-    price: 10000.00,
-    dailyIncome: 500.00,
+    price: 12000.00,
+    dailyIncome: 700.00,
     cycleDays: 30,
     viewCount: 2295,
     locked: true,
@@ -76,7 +75,7 @@ const investmentData = [
     id: 6,
     title: "Oil Field Equipment",
     image: "/lovable-uploads/cdc5ad7e-14e7-41a9-80df-35f3af265a34.png",
-    price: 12000.00,
+    price: 15000.00,
     dailyIncome: 900.00,
     cycleDays: 30,
     viewCount: 3187,
@@ -87,17 +86,23 @@ const investmentData = [
     id: 7,
     title: "Mineral Extraction System",
     image: "/lovable-uploads/c71c2543-3f57-4302-b98f-e5030facc992.png",
-    price: 2800.00,
-    dailyIncome: 224.00,
+    price: 18000.00,
+    dailyIncome: 1200.00,
+    cycleDays: 30,
     viewCount: 2514,
+    locked: true,
+    requiredProductId: 4,
   },
   {
     id: 8,
     title: "Heavy Mining Excavator",
     image: "/lovable-uploads/e5629de9-3d0b-4460-b0c5-fdf1020e6864.png",
-    price: 4200.00,
-    dailyIncome: 336.00,
+    price: 22000.00,
+    dailyIncome: 1500.00,
+    cycleDays: 30,
     viewCount: 1876,
+    locked: true,
+    requiredProductId: 5,
   }
 ];
 
@@ -108,7 +113,6 @@ const Investing: React.FC = () => {
   const [sellProductId, setSellProductId] = useState<number | null>(null);
   const navigate = useNavigate();
   
-  // Load user's owned products
   useEffect(() => {
     if (user && user.ownedProducts) {
       const owned = investmentData.filter(item => user.ownedProducts.includes(item.id));
@@ -118,14 +122,11 @@ const Investing: React.FC = () => {
     }
   }, [user]);
 
-  // Calculate total daily income
   const totalDailyIncome = userInvestments.reduce((total, item) => total + item.dailyIncome, 0);
   
-  // Collect daily income function
   const collectDailyIncome = () => {
     const now = Date.now();
     
-    // Check if 24 hours have passed since last collection (or if first time)
     if (!lastIncomeTime || (now - lastIncomeTime) > 24 * 60 * 60 * 1000) {
       if (totalDailyIncome > 0 && isAuthenticated) {
         updateUserBalance(totalDailyIncome);
@@ -149,7 +150,6 @@ const Investing: React.FC = () => {
         });
       }
     } else {
-      // Calculate time remaining until next collection
       const timeRemaining = 24 * 60 * 60 * 1000 - (now - lastIncomeTime);
       const hoursRemaining = Math.floor(timeRemaining / (60 * 60 * 1000));
       const minutesRemaining = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000));
@@ -162,19 +162,16 @@ const Investing: React.FC = () => {
     }
   };
   
-  // Handle selling a product
   const handleSellProduct = (productId: number) => {
     setSellProductId(productId);
   };
   
-  // Confirm selling a product
   const confirmSellProduct = () => {
     if (sellProductId === null) return;
     
     const productToSell = userInvestments.find(item => item.id === sellProductId);
     if (!productToSell) return;
     
-    // Calculate sell price (70% of purchase price as an example)
     const sellPrice = Math.round(productToSell.price * 0.7);
     
     const result = sellOwnedProduct(sellProductId, sellPrice);
@@ -189,26 +186,21 @@ const Investing: React.FC = () => {
     setSellProductId(null);
   };
   
-  // Cancel selling a product
   const cancelSellProduct = () => {
     setSellProductId(null);
   };
   
-  // Find the product being sold (if any)
   const productBeingSold = userInvestments.find(item => item.id === sellProductId);
 
   return (
     <div className="min-h-screen bg-black pb-24">
-      {/* Header */}
       <header className="bg-[#333333] py-4">
         <h1 className="text-white text-xl text-center font-medium">— Investing —</h1>
       </header>
       
-      {/* Yellow Banner */}
       <div className="bg-investment-yellow h-2"></div>
       
       <div className="p-4">
-        {/* Statistics Cards */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-gradient-to-r from-investment-gold to-yellow-500 rounded-xl p-4">
             <p className="text-white text-sm mb-1">Daily income</p>
@@ -227,7 +219,6 @@ const Investing: React.FC = () => {
           </div>
         </div>
         
-        {/* Collect Income Button */}
         <Button 
           className="w-full bg-investment-gold hover:bg-investment-gold/90 py-6 mb-6"
           onClick={collectDailyIncome}
@@ -235,7 +226,6 @@ const Investing: React.FC = () => {
           Collect Daily Income
         </Button>
         
-        {/* Investment List */}
         <h2 className="text-xl text-white font-medium mb-4">— Product List —</h2>
         
         {userInvestments.length > 0 ? (
@@ -273,7 +263,6 @@ const Investing: React.FC = () => {
         )}
       </div>
       
-      {/* Sell Confirmation Dialog */}
       <AlertDialog open={sellProductId !== null} onOpenChange={(open) => !open && setSellProductId(null)}>
         <AlertDialogContent className="bg-[#222222] border-gray-700 text-white">
           <AlertDialogHeader>
