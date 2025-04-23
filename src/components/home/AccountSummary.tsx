@@ -3,6 +3,7 @@ import React from 'react';
 import { User } from '@/types/auth';
 import { Wallet, ArrowDown, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from "@/hooks/use-toast";
 
 interface AccountSummaryProps {
   user: User | null;
@@ -26,11 +27,12 @@ const AccountSummary: React.FC<AccountSummaryProps> = ({ user }) => {
         onClick={handleDepositClick}
       >
         <div className="flex flex-col">
-          <span className="text-white text-sm mb-2">Wallet Balance</span>
+          <span className="text-white text-sm mb-2">Available Balance</span>
           <div className="flex items-center gap-2">
             <Wallet className="text-white" size={20} />
             <span className="text-white font-bold text-2xl">₹{user?.balance?.toFixed(2) || "0.00"}</span>
           </div>
+          <span className="text-white/70 text-xs mt-1">Tap to deposit</span>
         </div>
         <div className="absolute right-2 bottom-2 bg-white/20 p-1 rounded-full">
           <span className="text-xs text-white font-bold">+</span>
@@ -47,6 +49,7 @@ const AccountSummary: React.FC<AccountSummaryProps> = ({ user }) => {
             <TrendingUp className="text-white" size={20} />
             <span className="text-white font-bold text-2xl">₹{user?.totalDeposit?.toFixed(2) || "0.00"}</span>
           </div>
+          <span className="text-white/70 text-xs mt-1">Tap to withdraw</span>
         </div>
         <div className="absolute right-2 bottom-2 bg-white/20 p-1 rounded-full">
           <ArrowDown className="text-white" size={14} />
