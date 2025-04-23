@@ -3,8 +3,6 @@ import React from 'react';
 import { useAuth } from "@/contexts/AuthContext";
 
 const HeaderSection: React.FC = () => {
-  const { user } = useAuth();
-  
   return (
     <>
       <header className="bg-[#333333] py-4 relative">
