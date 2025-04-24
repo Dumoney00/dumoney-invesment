@@ -3,11 +3,13 @@ import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { useNavigate } from 'react-router-dom';
 import SearchBar from '@/components/products/SearchBar';
 import SortSelector from '@/components/products/SortSelector';
 import ProductsGrid from '@/components/products/ProductsGrid';
 import MarqueeText from '@/components/products/MarqueeText';
 import { Product } from '@/types/products';
+import ProductDetailsDialog from '@/components/ProductDetailsDialog';
 
 const allInvestmentData: Product[] = [
   {
@@ -98,10 +100,13 @@ const allInvestmentData: Product[] = [
 ];
 
 const Products: React.FC = () => {
+  const navigate = useNavigate();
   const { user, isAuthenticated, addOwnedProduct } = useAuth();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredProducts, setFilteredProducts] = useState(allInvestmentData);
   const [sortOption, setSortOption] = useState<string>('default');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showProductDetails, setShowProductDetails] = useState<boolean>(false);
 
   useEffect(() => {
     let availableProducts = [...allInvestmentData];
@@ -161,19 +166,12 @@ const Products: React.FC = () => {
       return;
     }
 
-    if (user && user.balance >= product.price) {
-      addOwnedProduct(product.id, product.price);
-      toast({
-        title: "Purchase Successful",
-        description: `You have purchased ${product.title}`,
-      });
-    } else {
-      toast({
-        title: "Insufficient Funds",
-        description: "Please deposit more funds to make this purchase",
-        variant: "destructive"
-      });
-    }
+    setSelectedProduct(product);
+    setShowProductDetails(true);
+  };
+
+  const handleInvestmentSuccess = () => {
+    navigate('/investing');
   };
 
   return (
@@ -202,6 +200,15 @@ const Products: React.FC = () => {
           onProductPurchase={handleProductPurchase}
         />
       </div>
+      
+      {selectedProduct && (
+        <ProductDetailsDialog
+          open={showProductDetails}
+          onOpenChange={setShowProductDetails}
+          product={selectedProduct}
+          onConfirmInvest={handleInvestmentSuccess}
+        />
+      )}
       
       <Navigation />
       <FloatingActionButton />
