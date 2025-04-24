@@ -53,6 +53,32 @@ export const addProductToUser = (user: User, productId: number, price: number): 
   };
 };
 
+// Remove product from user and add sell price to balance
+export const removeProductFromUser = (user: User, productId: number, sellPrice: number): User => {
+  // Find the product to remove
+  const productIndex = user.ownedProducts.indexOf(productId);
+  if (productIndex === -1) {
+    return user; // Product not found, return unchanged user
+  }
+  
+  // Calculate income reduction based on the product's daily income contribution
+  // Using the same 3.3% rate as in addProductToUser
+  const incomeReduction = sellPrice * 0.033;
+  
+  // Create new owned products array without the sold product
+  const updatedOwnedProducts = user.ownedProducts.filter(id => id !== productId);
+  
+  return {
+    ...user,
+    ownedProducts: updatedOwnedProducts,
+    investmentQuantity: user.investmentQuantity - 1,
+    // Add sell price to withdrawal balance since it's a profit
+    withdrawalBalance: user.withdrawalBalance + sellPrice,
+    // Reduce daily income
+    dailyIncome: Math.max(0, user.dailyIncome - incomeReduction)
+  };
+};
+
 // Add transaction to user history
 export const addTransactionToUser = (
   user: User,
