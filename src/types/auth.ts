@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -30,18 +29,22 @@ export interface BankDetails {
 
 export type TransactionType = "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome" | "referralBonus";
 
+export type TransactionStatus = "completed" | "pending" | "failed";
+
 export interface TransactionRecord {
   id: string;
   type: TransactionType;
   amount: number;
   timestamp: string;
-  status: "completed" | "pending" | "failed";
+  status: TransactionStatus;
   details?: string;
   userId?: string; // User ID for admin view
   userName?: string; // User's name for admin view
   bankDetails?: BankDetails; // Bank details for withdrawals
   upiId?: string; // UPI ID for withdrawals
   withdrawalTime?: string; // Specific time for withdrawals
+  approvedBy?: string; // Admin who approved the withdrawal
+  approvalTimestamp?: string;
   productId?: number; // For purchase transactions
   productName?: string; // For purchase transactions
 }
