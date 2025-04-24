@@ -2,8 +2,8 @@
 /**
  * Formats a date string into a user-friendly format
  */
-export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
+export const formatDate = (dateString: string | Date): string => {
+  const date = dateString instanceof Date ? dateString : new Date(dateString);
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',

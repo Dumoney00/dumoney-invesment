@@ -136,7 +136,7 @@ const AdminTransactionsPanel: React.FC = () => {
                   ${transaction.amount.toFixed(2)}
                 </TableCell>
                 <TableCell className="text-white">
-                  {formatDate(new Date(transaction.timestamp))}
+                  {formatDate(transaction.timestamp)}
                 </TableCell>
                 <TableCell>
                   <TransactionStatus status={transaction.status} />
