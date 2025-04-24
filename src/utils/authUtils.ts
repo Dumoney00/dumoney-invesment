@@ -1,4 +1,6 @@
+
 import { User, TransactionRecord } from "@/types/auth";
+import { toast } from "@/hooks/use-toast";
 
 export const createMockUser = (
   username: string, 

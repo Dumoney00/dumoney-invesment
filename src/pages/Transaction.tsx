@@ -15,6 +15,9 @@ import TransactionButton from '@/components/transaction/TransactionButton';
 import TransactionIcon from '@/components/transaction/TransactionIcon';
 import { TransactionFormValues } from '@/components/transaction/types';
 
+// Define preset amounts for the transaction form
+const presetAmounts = [100, 500, 1000, 5000, 10000, 50000];
+
 const Transaction: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,7 +26,9 @@ const Transaction: React.FC = () => {
   const [currentBalance, setCurrentBalance] = useState(user?.balance || 0);
   const [withdrawalBalance, setWithdrawalBalance] = useState(user?.withdrawalBalance || 0);
   
+  // Determine if this is a deposit or withdraw transaction
   const isDeposit = location.pathname === '/deposit';
+  const pageTitle = isDeposit ? 'Deposit' : 'Withdraw';
   
   // Update balances whenever user changes
   useEffect(() => {
@@ -32,9 +37,6 @@ const Transaction: React.FC = () => {
       setWithdrawalBalance(user.withdrawalBalance);
     }
   }, [user]);
-  
-  const isDeposit = location.pathname === '/deposit';
-  const pageTitle = isDeposit ? 'Deposit' : 'Withdraw';
   
   // Get current time to check withdrawal timing
   const now = new Date();

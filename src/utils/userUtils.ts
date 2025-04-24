@@ -1,5 +1,14 @@
+
 import { User, TransactionRecord } from "@/types/auth";
 import { createTransactionRecord } from "@/utils/authUtils";
+
+// Update user balance directly (without creating a transaction)
+export const updateBalance = (user: User, amount: number): User => {
+  return {
+    ...user,
+    balance: user.balance + amount
+  };
+};
 
 // Update user deposit balance
 export const updateDeposit = (user: User, amount: number): User => {
