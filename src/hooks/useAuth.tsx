@@ -4,9 +4,8 @@ import { User } from "@/types/auth";
 import { AuthService } from "@/types/auth-service";
 import { createMockUser, loadUserFromStorage, saveUserToStorage } from "@/utils/authUtils";
 import { showToast } from "@/utils/toastUtils";
+import { useAdminAuth } from './useAdminAuth';
 import { 
-  validateAdminCredentials, 
-  createAdminUser, 
   handleUserBlock, 
   handleUserUnblock, 
   handleReferralBonus 
@@ -25,6 +24,8 @@ export const useAuth = (): AuthService & {
     saveUserToStorage(updatedUser);
     setIsAuthenticated(!!updatedUser);
   };
+
+  const { adminLogin } = useAdminAuth(saveUser);
 
   const login = async (email: string, password: string) => {
     try {
@@ -52,25 +53,6 @@ export const useAuth = (): AuthService & {
       return true;
     } catch (error) {
       showToast("Registration Failed", "Could not create your account", "destructive");
-      return false;
-    }
-  };
-
-  const adminLogin = async (email: string, password: string) => {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      if (validateAdminCredentials(email, password)) {
-        const adminUser = createAdminUser(email);
-        saveUser(adminUser);
-        showToast("Admin Login Successful", "Welcome to the admin dashboard");
-        return true;
-      }
-      
-      showToast("Admin Login Failed", "Invalid credentials", "destructive");
-      return false;
-    } catch (error) {
-      showToast("Admin Login Failed", "Could not log in", "destructive");
       return false;
     }
   };
