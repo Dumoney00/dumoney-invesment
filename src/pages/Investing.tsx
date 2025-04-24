@@ -1,10 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import Navigation from '@/components/Navigation';
-import FloatingActionButton from '@/components/FloatingActionButton';
 import { useAuth } from "@/contexts/AuthContext";
 import DailyIncomeHeader from '@/components/investing/DailyIncomeHeader';
-import IncomeCollection from '@/components/investing/IncomeCollection';
 import EmptyInvestments from '@/components/investing/EmptyInvestments';
 import InvestmentGrid from '@/components/investing/InvestmentGrid';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
@@ -13,7 +10,6 @@ import { investmentData } from '@/data/investments';
 const Investing: React.FC = () => {
   const { user, isAuthenticated, updateUserBalance, sellOwnedProduct } = useAuth();
   const [userInvestments, setUserInvestments] = useState(investmentData.filter(item => user?.ownedProducts.includes(item.id) || []));
-  const [lastIncomeTime, setLastIncomeTime] = useState<number | null>(null);
   const [sellProductId, setSellProductId] = useState<number | null>(null);
   
   useEffect(() => {
@@ -26,13 +22,7 @@ const Investing: React.FC = () => {
   }, [user]);
 
   const totalDailyIncome = userInvestments.reduce((total, item) => total + item.dailyIncome, 0);
-  
-  const handleCollectIncome = () => {
-    if (totalDailyIncome > 0 && isAuthenticated) {
-      updateUserBalance(totalDailyIncome);
-      setLastIncomeTime(Date.now());
-    }
-  };
+  const totalInvestment = userInvestments.reduce((total, item) => total + item.price, 0);
   
   const handleSellProduct = (productId: number) => {
     setSellProductId(productId);
@@ -62,17 +52,10 @@ const Investing: React.FC = () => {
       <div className="p-4">
         <DailyIncomeHeader 
           totalDailyIncome={totalDailyIncome}
-          investmentQuantity={userInvestments.length}
+          totalInvestment={totalInvestment}
         />
         
-        <IncomeCollection
-          isAuthenticated={isAuthenticated}
-          totalDailyIncome={totalDailyIncome}
-          lastIncomeTime={lastIncomeTime}
-          onCollect={handleCollectIncome}
-        />
-        
-        <h2 className="text-xl text-white font-medium mb-4">— Product List —</h2>
+        <h2 className="text-xl text-white font-medium mb-4">— My Investments —</h2>
         
         {userInvestments.length > 0 ? (
           <InvestmentGrid 
@@ -119,7 +102,6 @@ const Investing: React.FC = () => {
       </AlertDialog>
       
       <Navigation />
-      <FloatingActionButton />
     </div>
   );
 };
