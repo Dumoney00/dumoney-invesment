@@ -1,9 +1,11 @@
+
 export interface User {
   id: string;
   username: string;
   email: string;
   phone?: string;
-  balance: number;
+  balance: number; // Main deposit wallet
+  withdrawalBalance: number; // Separate withdrawal wallet for earnings
   totalDeposit: number;
   totalWithdraw: number;
   dailyIncome: number;

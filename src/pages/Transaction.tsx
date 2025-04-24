@@ -21,11 +21,15 @@ const Transaction: React.FC = () => {
   const { user, updateUserDeposit, updateUserWithdraw } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(user?.balance || 0);
+  const [withdrawalBalance, setWithdrawalBalance] = useState(user?.withdrawalBalance || 0);
   
-  // Update balance whenever user changes
+  const isDeposit = location.pathname === '/deposit';
+  
+  // Update balances whenever user changes
   useEffect(() => {
     if (user) {
       setCurrentBalance(user.balance);
+      setWithdrawalBalance(user.withdrawalBalance);
     }
   }, [user]);
   
@@ -65,49 +69,41 @@ const Transaction: React.FC = () => {
     setIsProcessing(true);
     
     try {
-      // Simulate processing delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       if (isDeposit) {
-        // Update user wallet
         updateUserDeposit(values.amount);
-        
-        // Update local balance state for immediate UI feedback
         setCurrentBalance(prev => prev + values.amount);
         
         toast({
           title: "Deposit Successful",
-          description: `₹${values.amount.toFixed(2)} has been added to your account`
+          description: `₹${values.amount.toFixed(2)} has been added to your deposit wallet`
         });
-        
-        // After successful deposit, navigate to the home page to show balance
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
       } else {
-        if (user && user.balance >= values.amount) {
+        // Check withdrawal wallet balance
+        if (user && user.withdrawalBalance >= values.amount) {
           updateUserWithdraw(values.amount);
-          
-          // Update local balance state for immediate UI feedback
-          setCurrentBalance(prev => prev - values.amount);
+          setWithdrawalBalance(prev => prev - values.amount);
           
           toast({
             title: "Withdrawal Successful",
-            description: `₹${values.amount.toFixed(2)} has been withdrawn from your account`
+            description: `₹${values.amount.toFixed(2)} has been withdrawn from your earnings wallet`
           });
-          
-          // Navigate back to home after successful withdrawal
-          setTimeout(() => {
-            navigate('/');
-          }, 1000);
         } else {
           toast({
             title: "Withdrawal Failed",
-            description: "Insufficient balance",
+            description: "Insufficient balance in withdrawal wallet. You can only withdraw from your earnings.",
             variant: "destructive"
           });
+          setIsProcessing(false);
+          return;
         }
       }
+      
+      // Navigate back after successful transaction
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
     } catch (error) {
       console.error("Transaction error:", error);
       toast({
@@ -120,32 +116,44 @@ const Transaction: React.FC = () => {
     }
   };
 
-  const presetAmounts = [50, 100, 250, 500, 1000];
-  
   return (
     <div className="min-h-screen bg-black pb-24">
-      <TransactionHeader title={pageTitle} />
+      <TransactionHeader title={isDeposit ? 'Deposit' : 'Withdraw'} />
       
       <MarqueeInfo />
       
       <div className="p-6">
         <TransactionIcon isDeposit={isDeposit} />
         
-        <CurrentBalanceDisplay user={user} balance={currentBalance} />
-        
-        <WithdrawalTimeInfo isDeposit={isDeposit} isWithdrawalTime={isWithdrawalTime} />
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleTransaction)} className="space-y-6">
-            <AmountSelector form={form} presetAmounts={presetAmounts} />
-            
-            <TransactionButton 
-              isProcessing={isProcessing} 
-              isDeposit={isDeposit} 
-              isWithdrawalTime={isWithdrawalTime}
-            />
-          </form>
-        </Form>
+        <div className="space-y-4">
+          <CurrentBalanceDisplay 
+            user={user} 
+            balance={isDeposit ? currentBalance : withdrawalBalance}
+            isWithdrawalWallet={!isDeposit}
+          />
+          
+          {!isDeposit && (
+            <div className="bg-[#222222] rounded-lg p-4 mb-4">
+              <p className="text-yellow-500 text-sm">
+                Note: You can only withdraw from your earnings wallet. Deposit wallet funds cannot be withdrawn.
+              </p>
+            </div>
+          )}
+          
+          <WithdrawalTimeInfo isDeposit={isDeposit} isWithdrawalTime={isWithdrawalTime} />
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleTransaction)} className="space-y-6">
+              <AmountSelector form={form} presetAmounts={presetAmounts} />
+              
+              <TransactionButton 
+                isProcessing={isProcessing} 
+                isDeposit={isDeposit} 
+                isWithdrawalTime={isWithdrawalTime}
+              />
+            </form>
+          </Form>
+        </div>
       </div>
       
       <Navigation />

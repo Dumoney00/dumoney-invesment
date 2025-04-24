@@ -1,8 +1,5 @@
-
 import { User, TransactionRecord } from "@/types/auth";
-import { toast } from "@/hooks/use-toast";
 
-// Create mock user for testing/demo purposes
 export const createMockUser = (
   username: string, 
   email: string
@@ -13,6 +10,7 @@ export const createMockUser = (
     email,
     phone: "9182475" + Math.floor(1000 + Math.random() * 9000).toString(),
     balance: 0,
+    withdrawalBalance: 0,
     totalDeposit: 0,
     totalWithdraw: 0,
     dailyIncome: 0,
@@ -22,12 +20,10 @@ export const createMockUser = (
   };
 };
 
-// Generate a transaction ID
 export const generateTransactionId = (): string => {
   return Math.random().toString(36).substr(2, 9);
 };
 
-// Create a new transaction record
 export const createTransactionRecord = (
   transactionData: Omit<TransactionRecord, "id" | "timestamp">
 ): TransactionRecord => {
@@ -38,7 +34,6 @@ export const createTransactionRecord = (
   };
 };
 
-// Load user from localStorage
 export const loadUserFromStorage = (): User | null => {
   const storedUser = localStorage.getItem('investmentUser');
   if (storedUser) {
@@ -47,7 +42,6 @@ export const loadUserFromStorage = (): User | null => {
   return null;
 };
 
-// Save user to localStorage
 export const saveUserToStorage = (user: User | null): void => {
   if (user) {
     localStorage.setItem('investmentUser', JSON.stringify(user));
@@ -56,7 +50,6 @@ export const saveUserToStorage = (user: User | null): void => {
   }
 };
 
-// Show toast notification
 export const showToast = (
   title: string,
   description: string,

@@ -1,35 +1,33 @@
 import { User, TransactionRecord } from "@/types/auth";
 import { createTransactionRecord } from "@/utils/authUtils";
 
-// Update user balance (general)
-export const updateBalance = (user: User, amount: number): User => {
-  return {
-    ...user,
-    balance: user.balance + amount
-  };
-};
-
-// Update user deposit amount
+// Update user deposit balance
 export const updateDeposit = (user: User, amount: number): User => {
-  const updatedUser = {
+  return {
     ...user,
     totalDeposit: user.totalDeposit + amount,
     balance: user.balance + amount
   };
-  
-  return updatedUser;
 };
 
-// Update user withdraw amount
+// Update user withdraw amount (only from withdrawal wallet)
 export const updateWithdraw = (user: User, amount: number): User | null => {
-  if (user.balance < amount) {
+  if (user.withdrawalBalance < amount) {
     return null;
   }
   
   return {
     ...user,
     totalWithdraw: user.totalWithdraw + amount,
-    balance: user.balance - amount
+    withdrawalBalance: user.withdrawalBalance - amount
+  };
+};
+
+// Add income to withdrawal wallet
+export const addIncomeToWithdrawalWallet = (user: User, amount: number): User => {
+  return {
+    ...user,
+    withdrawalBalance: user.withdrawalBalance + amount
   };
 };
 
