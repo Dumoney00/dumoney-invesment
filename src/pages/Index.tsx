@@ -17,6 +17,35 @@ import FeaturedProducts from '@/components/home/FeaturedProducts';
 import ActivityFeed from '@/components/home/ActivityFeed';
 import { investmentData } from '@/data/investments';
 
+// Activity feed data
+const activityFeed = [
+  {
+    id: 1,
+    username: "User 01******1565",
+    amount: 9042.00
+  }, 
+  {
+    id: 2,
+    username: "User 01******4154",
+    amount: 8146.00
+  }, 
+  {
+    id: 3,
+    username: "User 01******7823",
+    amount: 4822.00
+  }, 
+  {
+    id: 4,
+    username: "User 01******9974",
+    amount: 6331.00
+  }, 
+  {
+    id: 5,
+    username: "User 01******2246",
+    amount: 7510.00
+  }
+];
+
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
