@@ -5,9 +5,13 @@ import { Wallet } from 'lucide-react';
 
 interface CurrentBalanceDisplayProps {
   user: User | null;
+  balance?: number;
 }
 
-const CurrentBalanceDisplay: React.FC<CurrentBalanceDisplayProps> = ({ user }) => {
+const CurrentBalanceDisplay: React.FC<CurrentBalanceDisplayProps> = ({ user, balance }) => {
+  // Use the provided balance if available, otherwise fall back to user.balance
+  const displayBalance = balance !== undefined ? balance : user?.balance || 0;
+  
   return (
     <div className="bg-[#222222] rounded-lg p-4 mb-4">
       <div className="flex justify-between items-center">
@@ -16,7 +20,7 @@ const CurrentBalanceDisplay: React.FC<CurrentBalanceDisplayProps> = ({ user }) =
           <span className="text-gray-400">Available Balance</span>
         </div>
         <span className="text-investment-gold text-xl font-bold">
-          ₹{user?.balance.toFixed(2) || '0.00'}
+          ₹{displayBalance.toFixed(2)}
         </span>
       </div>
     </div>

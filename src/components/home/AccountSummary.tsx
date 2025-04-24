@@ -1,8 +1,7 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '@/types/auth';
 import { useNavigate } from 'react-router-dom';
-import { toast } from "@/hooks/use-toast";
 import { Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +11,14 @@ interface AccountSummaryProps {
 
 const AccountSummary: React.FC<AccountSummaryProps> = ({ user }) => {
   const navigate = useNavigate();
+  const [balance, setBalance] = useState(user?.balance || 0);
+  
+  // Update balance whenever user changes
+  useEffect(() => {
+    if (user) {
+      setBalance(user.balance);
+    }
+  }, [user]);
 
   return (
     <div className="grid grid-cols-1 gap-4 p-4">
@@ -22,7 +29,7 @@ const AccountSummary: React.FC<AccountSummaryProps> = ({ user }) => {
             <h2 className="text-white font-medium">Available Balance</h2>
           </div>
           <span className="text-investment-gold text-xl font-bold">
-            ₹{user?.balance.toFixed(2) || '0.00'}
+            ₹{balance.toFixed(2)}
           </span>
         </div>
 

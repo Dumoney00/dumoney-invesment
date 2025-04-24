@@ -16,22 +16,34 @@ export const useUserManagement = (
 ) => {
   const updateUserBalance = (amount: number) => {
     if (user) {
-      saveUser(updateBalance(user, amount));
+      const updatedUser = updateBalance(user, amount);
+      saveUser(updatedUser);
+      return updatedUser.balance;
     }
+    return 0;
   };
 
   const updateUserDeposit = (amount: number) => {
     if (user) {
+      // Update the user with the deposit amount
       const updatedUser = updateDeposit(user, amount);
-      saveUser(updatedUser);
       
-      addTransaction({
+      // Add the transaction record
+      const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "deposit",
         amount,
         status: "completed",
         details: "Funds added to account"
       });
+      
+      // Save the updated user with the transaction
+      saveUser(userWithTransaction);
+      
+      console.log("Deposit completed. New balance:", userWithTransaction.balance);
+      
+      return userWithTransaction.balance;
     }
+    return 0;
   };
 
   const updateUserWithdraw = (amount: number) => {
@@ -40,23 +52,30 @@ export const useUserManagement = (
     const updatedUser = updateWithdraw(user, amount);
     
     if (updatedUser) {
-      saveUser(updatedUser);
-      
-      addTransaction({
+      // Add the transaction record
+      const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "withdraw",
         amount,
         status: "completed",
         details: "Funds withdrawn from account"
       });
       
+      // Save the updated user with the transaction
+      saveUser(userWithTransaction);
+      
+      console.log("Withdrawal completed. New balance:", userWithTransaction.balance);
+      
       return true;
     } else {
-      addTransaction({
+      // Still record the failed transaction attempt
+      const userWithFailedTransaction = addTransactionToUser(user, {
         type: "withdraw",
         amount,
         status: "failed",
         details: "Insufficient balance"
       });
+      
+      saveUser(userWithFailedTransaction);
       return false;
     }
   };
@@ -64,14 +83,16 @@ export const useUserManagement = (
   const addOwnedProduct = (productId: number, price: number) => {
     if (user) {
       const updatedUser = addProductToUser(user, productId, price);
-      saveUser(updatedUser);
       
-      addTransaction({
+      // Add the transaction record
+      const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "purchase",
         amount: price,
         status: "completed",
         details: `Purchased product ID: ${productId}`
       });
+      
+      saveUser(userWithTransaction);
     }
   };
   
@@ -88,14 +109,16 @@ export const useUserManagement = (
     }
     
     const updatedUser = removeProductFromUser(user, productId, sellPrice);
-    saveUser(updatedUser);
     
-    addTransaction({
+    // Add the transaction record
+    const userWithTransaction = addTransactionToUser(updatedUser, {
       type: "sale",
       amount: sellPrice,
       status: "completed",
       details: `Sold product ID: ${productId}`
     });
+    
+    saveUser(userWithTransaction);
     
     return true;
   };
@@ -104,7 +127,9 @@ export const useUserManagement = (
     if (user) {
       const updatedUser = addTransactionToUser(user, transactionData);
       saveUser(updatedUser);
+      return updatedUser;
     }
+    return user;
   };
   
   const updateUserProfile = (updates: Partial<User>) => {

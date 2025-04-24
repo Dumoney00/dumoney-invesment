@@ -11,6 +11,12 @@ interface AmountSelectorProps {
 }
 
 const AmountSelector: React.FC<AmountSelectorProps> = ({ form, presetAmounts }) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Ensure we have a valid number
+    const value = parseFloat(e.target.value);
+    form.setValue("amount", isNaN(value) ? 0 : value);
+  };
+
   return (
     <>
       <div className="space-y-2">
@@ -19,9 +25,10 @@ const AmountSelector: React.FC<AmountSelectorProps> = ({ form, presetAmounts }) 
           id="amount"
           type="number"
           value={form.watch("amount")}
-          onChange={(e) => form.setValue("amount", Number(e.target.value))}
+          onChange={handleAmountChange}
           className="bg-[#222222] border-gray-700 text-white text-xl py-6"
           placeholder="Enter amount"
+          min="1"
         />
       </div>
       

@@ -1,10 +1,18 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/contexts/AuthContext";
 import { Wallet } from "lucide-react";
 
 const HeaderSection: React.FC = () => {
   const { user } = useAuth();
+  const [balance, setBalance] = useState(user?.balance || 0);
+  
+  // Update balance whenever user changes
+  useEffect(() => {
+    if (user) {
+      setBalance(user.balance);
+    }
+  }, [user]);
 
   return (
     <>
@@ -13,7 +21,7 @@ const HeaderSection: React.FC = () => {
         {user && (
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <Wallet className="text-investment-gold" size={18} />
-            <span className="text-investment-gold font-medium">₹{user.balance.toFixed(2)}</span>
+            <span className="text-investment-gold font-medium">₹{balance.toFixed(2)}</span>
           </div>
         )}
       </header>
