@@ -47,6 +47,9 @@ const mapTransactionToActivity = (transaction: TransactionRecord): Activity => {
   };
 };
 
+// Export this function to be used by other components
+export { mapTransactionToActivity };
+
 const ActivityFeed: React.FC<ActivityFeedProps> = ({ 
   activities, 
   className,

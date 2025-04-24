@@ -29,10 +29,26 @@ export const useAuthProvider = (): AuthContextType => {
     addTransaction
   } = useUserManagement(user, saveUser);
 
-  // Add any effects or additional logic here
+  // Sync user data with localStorage whenever it changes
   useEffect(() => {
-    // This effect can be used for additional setup if needed
-  }, []);
+    if (user) {
+      // Update user in the users array in localStorage
+      const storedUsers = localStorage.getItem('investmentUsers');
+      let users = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      // Find and update or add the current user
+      const existingUserIndex = users.findIndex((u: any) => u.id === user.id);
+      
+      if (existingUserIndex >= 0) {
+        users[existingUserIndex] = user;
+      } else {
+        users.push(user);
+      }
+      
+      // Save back to localStorage
+      localStorage.setItem('investmentUsers', JSON.stringify(users));
+    }
+  }, [user]);
 
   return {
     user,

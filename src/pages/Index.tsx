@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
@@ -11,7 +11,7 @@ import AnnouncementBar from '@/components/home/AnnouncementBar';
 import PromoBanner from '@/components/home/PromoBanner';
 import QuickActions from '@/components/home/QuickActions';
 import InviteCard from '@/components/home/InviteCard';
-import ActivityFeed, { Activity } from '@/components/home/ActivityFeed';
+import ActivityFeed, { mapTransactionToActivity } from '@/components/home/ActivityFeed';
 import ProductsGrid from '@/components/products/ProductsGrid';
 import SearchBar from '@/components/products/SearchBar';
 import SortSelector from '@/components/products/SortSelector';
@@ -59,13 +59,13 @@ const Index: React.FC = () => {
       }
     });
 
-  const activities: Activity[] = user?.transactions?.map(transaction => ({
-    id: transaction.id,
-    username: user.username,
-    amount: transaction.amount,
-    type: transaction.type === 'purchase' ? 'investment' : transaction.type,
-    timestamp: transaction.timestamp
-  })) || [];
+  // Map user transactions to activities
+  const activities = user?.transactions 
+    ? user.transactions.map(transaction => mapTransactionToActivity({
+        ...transaction,
+        userName: user.username
+      }))
+    : [];
 
   return (
     <div className="min-h-screen bg-black pb-24">

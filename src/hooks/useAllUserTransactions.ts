@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { TransactionRecord, User } from '@/types/auth';
 
-// Similar to the function in AdminTransactionsPanel but as a reusable hook
 export const useAllUserTransactions = () => {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -12,23 +11,20 @@ export const useAllUserTransactions = () => {
     const fetchTransactions = async () => {
       setLoading(true);
       try {
-        // In a real app with a backend, this would be an API call
-        // For our mock system, we'll get data from localStorage
-        
-        // Check for all users in storage (in a real app this would come from a database)
+        // Get all users from localStorage
         const storedUsers = localStorage.getItem('investmentUsers');
+        const currentUser = localStorage.getItem('investmentUser');
+        
         let allUsers: User[] = [];
         
+        // Parse stored users if available
         if (storedUsers) {
-          allUsers = JSON.parse(storedUsers) as User[];
+          allUsers = JSON.parse(storedUsers);
         }
         
-        // Also include the current logged-in user
-        const currentUser = localStorage.getItem('investmentUser');
+        // Add current user if available and not already in the list
         if (currentUser) {
           const parsedUser = JSON.parse(currentUser) as User;
-          
-          // Only add if not already in the list
           if (!allUsers.some(u => u.id === parsedUser.id)) {
             allUsers.push(parsedUser);
           }
@@ -49,21 +45,30 @@ export const useAllUserTransactions = () => {
           }
         });
         
-        // Sort by timestamp, newest first
+        // Sort transactions by timestamp, newest first
         const sortedTransactions = allTransactions.sort((a, b) => 
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
         
         setTransactions(sortedTransactions);
+        
+        // Debug log to verify data
+        console.log('Fetched transactions:', sortedTransactions);
       } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch transactions'));
         console.error("Error fetching transactions:", err);
+        setError(err instanceof Error ? err : new Error('Failed to fetch transactions'));
       } finally {
         setLoading(false);
       }
     };
     
     fetchTransactions();
+    
+    // Set up a refresh interval to check for new data every 5 seconds
+    const intervalId = setInterval(fetchTransactions, 5000);
+    
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
   
   return { transactions, loading, error };
