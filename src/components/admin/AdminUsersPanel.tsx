@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { User } from '@/types/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Ban, ShieldCheck } from 'lucide-react';
+import { Search, Ban, ShieldCheck, UserCog } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Table, 
@@ -13,6 +13,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import AdminUserDetails from './AdminUserDetails';
 
 // Mock data for development - in a real app this would come from API/database
 const mockUsers: User[] = [
@@ -55,6 +56,7 @@ const AdminUsersPanel: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [loading, setLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // Filter users based on search term
   const filteredUsers = users.filter(user => 
@@ -83,6 +85,19 @@ const AdminUsersPanel: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const viewUserDetails = (userId: string) => {
+    setSelectedUserId(userId);
+  };
+
+  if (selectedUserId) {
+    return (
+      <AdminUserDetails 
+        userId={selectedUserId} 
+        onClose={() => setSelectedUserId(null)} 
+      />
+    );
+  }
 
   return (
     <div className="bg-[#222222] rounded-lg p-4">
@@ -118,7 +133,7 @@ const AdminUsersPanel: React.FC = () => {
                 <TableCell className="text-white">{user.username}</TableCell>
                 <TableCell className="text-white">{user.email}</TableCell>
                 <TableCell className="text-white">
-                  ${user.balance.toFixed(2)} / ${user.withdrawalBalance.toFixed(2)}
+                  ₹{user.balance.toFixed(2)} / ₹{user.withdrawalBalance.toFixed(2)}
                 </TableCell>
                 <TableCell className="text-white">{user.level || 0}</TableCell>
                 <TableCell>
@@ -127,19 +142,29 @@ const AdminUsersPanel: React.FC = () => {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={user.isBlocked ? 'text-green-500' : 'text-red-500'}
-                    onClick={() => handleBlockToggle(user.id, !!user.isBlocked)}
-                    disabled={loading}
-                  >
-                    {user.isBlocked ? (
-                      <><ShieldCheck size={16} className="mr-1" /> Unblock</>
-                    ) : (
-                      <><Ban size={16} className="mr-1" /> Block</>
-                    )}
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-blue-500"
+                      onClick={() => viewUserDetails(user.id)}
+                    >
+                      <UserCog size={16} className="mr-1" /> Details
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={user.isBlocked ? 'text-green-500' : 'text-red-500'}
+                      onClick={() => handleBlockToggle(user.id, !!user.isBlocked)}
+                      disabled={loading}
+                    >
+                      {user.isBlocked ? (
+                        <><ShieldCheck size={16} className="mr-1" /> Unblock</>
+                      ) : (
+                        <><Ban size={16} className="mr-1" /> Block</>
+                      )}
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

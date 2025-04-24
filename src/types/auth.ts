@@ -18,6 +18,14 @@ export interface User {
   referralCode?: string; // Referral code for the user
   referredBy?: string; // ID of the user who referred this user
   level?: number; // Level for referral program
+  bankDetails?: BankDetails; // Bank account details for withdrawals
+  upiId?: string; // UPI ID for quick payments
+}
+
+export interface BankDetails {
+  accountNumber: string;
+  ifscCode: string;
+  accountHolderName: string;
 }
 
 export type TransactionType = "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome" | "referralBonus";
@@ -30,6 +38,12 @@ export interface TransactionRecord {
   status: "completed" | "pending" | "failed";
   details?: string;
   userId?: string; // User ID for admin view
+  userName?: string; // User's name for admin view
+  bankDetails?: BankDetails; // Bank details for withdrawals
+  upiId?: string; // UPI ID for withdrawals
+  withdrawalTime?: string; // Specific time for withdrawals
+  productId?: number; // For purchase transactions
+  productName?: string; // For purchase transactions
 }
 
 export interface AuthContextType {
