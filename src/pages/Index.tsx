@@ -15,6 +15,7 @@ import ProductsGrid from '@/components/products/ProductsGrid';
 import SearchBar from '@/components/products/SearchBar';
 import SortSelector from '@/components/products/SortSelector';
 import { investmentData } from '@/data/investments';
+import { Activity } from '@/components/home/ActivityFeed';
 
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -23,7 +24,7 @@ const Index: React.FC = () => {
   const [showProductDetails, setShowProductDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
-  
+
   const handleProductPurchase = (product: typeof investmentData[0]) => {
     if (!isAuthenticated) {
       navigate('/auth');
@@ -57,6 +58,14 @@ const Index: React.FC = () => {
           return 0;
       }
     });
+
+  const activities: Activity[] = user?.transactions?.map(transaction => ({
+    id: transaction.id,
+    username: user.username,
+    amount: transaction.amount,
+    type: transaction.type === 'purchase' ? 'investment' : transaction.type,
+    timestamp: transaction.timestamp
+  })) || [];
 
   return (
     <div className="min-h-screen bg-black pb-24">
@@ -101,7 +110,10 @@ const Index: React.FC = () => {
       </div>
       
       <div className="p-4 mt-6">
-        <ActivityFeed activities={[]} />
+        <ActivityFeed 
+          activities={activities.slice(0, 5)}
+          showHeader={true}
+        />
       </div>
       
       {selectedProduct && (
