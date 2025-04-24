@@ -37,6 +37,11 @@ export const useUserManagement = (
       
       saveUser(userWithTransaction);
       
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'investmentUser',
+        newValue: JSON.stringify(userWithTransaction)
+      }));
+      
       console.log("Deposit completed. New balance:", userWithTransaction.balance);
       
       return userWithTransaction.balance;
@@ -53,13 +58,18 @@ export const useUserManagement = (
       const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "withdraw",
         amount,
-        status: "completed",
-        details: "Funds withdrawn from account"
+        status: "pending",
+        details: "Withdrawal request submitted"
       });
       
       saveUser(userWithTransaction);
       
-      console.log("Withdrawal completed. New balance:", userWithTransaction.balance);
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'investmentUser',
+        newValue: JSON.stringify(userWithTransaction)
+      }));
+      
+      console.log("Withdrawal request submitted. New balance:", userWithTransaction.balance);
       
       return true;
     } else {
