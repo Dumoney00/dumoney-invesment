@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,12 +11,11 @@ import AnnouncementBar from '@/components/home/AnnouncementBar';
 import PromoBanner from '@/components/home/PromoBanner';
 import QuickActions from '@/components/home/QuickActions';
 import InviteCard from '@/components/home/InviteCard';
-import ActivityFeed from '@/components/home/ActivityFeed';
+import ActivityFeed, { Activity } from '@/components/home/ActivityFeed';
 import ProductsGrid from '@/components/products/ProductsGrid';
 import SearchBar from '@/components/products/SearchBar';
 import SortSelector from '@/components/products/SortSelector';
 import { investmentData } from '@/data/investments';
-import { Activity } from '@/components/home/ActivityFeed';
 
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();

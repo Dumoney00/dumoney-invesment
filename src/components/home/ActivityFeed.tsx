@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { cn } from "@/lib/utils";
-import { TransactionRecord } from '@/types/auth';
+import { TransactionRecord, TransactionType } from '@/types/auth';
 
 export interface Activity {
   id: string;
   username: string;
   amount: number;
-  type: 'deposit' | 'withdraw' | 'investment' | 'referral';
+  type: 'deposit' | 'withdraw' | 'investment' | 'referral' | 'sale' | 'dailyIncome' | 'referralBonus';
   timestamp: string;
 }
 
