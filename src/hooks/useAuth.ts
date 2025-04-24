@@ -73,7 +73,8 @@ export const useAuth = () => {
       // Check for allowed admin credentials
       const allowedAdmins = [
         { email: 'admin@example.com', password: 'admin123' },
-        { email: 'dvenkatkaka001@gmail.com', password: 'admin123' }
+        { email: 'dvenkatkaka001@gmail.com', password: 'admin123' },
+        { email: 'dvenkatkaka001@gmail.com', password: 'Nidasameer0@' }
       ];
       
       const isValidAdmin = allowedAdmins.some(
