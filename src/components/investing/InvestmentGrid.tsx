@@ -26,10 +26,17 @@ const InvestmentGrid: React.FC<InvestmentGridProps> = ({ investments }) => {
   }, {} as Record<string, Product & { count: number; totalInvestment: number; totalDailyIncome: number }>);
 
   const calculateRemainingDays = (cycleDays: number = 45) => {
-    // For this example, we're using a fixed start date
-    const startDate = new Date('2024-04-24'); // Current date from the system
+    const startDate = new Date('2024-04-24');
     const today = new Date();
     const daysPassed = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // For 30-day plans, decrease one day automatically
+    if (cycleDays === 30) {
+      const remainingDays = Math.max(0, cycleDays - daysPassed - 1);
+      return remainingDays;
+    }
+    
+    // For 45-day plans, show actual remaining days
     const remainingDays = Math.max(0, cycleDays - daysPassed);
     return remainingDays;
   };
