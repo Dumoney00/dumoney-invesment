@@ -70,9 +70,17 @@ export const useAuth = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      // In a real app, this would validate against admin credentials in a secure way
-      // For demo purposes, let's use a hardcoded check
-      if (email === 'admin@example.com' && password === 'admin123') {
+      // Check for allowed admin credentials
+      const allowedAdmins = [
+        { email: 'admin@example.com', password: 'admin123' },
+        { email: 'dvenkatkaka001@gmail.com', password: 'admin123' }
+      ];
+      
+      const isValidAdmin = allowedAdmins.some(
+        admin => admin.email === email && admin.password === password
+      );
+      
+      if (isValidAdmin) {
         const adminUser: User = {
           id: 'admin_' + Math.random().toString(36).substr(2, 9),
           username: 'Administrator',
