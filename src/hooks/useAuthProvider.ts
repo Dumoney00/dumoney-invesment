@@ -12,7 +12,11 @@ export const useAuthProvider = (): AuthContextType => {
     login, 
     register, 
     logout,
-    resetPassword
+    resetPassword,
+    adminLogin,
+    blockUser,
+    unblockUser,
+    approveReferralBonus
   } = useAuth();
 
   const {
@@ -43,6 +47,10 @@ export const useAuthProvider = (): AuthContextType => {
     sellOwnedProduct,
     updateUserProfile,
     resetPassword,
-    addTransaction
+    addTransaction,
+    adminLogin,
+    blockUser,
+    unblockUser,
+    approveReferralBonus
   };
 };

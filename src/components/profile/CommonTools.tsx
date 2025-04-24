@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Wallet, User, MessageCircle, HelpCircle, Info, Download } from 'lucide-react';
+import { Wallet, User, MessageCircle, HelpCircle, Info, Download, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface ToolItem {
   icon: React.ElementType;
@@ -11,6 +12,8 @@ interface ToolItem {
 }
 
 const CommonTools: React.FC = () => {
+  const navigate = useNavigate();
+
   const handleDownloadApp = () => {
     // TODO: Replace with your actual APK URL once uploaded
     const apkUrl = '/app-release.apk';
@@ -31,6 +34,10 @@ const CommonTools: React.FC = () => {
     });
   };
 
+  const handleAdminLogin = () => {
+    navigate('/admin-login');
+  };
+
   const tools: ToolItem[] = [
     { icon: Wallet, label: 'Envelope' },
     { icon: User, label: 'Account' },
@@ -42,6 +49,11 @@ const CommonTools: React.FC = () => {
       icon: Download, 
       label: 'Download App',
       onClick: handleDownloadApp 
+    },
+    {
+      icon: Shield,
+      label: 'Admin Login',
+      onClick: handleAdminLogin
     },
   ];
   

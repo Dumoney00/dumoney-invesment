@@ -66,6 +66,51 @@ export const useAuth = () => {
     }
   };
 
+  const adminLogin = async (email: string, password: string) => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // In a real app, this would validate against admin credentials in a secure way
+      // For demo purposes, let's use a hardcoded check
+      if (email === 'admin@example.com' && password === 'admin123') {
+        const adminUser: User = {
+          id: 'admin_' + Math.random().toString(36).substr(2, 9),
+          username: 'Administrator',
+          email,
+          balance: 0,
+          withdrawalBalance: 0,
+          totalDeposit: 0,
+          totalWithdraw: 0,
+          dailyIncome: 0,
+          investmentQuantity: 0,
+          ownedProducts: [],
+          isAdmin: true
+        };
+        
+        saveUser(adminUser);
+        showToast(
+          "Admin Login Successful",
+          "Welcome to the admin dashboard"
+        );
+        return true;
+      }
+      
+      showToast(
+        "Admin Login Failed",
+        "Invalid credentials",
+        "destructive"
+      );
+      return false;
+    } catch (error) {
+      showToast(
+        "Admin Login Failed",
+        "Could not log in",
+        "destructive"
+      );
+      return false;
+    }
+  };
+
   const logout = () => {
     saveUser(null);
     localStorage.removeItem('investmentUser');
@@ -84,6 +129,65 @@ export const useAuth = () => {
     }
   };
 
+  // Admin functions to block/unblock users
+  const blockUser = async (userId: string) => {
+    try {
+      // In a real app, this would make an API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      showToast(
+        "User Blocked",
+        `User ${userId} has been blocked successfully`
+      );
+      return true;
+    } catch (error) {
+      showToast(
+        "Action Failed",
+        "Could not block the user",
+        "destructive"
+      );
+      return false;
+    }
+  };
+
+  const unblockUser = async (userId: string) => {
+    try {
+      // In a real app, this would make an API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      showToast(
+        "User Unblocked",
+        `User ${userId} has been unblocked successfully`
+      );
+      return true;
+    } catch (error) {
+      showToast(
+        "Action Failed",
+        "Could not unblock the user",
+        "destructive"
+      );
+      return false;
+    }
+  };
+
+  // Admin function to approve referral bonus
+  const approveReferralBonus = async (userId: string, amount: number) => {
+    try {
+      // In a real app, this would make an API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      showToast(
+        "Bonus Approved",
+        `Referral bonus of $${amount} approved for user ${userId}`
+      );
+      return true;
+    } catch (error) {
+      showToast(
+        "Action Failed",
+        "Could not approve the referral bonus",
+        "destructive"
+      );
+      return false;
+    }
+  };
+
   return {
     user,
     isAuthenticated,
@@ -91,6 +195,10 @@ export const useAuth = () => {
     login,
     register,
     logout,
-    resetPassword
+    resetPassword,
+    adminLogin,
+    blockUser,
+    unblockUser,
+    approveReferralBonus
   };
 };

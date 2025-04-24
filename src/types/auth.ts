@@ -13,9 +13,14 @@ export interface User {
   ownedProducts: number[];
   transactions?: TransactionRecord[];
   lastIncomeCollection?: string; // Timestamp of last income collection
+  isAdmin?: boolean; // Flag to identify admin users
+  isBlocked?: boolean; // Flag to identify blocked users
+  referralCode?: string; // Referral code for the user
+  referredBy?: string; // ID of the user who referred this user
+  level?: number; // Level for referral program
 }
 
-export type TransactionType = "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome";
+export type TransactionType = "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome" | "referralBonus";
 
 export interface TransactionRecord {
   id: string;
@@ -24,6 +29,7 @@ export interface TransactionRecord {
   timestamp: string;
   status: "completed" | "pending" | "failed";
   details?: string;
+  userId?: string; // User ID for admin view
 }
 
 export interface AuthContextType {
@@ -40,4 +46,8 @@ export interface AuthContextType {
   updateUserProfile: (updates: Partial<User>) => void;
   resetPassword: (email: string) => Promise<boolean>;
   addTransaction: (transaction: Omit<TransactionRecord, "id" | "timestamp">) => void;
+  adminLogin: (email: string, password: string) => Promise<boolean>;
+  blockUser: (userId: string) => Promise<boolean>;
+  unblockUser: (userId: string) => Promise<boolean>;
+  approveReferralBonus: (userId: string, amount: number) => Promise<boolean>;
 }
