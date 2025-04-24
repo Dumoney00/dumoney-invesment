@@ -53,20 +53,6 @@ export const addProductToUser = (user: User, productId: number, price: number): 
   };
 };
 
-// Remove owned product from user
-export const removeProductFromUser = (user: User, productId: number, sellPrice: number): User => {
-  const product = user.ownedProducts.find(id => id === productId);
-  const dailyIncomeReduction = (sellPrice / 0.7) * 0.033; // Calculate original price and its daily income
-
-  return {
-    ...user,
-    ownedProducts: user.ownedProducts.filter(id => id !== productId),
-    investmentQuantity: user.investmentQuantity - 1,
-    balance: user.balance + sellPrice,
-    dailyIncome: user.dailyIncome - dailyIncomeReduction,
-  };
-};
-
 // Add transaction to user history
 export const addTransactionToUser = (
   user: User,

@@ -1,14 +1,12 @@
 
 import React from 'react';
-import InvestmentCard from '@/components/InvestmentCard';
 import { Product } from '@/types/products';
 
 interface InvestmentGridProps {
   investments: Product[];
-  onSellProduct: (productId: number) => void;
 }
 
-const InvestmentGrid: React.FC<InvestmentGridProps> = ({ investments, onSellProduct }) => {
+const InvestmentGrid: React.FC<InvestmentGridProps> = ({ investments }) => {
   const groupedInvestments = investments.reduce((acc, item) => {
     const title = item.title;
     if (!acc[title]) {
@@ -48,13 +46,6 @@ const InvestmentGrid: React.FC<InvestmentGridProps> = ({ investments, onSellProd
               <p className="text-investment-gold font-medium">₹{group.totalDailyIncome.toFixed(2)}</p>
             </div>
           </div>
-          
-          <button 
-            className="w-full mt-4 py-2 px-4 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-            onClick={() => onSellProduct(group.id)}
-          >
-            Sell
-          </button>
         </div>
       ))}
     </div>
