@@ -2,16 +2,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import AdminUsersPanel from '@/components/admin/AdminUsersPanel';
 import AdminTransactionsPanel from '@/components/admin/AdminTransactionsPanel';
 import AdminReferralsPanel from '@/components/admin/AdminReferralsPanel';
-import AdminHeader from '@/components/admin/AdminHeader';
+import AdminDashboardLayout from '@/components/admin/AdminDashboardLayout';
+import AdminOverviewPanel from '@/components/admin/AdminOverviewPanel';
 
 const AdminDashboard: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
     // Redirect if not authenticated or not an admin
@@ -25,19 +31,39 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      <AdminHeader />
-      
-      {/* Yellow Banner */}
-      <div className="bg-investment-yellow h-2"></div>
-      
-      <div className="p-4">
-        <Tabs defaultValue="users" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 bg-[#333333] mb-6">
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="referrals">Referrals</TabsTrigger>
+    <AdminDashboardLayout>
+      <div className="p-6">
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-4 bg-[#1A1F2C]/80 mb-6 p-1 rounded-lg">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="users" 
+              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+            >
+              Users
+            </TabsTrigger>
+            <TabsTrigger 
+              value="transactions" 
+              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+            >
+              Transactions
+            </TabsTrigger>
+            <TabsTrigger 
+              value="referrals" 
+              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+            >
+              Referrals
+            </TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="overview">
+            <AdminOverviewPanel />
+          </TabsContent>
           
           <TabsContent value="users">
             <AdminUsersPanel />
@@ -52,7 +78,7 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </AdminDashboardLayout>
   );
 };
 
