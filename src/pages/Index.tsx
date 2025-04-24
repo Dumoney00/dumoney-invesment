@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
+import ProductDetailsDialog from '@/components/ProductDetailsDialog';
 
-// Import our new components
+// Import our components
 import HeaderSection from '@/components/home/HeaderSection';
 import AccountSummary from '@/components/home/AccountSummary';
 import AnnouncementBar from '@/components/home/AnnouncementBar';
@@ -14,71 +15,13 @@ import QuickActions from '@/components/home/QuickActions';
 import InviteCard from '@/components/home/InviteCard';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 import ActivityFeed from '@/components/home/ActivityFeed';
-
-// Data for the products and activities
-const investmentData = [{
-  id: 1,
-  title: "Oil Refinery Processing Unit",
-  image: "/lovable-uploads/39854854-dee8-4bf0-a045-eff7813c1370.png",
-  price: 1200.00,
-  dailyIncome: 40.00,
-  cycleDays: 45,
-  viewCount: 6351,
-  locked: false,
-}, {
-  id: 2,
-  title: "Industrial Gas Processing Plant",
-  image: "/lovable-uploads/1541f643-6e7a-4b1f-b83a-533eb61d205f.png",
-  price: 2400.00,
-  dailyIncome: 80.00,
-  cycleDays: 45,
-  viewCount: 1730,
-  locked: false,
-}, {
-  id: 3,
-  title: "Pipeline Network System",
-  image: "/lovable-uploads/4b9b18f6-756a-4f3b-aafc-0f0501a3ce42.png",
-  price: 4800.00,
-  dailyIncome: 160.00,
-  cycleDays: 45,
-  viewCount: 4677,
-  locked: false,
-}, {
-  id: 4,
-  title: "Mining Processing Facility",
-  image: "/lovable-uploads/5ac44beb-15bc-49ee-8192-f6369f2e9ba1.png",
-  price: 10000.00,
-  dailyIncome: 500.00,
-  cycleDays: 30,
-  viewCount: 4329,
-  locked: true,
-}];
-
-const activityFeed = [{
-  id: 1,
-  username: "User 01******1565",
-  amount: 9042.00
-}, {
-  id: 2,
-  username: "User 01******4154",
-  amount: 8146.00
-}, {
-  id: 3,
-  username: "User 01******7823",
-  amount: 4822.00
-}, {
-  id: 4,
-  username: "User 01******9974",
-  amount: 6331.00
-}, {
-  id: 5,
-  username: "User 01******2246",
-  amount: 7510.00
-}];
+import { investmentData } from '@/data/investments';
 
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [selectedProduct, setSelectedProduct] = useState<typeof investmentData[0] | null>(null);
+  const [showProductDetails, setShowProductDetails] = useState(false);
   
   // Format dates for featured products section
   const currentDate = new Date();
@@ -94,7 +37,12 @@ const Index: React.FC = () => {
       navigate('/auth');
       return;
     }
-    navigate('/products');
+    setSelectedProduct(product);
+    setShowProductDetails(true);
+  };
+
+  const handleInvestmentSuccess = () => {
+    navigate('/investing');
   };
 
   return (
@@ -135,6 +83,15 @@ const Index: React.FC = () => {
       <div className="p-4">
         <ActivityFeed activities={activityFeed} />
       </div>
+      
+      {selectedProduct && (
+        <ProductDetailsDialog
+          open={showProductDetails}
+          onOpenChange={setShowProductDetails}
+          product={selectedProduct}
+          onConfirmInvest={handleInvestmentSuccess}
+        />
+      )}
       
       <Navigation />
       

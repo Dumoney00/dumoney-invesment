@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Home, Users, ShoppingBag, BarChart3, User } from 'lucide-react';
+import { Home, Users, BarChart3, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Navigation: React.FC = () => {
@@ -9,7 +9,6 @@ const Navigation: React.FC = () => {
   const navItems = [
     { label: 'Home', icon: Home, path: '/' },
     { label: 'Agent', icon: Users, path: '/agent' },
-    { label: 'Product', icon: ShoppingBag, path: '/products' },
     { label: 'Investing', icon: BarChart3, path: '/investing' },
     { label: 'Mine', icon: User, path: '/profile' },
   ];
