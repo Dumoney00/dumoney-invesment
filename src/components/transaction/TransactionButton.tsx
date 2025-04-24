@@ -6,14 +6,12 @@ interface TransactionButtonProps {
   isProcessing: boolean;
   isDeposit: boolean;
   isWithdrawalTime: boolean;
-  paymentMethod: string;
 }
 
 const TransactionButton: React.FC<TransactionButtonProps> = ({ 
   isProcessing, 
   isDeposit, 
-  isWithdrawalTime,
-  paymentMethod
+  isWithdrawalTime
 }) => {
   return (
     <Button
@@ -24,9 +22,7 @@ const TransactionButton: React.FC<TransactionButtonProps> = ({
       {isProcessing 
         ? "Processing..." 
         : isDeposit 
-          ? paymentMethod === "paytm"
-            ? "Continue to Paytm"
-            : "Deposit Funds" 
+          ? "Deposit Funds"
           : "Withdraw Funds"
       }
     </Button>
