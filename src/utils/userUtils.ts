@@ -1,7 +1,5 @@
-
 import { User, TransactionRecord } from "@/types/auth";
 import { createTransactionRecord } from "@/utils/authUtils";
-import { showToast } from "@/utils/toastUtils";
 
 // Update user balance (general)
 export const updateBalance = (user: User, amount: number): User => {
@@ -37,21 +35,28 @@ export const updateWithdraw = (user: User, amount: number): User | null => {
 
 // Add owned product to user
 export const addProductToUser = (user: User, productId: number, price: number): User => {
+  const updatedDailyIncome = user.dailyIncome + (price * 0.033); // 3.3% daily income rate
+
   return {
     ...user,
     ownedProducts: [...user.ownedProducts, productId],
     investmentQuantity: user.investmentQuantity + 1,
-    balance: user.balance - price
+    balance: user.balance - price,
+    dailyIncome: updatedDailyIncome,
   };
 };
 
 // Remove owned product from user
 export const removeProductFromUser = (user: User, productId: number, sellPrice: number): User => {
+  const product = user.ownedProducts.find(id => id === productId);
+  const dailyIncomeReduction = (sellPrice / 0.7) * 0.033; // Calculate original price and its daily income
+
   return {
     ...user,
     ownedProducts: user.ownedProducts.filter(id => id !== productId),
     investmentQuantity: user.investmentQuantity - 1,
-    balance: user.balance + sellPrice
+    balance: user.balance + sellPrice,
+    dailyIncome: user.dailyIncome - dailyIncomeReduction,
   };
 };
 

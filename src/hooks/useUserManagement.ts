@@ -82,17 +82,19 @@ export const useUserManagement = (
 
   const addOwnedProduct = (productId: number, price: number) => {
     if (user) {
+      // Add product to owned products and update balance
       const updatedUser = addProductToUser(user, productId, price);
       
-      // Add the transaction record
+      // Add the transaction record for the investment
       const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "purchase",
         amount: price,
         status: "completed",
-        details: `Purchased product ID: ${productId}`
+        details: `Investment in product ID: ${productId}`
       });
       
       saveUser(userWithTransaction);
+      console.log("Investment completed. New balance:", userWithTransaction.balance);
     }
   };
   

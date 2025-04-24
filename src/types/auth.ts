@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -11,6 +10,7 @@ export interface User {
   investmentQuantity: number;
   ownedProducts: number[];
   transactions?: TransactionRecord[];
+  lastIncomeCollection?: string; // Timestamp of last income collection
 }
 
 export type TransactionType = "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome";

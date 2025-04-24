@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -30,7 +29,7 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   product,
   onConfirmInvest
 }) => {
-  const { user } = useAuth();
+  const { user, addOwnedProduct, updateUserBalance } = useAuth();
   const [showConfirmation, setShowConfirmation] = React.useState(false);
   
   const hourlyIncome = parseFloat((product.dailyIncome / 24).toFixed(2));
@@ -52,14 +51,18 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
   };
   
   const handleConfirmation = () => {
-    setShowConfirmation(false);
-    onOpenChange(false);
-    onConfirmInvest();
-    
-    toast({
-      title: "Investment Successful",
-      description: `You have invested in ${product.title}`,
-    });
+    if (user) {
+      addOwnedProduct(product.id, product.price);
+      
+      setShowConfirmation(false);
+      onOpenChange(false);
+      onConfirmInvest();
+      
+      toast({
+        title: "Investment Successful",
+        description: `You have invested in ${product.title}. Check your investments page to track daily earnings.`,
+      });
+    }
   };
   
   return (
