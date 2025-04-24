@@ -16,7 +16,7 @@ const WithdrawalTimeInfo: React.FC<WithdrawalTimeInfoProps> = ({ isDeposit, isWi
       <p className="text-center text-white text-sm">
         {isWithdrawalTime 
           ? "✅ Withdrawals are currently open" 
-          : "⏰ Withdrawals are only available from 11:00 AM to 11:30 AM, Monday to Friday"}
+          : "⏰ Withdrawals are only available from 11:00 AM to 12:00 PM, Monday to Friday"}
       </p>
     </div>
   );

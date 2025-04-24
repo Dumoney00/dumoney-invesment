@@ -1,4 +1,4 @@
-
+import { useEffect } from 'react';
 import { User, TransactionRecord } from "@/types/auth";
 import { 
   updateBalance,
@@ -6,7 +6,8 @@ import {
   updateWithdraw,
   addProductToUser,
   removeProductFromUser,
-  addTransactionToUser
+  addTransactionToUser,
+  addDailyIncome
 } from "@/utils/userUtils";
 import { showToast } from "@/utils/toastUtils";
 
@@ -25,10 +26,8 @@ export const useUserManagement = (
 
   const updateUserDeposit = (amount: number) => {
     if (user) {
-      // Update the user with the deposit amount
       const updatedUser = updateDeposit(user, amount);
       
-      // Add the transaction record
       const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "deposit",
         amount,
@@ -36,7 +35,6 @@ export const useUserManagement = (
         details: "Funds added to account"
       });
       
-      // Save the updated user with the transaction
       saveUser(userWithTransaction);
       
       console.log("Deposit completed. New balance:", userWithTransaction.balance);
@@ -52,7 +50,6 @@ export const useUserManagement = (
     const updatedUser = updateWithdraw(user, amount);
     
     if (updatedUser) {
-      // Add the transaction record
       const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "withdraw",
         amount,
@@ -60,14 +57,12 @@ export const useUserManagement = (
         details: "Funds withdrawn from account"
       });
       
-      // Save the updated user with the transaction
       saveUser(userWithTransaction);
       
       console.log("Withdrawal completed. New balance:", userWithTransaction.balance);
       
       return true;
     } else {
-      // Still record the failed transaction attempt
       const userWithFailedTransaction = addTransactionToUser(user, {
         type: "withdraw",
         amount,
@@ -82,10 +77,8 @@ export const useUserManagement = (
 
   const addOwnedProduct = (productId: number, price: number) => {
     if (user) {
-      // Add product to owned products and update balance
       const updatedUser = addProductToUser(user, productId, price);
       
-      // Add the transaction record for the investment
       const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "purchase",
         amount: price,
@@ -112,7 +105,6 @@ export const useUserManagement = (
     
     const updatedUser = removeProductFromUser(user, productId, sellPrice);
     
-    // Add the transaction record
     const userWithTransaction = addTransactionToUser(updatedUser, {
       type: "sale",
       amount: sellPrice,
@@ -142,6 +134,23 @@ export const useUserManagement = (
       });
     }
   };
+
+  useEffect(() => {
+    if (!user) return;
+
+    const checkDailyIncome = () => {
+      const updatedUser = addDailyIncome(user);
+      if (updatedUser !== user) {
+        saveUser(updatedUser);
+      }
+    };
+
+    checkDailyIncome();
+
+    const interval = setInterval(checkDailyIncome, 60000);
+
+    return () => clearInterval(interval);
+  }, [user, saveUser]);
 
   return {
     updateUserBalance,

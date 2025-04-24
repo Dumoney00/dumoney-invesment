@@ -1,4 +1,3 @@
-
 import { User, TransactionRecord } from "@/types/auth";
 import { createTransactionRecord } from "@/utils/authUtils";
 
@@ -90,4 +89,43 @@ export const addTransactionToUser = (
     ...user,
     transactions: [newTransaction, ...(user.transactions || [])]
   };
+};
+
+// Add daily income to withdrawal wallet
+export const addDailyIncome = (user: User): User => {
+  const now = new Date();
+  const currentHour = now.getHours();
+  
+  // Only add income at 9 AM
+  if (currentHour !== 9) {
+    return user;
+  }
+  
+  // Get last income date
+  const lastIncome = user.lastIncomeCollection 
+    ? new Date(user.lastIncomeCollection) 
+    : null;
+    
+  // Check if income was already added today
+  if (lastIncome) {
+    const today = new Date();
+    if (lastIncome.toDateString() === today.toDateString()) {
+      return user;
+    }
+  }
+  
+  // Add daily income to withdrawal wallet
+  const updatedUser = {
+    ...user,
+    withdrawalBalance: user.withdrawalBalance + user.dailyIncome,
+    lastIncomeCollection: new Date().toISOString()
+  };
+  
+  // Add transaction record for daily income
+  return addTransactionToUser(updatedUser, {
+    type: "dailyIncome",
+    amount: user.dailyIncome,
+    status: "completed",
+    details: "Daily income added to withdrawal wallet"
+  });
 };

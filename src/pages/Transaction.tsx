@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,11 +43,10 @@ const Transaction: React.FC = () => {
   const currentMinute = now.getMinutes();
   const currentDay = now.getDay(); // 0 is Sunday, 6 is Saturday
   
-  // Check if withdrawal is allowed (11:00 AM to 11:30 AM, Monday to Friday)
+  // Check if withdrawal is allowed (11:00 AM to 12:00 PM, Monday to Friday)
   const isWithdrawalTime = 
-    currentHour === 11 && 
-    currentMinute >= 0 && 
-    currentMinute <= 30 && 
+    ((currentHour === 11 && currentMinute >= 0) || 
+    (currentHour === 11 && currentMinute <= 59)) && 
     currentDay >= 1 && 
     currentDay <= 5;
   
