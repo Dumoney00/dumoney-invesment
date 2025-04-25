@@ -53,7 +53,7 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (username: string, email: string, password: string) => Promise<boolean>;
+  register: (username: string, email: string, phone: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUserBalance: (amount: number) => void;
   updateUserDeposit: (amount: number) => void;
