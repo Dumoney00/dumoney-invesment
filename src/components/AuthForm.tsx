@@ -1,16 +1,16 @@
-
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { User, LogIn, UserPlus } from 'lucide-react';
+import { User, LogIn, UserPlus, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ForgotPassword from './ForgotPassword';
 
 const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -26,9 +26,9 @@ const AuthForm: React.FC = () => {
       let success: boolean;
       
       if (isLogin) {
-        success = await login(email, password);
+        success = await login(emailOrPhone, password);
       } else {
-        success = await register(username, email, password);
+        success = await register(username, emailOrPhone, phone, password);
       }
 
       if (success) {
@@ -38,7 +38,7 @@ const AuthForm: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   const handleBackFromForgotPassword = () => {
     setShowForgotPassword(false);
   };
@@ -109,30 +109,61 @@ const AuthForm: React.FC = () => {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
+            <>
+              <div>
+                <label htmlFor="username" className="text-gray-300 mb-1 block">Username</label>
+                <Input
+                  id="username"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required={!isLogin}
+                  className="bg-[#222222] border-gray-700 text-white"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="email" className="text-gray-300 mb-1 block">Email</label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={emailOrPhone}
+                  onChange={(e) => setEmailOrPhone(e.target.value)}
+                  required
+                  className="bg-[#222222] border-gray-700 text-white"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="phone" className="text-gray-300 mb-1 block">Phone Number</label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  className="bg-[#222222] border-gray-700 text-white"
+                />
+              </div>
+            </>
+          )}
+          
+          {isLogin && (
             <div>
-              <label htmlFor="username" className="text-gray-300 mb-1 block">Username</label>
+              <label htmlFor="emailOrPhone" className="text-gray-300 mb-1 block">Email or Phone</label>
               <Input
-                id="username"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required={!isLogin}
+                id="emailOrPhone"
+                placeholder="Enter your email or phone"
+                value={emailOrPhone}
+                onChange={(e) => setEmailOrPhone(e.target.value)}
+                required
                 className="bg-[#222222] border-gray-700 text-white"
               />
             </div>
           )}
-          <div>
-            <label htmlFor="email" className="text-gray-300 mb-1 block">Email</label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-[#222222] border-gray-700 text-white"
-            />
-          </div>
+          
           <div>
             <label htmlFor="password" className="text-gray-300 mb-1 block">Password</label>
             <Input

@@ -10,8 +10,8 @@ export interface AuthService {
   user: User | null;
   isAuthenticated: boolean;
   saveUser: (updatedUser: User | null) => void;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (username: string, email: string, password: string) => Promise<boolean>;
+  login: (emailOrPhone: string, password: string) => Promise<boolean>;
+  register: (username: string, email: string, phone: string, password: string) => Promise<boolean>;
   adminLogin: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   resetPassword: (email: string) => Promise<boolean>;

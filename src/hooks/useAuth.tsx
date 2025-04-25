@@ -27,28 +27,61 @@ export const useAuth = (): AuthService & {
 
   const { adminLogin } = useAdminAuth(saveUser);
 
-  const login = async (email: string, password: string) => {
+  const login = async (emailOrPhone: string, password: string) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      if (email && password) {
-        const mockUser = createMockUser(email.split('@')[0], email);
-        saveUser(mockUser);
+      // Get all users from localStorage to check credentials
+      const storedUsers = localStorage.getItem('investmentUsers');
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      // Check if user exists with provided email or phone
+      const foundUser = users.find((u: User) => 
+        u.email === emailOrPhone || u.phone === emailOrPhone
+      );
+      
+      if (foundUser && password) {
+        saveUser(foundUser);
         showToast("Login Successful", "Welcome back to your investment dashboard");
         return true;
       }
+      
+      showToast("Login Failed", "Invalid credentials", "destructive");
       return false;
     } catch (error) {
-      showToast("Login Failed", "Invalid email or password", "destructive");
+      showToast("Login Failed", "Invalid credentials", "destructive");
       return false;
     }
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = async (username: string, email: string, phone: string, password: string) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const mockUser = createMockUser(username, email);
+      
+      // Check if phone or email already exists
+      const storedUsers = localStorage.getItem('investmentUsers');
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      const existingUser = users.find((u: User) => 
+        u.email === email || u.phone === phone
+      );
+      
+      if (existingUser) {
+        showToast(
+          "Registration Failed",
+          "An account with this email or phone number already exists",
+          "destructive"
+        );
+        return false;
+      }
+      
+      const mockUser = createMockUser(username, email, phone);
       saveUser(mockUser);
+      
+      // Update users array in localStorage
+      users.push(mockUser);
+      localStorage.setItem('investmentUsers', JSON.stringify(users));
+      
       showToast("Registration Successful", "Your account has been created");
       return true;
     } catch (error) {

@@ -4,13 +4,14 @@ import { toast } from "@/hooks/use-toast";
 
 export const createMockUser = (
   username: string, 
-  email: string
+  email: string,
+  phone: string
 ): User => {
   return {
     id: Math.random().toString(36).substr(2, 9),
     username,
     email,
-    phone: "9182475" + Math.floor(1000 + Math.random() * 9000).toString(),
+    phone,
     balance: 0,
     withdrawalBalance: 0,
     totalDeposit: 0,
