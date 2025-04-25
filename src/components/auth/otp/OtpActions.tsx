@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Loader2 } from 'lucide-react';
 
@@ -20,16 +20,18 @@ const OtpActions: React.FC<OtpActionsProps> = ({
     <div className="flex gap-3">
       <Button
         variant="outline"
-        className="flex-1 border-gray-700 text-gray-300"
+        className="flex-1 border-gray-700 text-gray-300 transition-colors hover:bg-gray-800"
         onClick={onCancel}
         disabled={isVerifying}
+        type="button"
       >
         Cancel
       </Button>
       <Button
-        className="flex-1 bg-investment-gold hover:bg-investment-gold/90"
+        className="flex-1 bg-investment-gold hover:bg-investment-gold/90 transition-colors"
         onClick={onVerify}
         disabled={isVerifying || !isValidOtp}
+        type="button"
       >
         {isVerifying ? (
           <>
@@ -42,4 +44,5 @@ const OtpActions: React.FC<OtpActionsProps> = ({
   );
 };
 
-export default OtpActions;
+// Memoize component to prevent unnecessary re-renders
+export default memo(OtpActions);

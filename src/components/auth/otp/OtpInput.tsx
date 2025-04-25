@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { 
   InputOTP,
   InputOTPGroup,
@@ -10,13 +10,19 @@ interface OtpInputProps {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  maxLength?: number;
 }
 
-const OtpInput: React.FC<OtpInputProps> = ({ value, onChange, disabled }) => {
+const OtpInput: React.FC<OtpInputProps> = ({ 
+  value, 
+  onChange, 
+  disabled = false,
+  maxLength = 6
+}) => {
   return (
     <div className="flex justify-center">
       <InputOTP
-        maxLength={6}
+        maxLength={maxLength}
         value={value}
         onChange={onChange}
         disabled={disabled}
@@ -27,7 +33,7 @@ const OtpInput: React.FC<OtpInputProps> = ({ value, onChange, disabled }) => {
                 key={index}
                 {...slot}
                 index={index}
-                className="bg-[#333333] border-gray-700"
+                className="bg-[#333333] border-gray-700 focus:border-investment-gold focus:ring-investment-gold/20"
               />
             ))}
           </InputOTPGroup>
@@ -37,4 +43,5 @@ const OtpInput: React.FC<OtpInputProps> = ({ value, onChange, disabled }) => {
   );
 };
 
-export default OtpInput;
+// Memoize component to prevent unnecessary re-renders
+export default memo(OtpInput);
