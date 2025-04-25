@@ -15,4 +15,7 @@ export interface AuthService {
   adminLogin: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   resetPassword: (email: string) => Promise<boolean>;
+  blockUser: (userId: string) => Promise<boolean>;
+  unblockUser: (userId: string) => Promise<boolean>;
+  approveReferralBonus: (userId: string, amount: number) => Promise<boolean>;
 }

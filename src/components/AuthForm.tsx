@@ -1,43 +1,14 @@
+
 import React, { useState } from 'react';
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { User, LogIn, UserPlus, Phone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { User, LogIn, UserPlus } from 'lucide-react';
+import LoginForm from './auth/LoginForm';
+import RegisterForm from './auth/RegisterForm';
 import ForgotPassword from './ForgotPassword';
 
 const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [username, setUsername] = useState('');
-  const [emailOrPhone, setEmailOrPhone] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-
-  const { login, register } = useAuth();
-  const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      let success: boolean;
-      
-      if (isLogin) {
-        success = await login(emailOrPhone, password);
-      } else {
-        success = await register(username, emailOrPhone, phone, password);
-      }
-
-      if (success) {
-        navigate('/');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleBackFromForgotPassword = () => {
     setShowForgotPassword(false);
@@ -102,79 +73,11 @@ const AuthForm: React.FC = () => {
             Register
           </Button>
         </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <>
-              <div>
-                <label htmlFor="username" className="text-gray-300 mb-1 block">Username</label>
-                <Input
-                  id="username"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required={!isLogin}
-                  className="bg-[#222222] border-gray-700 text-white"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="email" className="text-gray-300 mb-1 block">Email</label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={emailOrPhone}
-                  onChange={(e) => setEmailOrPhone(e.target.value)}
-                  required
-                  className="bg-[#222222] border-gray-700 text-white"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="phone" className="text-gray-300 mb-1 block">Phone Number</label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  required
-                  className="bg-[#222222] border-gray-700 text-white"
-                />
-              </div>
-            </>
-          )}
-          
-          {isLogin && (
-            <div>
-              <label htmlFor="emailOrPhone" className="text-gray-300 mb-1 block">Email or Phone</label>
-              <Input
-                id="emailOrPhone"
-                placeholder="Enter your email or phone"
-                value={emailOrPhone}
-                onChange={(e) => setEmailOrPhone(e.target.value)}
-                required
-                className="bg-[#222222] border-gray-700 text-white"
-              />
-            </div>
-          )}
-          
-          <div>
-            <label htmlFor="password" className="text-gray-300 mb-1 block">Password</label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-[#222222] border-gray-700 text-white"
-            />
-          </div>
-          
-          {isLogin && (
-            <div className="text-right">
+
+        {isLogin ? (
+          <>
+            <LoginForm />
+            <div className="text-right mt-4">
               <Button 
                 variant="link" 
                 type="button" 
@@ -184,16 +87,10 @@ const AuthForm: React.FC = () => {
                 Forgot Password?
               </Button>
             </div>
-          )}
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-investment-gold hover:bg-investment-gold/90"
-            disabled={isLoading}
-          >
-            {isLoading ? "Processing..." : isLogin ? "Login" : "Register"}
-          </Button>
-        </form>
+          </>
+        ) : (
+          <RegisterForm />
+        )}
       </div>
     </div>
   );
