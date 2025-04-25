@@ -15,13 +15,13 @@ const CommonTools: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDownloadApp = () => {
-    // TODO: Replace with your actual APK URL once uploaded
-    const apkUrl = '/app-release.apk';
+    // APK URL - update this with your actual APK URL once deployed
+    const apkUrl = 'https://your-domain.com/downloads/dumoney-investment.apk';
     
     // Create a temporary link element
     const link = document.createElement('a');
     link.href = apkUrl;
-    link.download = 'wealth-forge-portal.apk';
+    link.download = 'dumoney-investment.apk';
     
     // Trigger download
     document.body.appendChild(link);
@@ -30,7 +30,7 @@ const CommonTools: React.FC = () => {
     
     toast({
       title: "Download Started",
-      description: "Your download will begin shortly."
+      description: "Your APK download will begin shortly. Once downloaded, open the file to install the app."
     });
   };
 
