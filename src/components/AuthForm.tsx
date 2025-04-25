@@ -51,14 +51,12 @@ const AuthForm: React.FC = () => {
   if (showForgotPassword) {
     return (
       <div className="min-h-screen bg-black pt-12 pb-24">
-        {/* Header */}
         <header className="bg-[#333333] py-4">
           <h1 className="text-white text-xl text-center font-medium">
             — Forgot Password —
           </h1>
         </header>
         
-        {/* Yellow Banner */}
         <div className="bg-investment-yellow h-2"></div>
         
         <div className="max-w-md mx-auto p-5 mt-8">
@@ -73,14 +71,12 @@ const AuthForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black pt-12 pb-24">
-      {/* Header */}
       <header className="bg-[#333333] py-4">
         <h1 className="text-white text-xl text-center font-medium">
           — {isLogin ? 'Login' : 'Register'} —
         </h1>
       </header>
       
-      {/* Yellow Banner */}
       <div className="bg-investment-yellow h-2"></div>
       
       <div className="max-w-md mx-auto p-5 mt-8">

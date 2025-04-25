@@ -19,12 +19,14 @@ export const useAuth = () => {
     setIsAuthenticated(!!updatedUser);
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (emailOrPhone: string, password: string) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      if (email && password) {
-        const mockUser = createMockUser(email.split('@')[0], email);
+      if (emailOrPhone && password) {
+        // Changed to extract username from email if an email is used
+        const username = emailOrPhone.includes('@') ? emailOrPhone.split('@')[0] : emailOrPhone;
+        const mockUser = createMockUser(username, emailOrPhone, emailOrPhone);
         
         saveUser(mockUser);
         showToast(
@@ -44,11 +46,11 @@ export const useAuth = () => {
     }
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = async (username: string, email: string, phone: string, password: string) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      const mockUser = createMockUser(username, email);
+      const mockUser = createMockUser(username, email, phone);
       
       saveUser(mockUser);
       showToast(
