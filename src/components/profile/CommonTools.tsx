@@ -15,22 +15,25 @@ const CommonTools: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDownloadApp = () => {
-    // APK URL - update this with your actual APK URL once deployed
-    const apkUrl = 'https://your-domain.com/downloads/dumoney-investment.apk';
+    // Using the direct APK download URL
+    const apkUrl = 'https://8182cd2c-297a-44b5-b0a1-c773f5531117.lovableproject.com/dumoney-investment.apk';
     
-    // Create a temporary link element
-    const link = document.createElement('a');
-    link.href = apkUrl;
-    link.download = 'dumoney-investment.apk';
+    // Create an invisible iframe for download
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
     
-    // Trigger download
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Start download
+    iframe.src = apkUrl;
+    
+    // Remove iframe after a delay
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 2000);
     
     toast({
       title: "Download Started",
-      description: "Your APK download will begin shortly. Once downloaded, open the file to install the app."
+      description: "Your APK download will begin shortly. Once downloaded, open the file to install the app.",
     });
   };
 
