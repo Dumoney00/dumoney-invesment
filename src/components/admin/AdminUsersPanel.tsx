@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,7 @@ import { useAllUsers } from '@/hooks/useAllUsers';
 
 const AdminUsersPanel: React.FC = () => {
   const { blockUser, unblockUser } = useAuth();
-  const { users, loading } = useAllUsers();
+  const { users, setUsers, loading, setLoading } = useAllUsers();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'blocked'>('all');

@@ -60,5 +60,13 @@ export const useAllUsers = () => {
     };
   }, []);
   
-  return { users, loading, error };
+  // Return both the state values and the setter functions
+  return { 
+    users, 
+    setUsers,
+    loading, 
+    setLoading, 
+    error,
+    fetchUsers
+  };
 };
