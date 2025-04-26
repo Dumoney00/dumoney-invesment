@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { UserPlus } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from 'react-router-dom';
+import { checkExistingUser } from "@/utils/authUtils";
+import { toast } from "@/hooks/use-toast";
 
 const RegisterForm: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -21,6 +23,17 @@ const RegisterForm: React.FC = () => {
     setIsLoading(true);
     
     try {
+      // Check for existing user
+      if (checkExistingUser(email, phone)) {
+        toast({
+          title: "Registration Failed",
+          description: "An account with this email or phone number already exists. Please login instead.",
+          variant: "destructive"
+        });
+        navigate('/auth');
+        return;
+      }
+
       const success = await register(username, email, phone, password);
       if (success) {
         navigate('/');

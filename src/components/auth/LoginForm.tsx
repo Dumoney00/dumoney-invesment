@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { LogIn } from 'lucide-react';
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from 'react-router-dom';
+import { findUserByEmailOrPhone } from "@/utils/authUtils";
+import { toast } from "@/hooks/use-toast";
 
 const LoginForm: React.FC = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -19,6 +21,17 @@ const LoginForm: React.FC = () => {
     setIsLoading(true);
     
     try {
+      // Check if user exists with given email or phone
+      const existingUser = findUserByEmailOrPhone(emailOrPhone);
+      if (!existingUser) {
+        toast({
+          title: "Login Failed",
+          description: "No account found with this email or phone number",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const success = await login(emailOrPhone, password);
       if (success) {
         navigate('/');

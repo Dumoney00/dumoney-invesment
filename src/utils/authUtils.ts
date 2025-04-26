@@ -53,6 +53,22 @@ export const saveUserToStorage = (user: User | null): void => {
   }
 };
 
+export const checkExistingUser = (email: string, phone: string): boolean => {
+  const storedUsers = localStorage.getItem('investmentUsers');
+  if (!storedUsers) return false;
+  
+  const users: User[] = JSON.parse(storedUsers);
+  return users.some(user => user.email === email || user.phone === phone);
+};
+
+export const findUserByEmailOrPhone = (emailOrPhone: string): User | null => {
+  const storedUsers = localStorage.getItem('investmentUsers');
+  if (!storedUsers) return null;
+  
+  const users: User[] = JSON.parse(storedUsers);
+  return users.find(user => user.email === emailOrPhone || user.phone === emailOrPhone) || null;
+};
+
 export const showToast = (
   title: string,
   description: string,
