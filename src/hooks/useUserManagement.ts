@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { User, TransactionRecord } from "@/types/auth";
+import { User, TransactionRecord, UserOwnedProduct } from "@/types/auth";
 import { 
   updateBalance,
   updateDeposit,
@@ -105,7 +105,9 @@ export const useUserManagement = (
   const sellOwnedProduct = (productId: number, sellPrice: number) => {
     if (!user) return false;
     
-    if (!user.ownedProducts.includes(productId)) {
+    const productExists = user.ownedProducts.some(product => product.productId === productId);
+    
+    if (!productExists) {
       showToast(
         "Sale Failed",
         "You don't own this product",
@@ -181,3 +183,4 @@ export const useUserManagement = (
     addTransaction
   };
 };
+

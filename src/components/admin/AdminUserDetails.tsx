@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { User, TransactionRecord } from '@/types/auth';
+import { User, TransactionRecord, UserOwnedProduct } from '@/types/auth';
 import { 
   Table, 
   TableBody, 
@@ -31,7 +30,18 @@ const mockUserDetails: User = {
   totalWithdraw: 400,
   dailyIncome: 35,
   investmentQuantity: 2,
-  ownedProducts: [1, 2],
+  ownedProducts: [
+    {
+      productId: 1,
+      purchaseDate: new Date().toISOString(),
+      cycleDays: 45
+    },
+    {
+      productId: 2,
+      purchaseDate: new Date().toISOString(),
+      cycleDays: 30
+    }
+  ],
   isBlocked: false,
   referralCode: 'JOHN123',
   level: 2,
@@ -190,7 +200,7 @@ const AdminUserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
                 <dt className="text-gray-400">Product IDs:</dt>
                 <dd className="col-span-2">
                   {userDetails.ownedProducts.length > 0 ? 
-                    userDetails.ownedProducts.join(', ') : 
+                    userDetails.ownedProducts.map(product => product.productId).join(', ') : 
                     'No active investments'}
                 </dd>
               </div>

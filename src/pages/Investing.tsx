@@ -10,11 +10,17 @@ import { investmentData } from '@/data/investments';
 
 const Investing: React.FC = () => {
   const { user } = useAuth();
-  const [userInvestments, setUserInvestments] = useState(investmentData.filter(item => user?.ownedProducts.includes(item.id) || []));
+  const [userInvestments, setUserInvestments] = useState(
+    user?.ownedProducts ? investmentData.filter(item => 
+      user.ownedProducts.some(product => product.productId === item.id)
+    ) : []
+  );
   
   useEffect(() => {
     if (user && user.ownedProducts) {
-      const owned = investmentData.filter(item => user.ownedProducts.includes(item.id));
+      const owned = investmentData.filter(item => 
+        user.ownedProducts.some(product => product.productId === item.id)
+      );
       setUserInvestments(owned);
     } else {
       setUserInvestments([]);
