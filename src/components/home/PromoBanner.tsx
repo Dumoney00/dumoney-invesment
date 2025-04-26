@@ -4,7 +4,7 @@ import ImageCarousel from './ImageCarousel';
 
 const PromoBanner: React.FC = () => {
   return (
-    <div className="w-full mb-6">
+    <div className="w-full">
       <ImageCarousel />
     </div>
   );

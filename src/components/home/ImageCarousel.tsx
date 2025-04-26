@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/carousel";
 
 const images = [
-  "/lovable-uploads/3f4f41e7-e966-4631-a657-0e326c4acc99.png",
+  "/lovable-uploads/63e1d57e-857e-4800-aea2-cfb2d7b3d956.png",
   "/lovable-uploads/afee450b-5eae-4439-ba61-8d98f5ff2b07.png",
   "/lovable-uploads/6f0548e1-599b-4b22-b54e-cd554aca80cf.png",
   "/lovable-uploads/d3c01862-f72d-40de-aad3-0315ce1d2dad.png"
@@ -21,11 +21,11 @@ const ImageCarousel = () => {
       <CarouselContent>
         {images.map((image, index) => (
           <CarouselItem key={index}>
-            <div className="relative aspect-[2/1] w-full overflow-hidden rounded-xl">
+            <div className="w-full">
               <img
                 src={image}
                 alt={`Slide ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-auto"
               />
             </div>
           </CarouselItem>
