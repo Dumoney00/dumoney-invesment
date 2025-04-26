@@ -3,22 +3,28 @@ export interface User {
   username: string;
   email: string;
   phone?: string;
-  balance: number; // Main deposit wallet
-  withdrawalBalance: number; // Separate withdrawal wallet for earnings
+  balance: number;
+  withdrawalBalance: number;
   totalDeposit: number;
   totalWithdraw: number;
   dailyIncome: number;
   investmentQuantity: number;
-  ownedProducts: number[];
+  ownedProducts: UserOwnedProduct[];
   transactions?: TransactionRecord[];
-  lastIncomeCollection?: string; // Timestamp of last income collection
-  isAdmin?: boolean; // Flag to identify admin users
-  isBlocked?: boolean; // Flag to identify blocked users
-  referralCode?: string; // Referral code for the user
-  referredBy?: string; // ID of the user who referred this user
-  level?: number; // Level for referral program
-  bankDetails?: BankDetails; // Bank account details for withdrawals
-  upiId?: string; // UPI ID for quick payments
+  lastIncomeCollection?: string;
+  isAdmin?: boolean;
+  isBlocked?: boolean;
+  referralCode?: string;
+  referredBy?: string;
+  level?: number;
+  bankDetails?: BankDetails;
+  upiId?: string;
+}
+
+export interface UserOwnedProduct {
+  productId: number;
+  purchaseDate: string;
+  cycleDays: number;
 }
 
 export interface BankDetails {
@@ -38,15 +44,15 @@ export interface TransactionRecord {
   timestamp: string;
   status: TransactionStatus;
   details?: string;
-  userId?: string; // User ID for admin view
-  userName?: string; // User's name for admin view
-  bankDetails?: BankDetails; // Bank details for withdrawals
-  upiId?: string; // UPI ID for withdrawals
-  withdrawalTime?: string; // Specific time for withdrawals
-  approvedBy?: string; // Admin who approved the withdrawal
+  userId?: string;
+  userName?: string;
+  bankDetails?: BankDetails;
+  upiId?: string;
+  withdrawalTime?: string;
+  approvedBy?: string;
   approvalTimestamp?: string;
-  productId?: number; // For purchase transactions
-  productName?: string; // For purchase transactions
+  productId?: number;
+  productName?: string;
 }
 
 export interface AuthContextType {
