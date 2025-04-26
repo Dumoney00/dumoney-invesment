@@ -21,7 +21,7 @@ const ImageCarousel = () => {
       <CarouselContent>
         {images.map((image, index) => (
           <CarouselItem key={index}>
-            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl">
+            <div className="relative aspect-[2/1] w-full overflow-hidden rounded-xl">
               <img
                 src={image}
                 alt={`Slide ${index + 1}`}
@@ -31,8 +31,8 @@ const ImageCarousel = () => {
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
-      <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
+      <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" />
+      <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" />
     </Carousel>
   );
 };
