@@ -47,7 +47,26 @@ export const loadUserFromStorage = (): User | null => {
 
 export const saveUserToStorage = (user: User | null): void => {
   if (user) {
+    // Save current user
     localStorage.setItem('investmentUser', JSON.stringify(user));
+    
+    // Update users array
+    const storedUsers = localStorage.getItem('investmentUsers');
+    let users = storedUsers ? JSON.parse(storedUsers) : [];
+    
+    // Check if user already exists
+    const existingUserIndex = users.findIndex((u: User) => u.id === user.id);
+    
+    if (existingUserIndex >= 0) {
+      // Update existing user
+      users[existingUserIndex] = user;
+    } else {
+      // Add new user
+      users.push(user);
+    }
+    
+    // Save updated users array
+    localStorage.setItem('investmentUsers', JSON.stringify(users));
   } else {
     localStorage.removeItem('investmentUser');
   }

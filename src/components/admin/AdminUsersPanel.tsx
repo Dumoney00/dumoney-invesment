@@ -1,6 +1,4 @@
-
 import React, { useState } from 'react';
-import { User } from '@/types/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Ban, ShieldCheck, UserCog, Filter } from 'lucide-react';
@@ -21,81 +19,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-// Mock data for development - in a real app this would come from API/database
-const mockUsers: User[] = [
-  {
-    id: 'usr_123',
-    username: 'john_doe',
-    email: 'john@example.com',
-    phone: '9182475123',
-    balance: 500,
-    withdrawalBalance: 100,
-    totalDeposit: 1000,
-    totalWithdraw: 400,
-    dailyIncome: 35,
-    investmentQuantity: 2,
-    ownedProducts: [1, 2],
-    isBlocked: false,
-    referralCode: 'JOHN123',
-    referredBy: 'usr_789',
-    level: 2
-  },
-  {
-    id: 'usr_456',
-    username: 'jane_smith',
-    email: 'jane@example.com',
-    phone: '9182475456',
-    balance: 1200,
-    withdrawalBalance: 300,
-    totalDeposit: 1500,
-    totalWithdraw: 200,
-    dailyIncome: 50,
-    investmentQuantity: 3,
-    ownedProducts: [1, 3, 4],
-    isBlocked: true,
-    referralCode: 'JANE456',
-    level: 1
-  },
-  {
-    id: 'usr_789',
-    username: 'robert_johnson',
-    email: 'robert@example.com',
-    phone: '9182475789',
-    balance: 2500,
-    withdrawalBalance: 600,
-    totalDeposit: 3000,
-    totalWithdraw: 450,
-    dailyIncome: 75,
-    investmentQuantity: 4,
-    ownedProducts: [2, 4, 5, 6],
-    isBlocked: false,
-    referralCode: 'ROBERT789',
-    level: 3
-  },
-  {
-    id: 'usr_101',
-    username: 'sarah_wilson',
-    email: 'sarah@example.com',
-    phone: '9182475101',
-    balance: 800,
-    withdrawalBalance: 150,
-    totalDeposit: 950,
-    totalWithdraw: 100,
-    dailyIncome: 25,
-    investmentQuantity: 1,
-    ownedProducts: [3],
-    isBlocked: false,
-    referralCode: 'SARAH101',
-    level: 1
-  }
-];
+import { useAllUsers } from '@/hooks/useAllUsers';
 
 const AdminUsersPanel: React.FC = () => {
   const { blockUser, unblockUser } = useAuth();
+  const { users, loading } = useAllUsers();
   const [searchTerm, setSearchTerm] = useState('');
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [loading, setLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'blocked'>('all');
 
@@ -139,6 +68,14 @@ const AdminUsersPanel: React.FC = () => {
   const viewUserDetails = (userId: string) => {
     setSelectedUserId(userId);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-gray-400">Loading users...</p>
+      </div>
+    );
+  }
 
   if (selectedUserId) {
     return (
