@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,15 +7,13 @@ import FloatingActionButton from '@/components/FloatingActionButton';
 import ProductDetailsDialog from '@/components/ProductDetailsDialog';
 import HeaderSection from '@/components/home/HeaderSection';
 import AccountSummary from '@/components/home/AccountSummary';
-import AnnouncementBar from '@/components/home/AnnouncementBar';
 import PromoBanner from '@/components/home/PromoBanner';
 import QuickActions from '@/components/home/QuickActions';
-import InviteCard from '@/components/home/InviteCard';
-import ActivityFeed, { mapTransactionToActivity } from '@/components/home/ActivityFeed';
 import ProductsGrid from '@/components/products/ProductsGrid';
 import SearchBar from '@/components/products/SearchBar';
 import SortSelector from '@/components/products/SortSelector';
 import { investmentData } from '@/data/investments';
+import ActivityFeed, { mapTransactionToActivity } from '@/components/home/ActivityFeed';
 
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -41,10 +40,6 @@ const Index: React.FC = () => {
     }
     setSelectedProduct(product);
     setShowProductDetails(true);
-  };
-
-  const handleInvestmentSuccess = () => {
-    navigate('/investing');
   };
 
   const filteredProducts = investmentData
@@ -82,25 +77,11 @@ const Index: React.FC = () => {
       
       <AccountSummary user={user} />
       
-      <div className="px-4 mb-4">
-        <AnnouncementBar 
-          isAuthenticated={isAuthenticated} 
-          username={user?.username} 
-        />
-      </div>
-      
       <div className="px-4 mb-6">
         <PromoBanner />
       </div>
       
       <QuickActions />
-      
-      <div className="px-4 mb-6">
-        <InviteCard 
-          isAuthenticated={isAuthenticated} 
-          userId={user?.id} 
-        />
-      </div>
       
       <div className="px-4">
         <h2 className="text-xl text-white font-medium mb-4">— All Products —</h2>
@@ -130,7 +111,7 @@ const Index: React.FC = () => {
           open={showProductDetails}
           onOpenChange={setShowProductDetails}
           product={selectedProduct}
-          onConfirmInvest={handleInvestmentSuccess}
+          onConfirmInvest={() => navigate('/investing')}
         />
       )}
       
