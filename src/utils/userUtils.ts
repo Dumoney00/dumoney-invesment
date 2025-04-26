@@ -1,3 +1,4 @@
+
 import { User, TransactionRecord } from "@/types/auth";
 import { createTransactionRecord } from "@/utils/authUtils";
 
@@ -112,6 +113,11 @@ export const addDailyIncome = (user: User): User => {
     if (lastIncome.toDateString() === today.toDateString()) {
       return user;
     }
+  }
+  
+  // Skip if user has no daily income
+  if (user.dailyIncome <= 0) {
+    return user;
   }
   
   // Add daily income to withdrawal wallet

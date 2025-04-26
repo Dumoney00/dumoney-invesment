@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { User, TransactionRecord } from "@/types/auth";
 import { 
@@ -145,18 +146,26 @@ export const useUserManagement = (
     }
   };
 
+  // Check at component mount and every minute if daily income should be added
   useEffect(() => {
     if (!user) return;
 
     const checkDailyIncome = () => {
       const updatedUser = addDailyIncome(user);
       if (updatedUser !== user) {
+        showToast(
+          "Daily Income Added",
+          `₹${user.dailyIncome.toFixed(2)} has been added to your withdrawal wallet`,
+          "default"
+        );
         saveUser(updatedUser);
       }
     };
 
+    // Check immediately when component mounts
     checkDailyIncome();
 
+    // Set interval to check every minute
     const interval = setInterval(checkDailyIncome, 60000);
 
     return () => clearInterval(interval);

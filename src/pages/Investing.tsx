@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import DailyIncomeHeader from '@/components/investing/DailyIncomeHeader';
 import EmptyInvestments from '@/components/investing/EmptyInvestments';
 import InvestmentGrid from '@/components/investing/InvestmentGrid';
+import NextIncomeInfo from '@/components/investing/NextIncomeInfo';
 import { investmentData } from '@/data/investments';
 
 const Investing: React.FC = () => {
@@ -36,6 +37,10 @@ const Investing: React.FC = () => {
           totalDailyIncome={totalDailyIncome}
           totalInvestment={totalInvestment}
         />
+        
+        {user && user.dailyIncome > 0 && (
+          <NextIncomeInfo user={user} />
+        )}
         
         <h2 className="text-xl text-white font-medium mb-4">— My Investments —</h2>
         

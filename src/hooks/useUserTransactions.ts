@@ -6,7 +6,8 @@ import {
   updateWithdraw,
   addProductToUser,
   removeProductFromUser,
-  addTransactionToUser
+  addTransactionToUser,
+  addDailyIncome
 } from "@/utils/userUtils";
 import { showToast } from "@/utils/toastUtils";
 
@@ -23,14 +24,15 @@ export const useUserTransactions = (
   const updateUserDeposit = (amount: number) => {
     if (user) {
       const updatedUser = updateDeposit(user, amount);
-      saveUser(updatedUser);
       
-      addTransaction({
+      const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "deposit",
         amount,
         status: "completed",
         details: "Funds added to account"
       });
+      
+      saveUser(userWithTransaction);
     }
   };
 
@@ -40,23 +42,24 @@ export const useUserTransactions = (
     const updatedUser = updateWithdraw(user, amount);
     
     if (updatedUser) {
-      saveUser(updatedUser);
-      
-      addTransaction({
+      const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "withdraw",
         amount,
         status: "completed",
         details: "Funds withdrawn from account"
       });
       
+      saveUser(userWithTransaction);
       return true;
     } else {
-      addTransaction({
+      const userWithFailedTransaction = addTransactionToUser(user, {
         type: "withdraw",
         amount,
         status: "failed",
         details: "Insufficient balance"
       });
+      
+      saveUser(userWithFailedTransaction);
       return false;
     }
   };
@@ -64,14 +67,15 @@ export const useUserTransactions = (
   const addOwnedProduct = (productId: number, price: number) => {
     if (user) {
       const updatedUser = addProductToUser(user, productId, price);
-      saveUser(updatedUser);
       
-      addTransaction({
+      const userWithTransaction = addTransactionToUser(updatedUser, {
         type: "purchase",
         amount: price,
         status: "completed",
         details: `Purchased product ID: ${productId}`
       });
+      
+      saveUser(userWithTransaction);
     }
   };
   
@@ -88,15 +92,15 @@ export const useUserTransactions = (
     }
     
     const updatedUser = removeProductFromUser(user, productId, sellPrice);
-    saveUser(updatedUser);
     
-    addTransaction({
+    const userWithTransaction = addTransactionToUser(updatedUser, {
       type: "sale",
       amount: sellPrice,
       status: "completed",
       details: `Sold product ID: ${productId}`
     });
     
+    saveUser(userWithTransaction);
     return true;
   };
   
@@ -104,7 +108,9 @@ export const useUserTransactions = (
     if (user) {
       const updatedUser = addTransactionToUser(user, transactionData);
       saveUser(updatedUser);
+      return updatedUser;
     }
+    return user;
   };
   
   const updateUserProfile = (updates: Partial<User>) => {
@@ -116,6 +122,18 @@ export const useUserTransactions = (
     }
   };
 
+  // Manually trigger daily income addition
+  const processDailyIncome = () => {
+    if (user) {
+      const updatedUser = addDailyIncome(user);
+      if (updatedUser !== user) {
+        saveUser(updatedUser);
+        return true;
+      }
+    }
+    return false;
+  };
+
   return {
     updateUserBalance,
     updateUserDeposit,
@@ -123,6 +141,7 @@ export const useUserTransactions = (
     addOwnedProduct,
     sellOwnedProduct,
     updateUserProfile,
-    addTransaction
+    addTransaction,
+    processDailyIncome
   };
 };
