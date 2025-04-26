@@ -1,0 +1,40 @@
+
+import React from 'react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
+const images = [
+  "/lovable-uploads/3f4f41e7-e966-4631-a657-0e326c4acc99.png",
+  "/lovable-uploads/afee450b-5eae-4439-ba61-8d98f5ff2b07.png",
+  "/lovable-uploads/6f0548e1-599b-4b22-b54e-cd554aca80cf.png",
+  "/lovable-uploads/d3c01862-f72d-40de-aad3-0315ce1d2dad.png"
+];
+
+const ImageCarousel = () => {
+  return (
+    <Carousel className="relative w-full">
+      <CarouselContent>
+        {images.map((image, index) => (
+          <CarouselItem key={index}>
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl">
+              <img
+                src={image}
+                alt={`Slide ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
+      <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
+    </Carousel>
+  );
+};
+
+export default ImageCarousel;
