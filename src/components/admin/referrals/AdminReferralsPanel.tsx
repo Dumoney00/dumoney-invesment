@@ -32,29 +32,14 @@ import {
   ReferralTier 
 } from '@/types/referrals';
 import { 
-  generateMockReferralStats, 
+  generateMockReferrals, 
   referralTiers, 
   approveReferral, 
   rejectReferral, 
   bulkApproveReferrals, 
   generateMockUserReferralStats, 
-  generateMockReferrals, 
   isReferralOverdue 
 } from '@/services/referralService';
-
-// Format currency helper
-const formatCurrency = (amount: number): string => {
-  return `₹${amount.toLocaleString()}`;
-};
-
-// Format date helper
-const formatDate = (isoDate: string): string => {
-  return new Date(isoDate).toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  });
-};
 
 const AdminReferralsPanel: React.FC = () => {
   const { user, approveReferralBonus } = useAuth();
@@ -70,24 +55,19 @@ const AdminReferralsPanel: React.FC = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
 
-  // Load mock data
   useEffect(() => {
     setUserStats(generateMockUserReferralStats());
     setReferrals(generateMockReferrals());
   }, []);
 
-  // Filter referrals based on search term, status, and date
   const filteredReferrals = referrals.filter(referral => {
-    // Search filter
     const searchMatch = 
       referral.referrerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       referral.referredName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       referral.id.toLowerCase().includes(searchTerm.toLowerCase());
     
-    // Status filter
     const statusMatch = statusFilter === 'all' || referral.status === statusFilter;
     
-    // Date filter
     let dateMatch = true;
     if (dateFilter !== 'all') {
       const createdDate = new Date(referral.dateCreated);
@@ -109,13 +89,11 @@ const AdminReferralsPanel: React.FC = () => {
     return searchMatch && statusMatch && dateMatch;
   });
 
-  // Filter users based on search term
   const filteredUserStats = userStats.filter(stat => 
     stat.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     stat.userId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle approve referral
   const handleApproveReferral = async (referralId: string) => {
     if (!user?.isAdmin) return;
     
@@ -132,7 +110,6 @@ const AdminReferralsPanel: React.FC = () => {
       );
       
       if (success) {
-        // Update local state
         setReferrals(prev => prev.map(r => {
           if (r.id === referralId) {
             return {
@@ -146,7 +123,6 @@ const AdminReferralsPanel: React.FC = () => {
           return r;
         }));
         
-        // Update user stats
         updateUserStatsAfterApproval(referral.referrerId);
       }
     } finally {
@@ -154,7 +130,6 @@ const AdminReferralsPanel: React.FC = () => {
     }
   };
 
-  // Handle reject referral
   const handleRejectReferral = async () => {
     if (!user?.isAdmin || !selectedReferral) return;
     
@@ -168,7 +143,6 @@ const AdminReferralsPanel: React.FC = () => {
       );
       
       if (success) {
-        // Update local state
         setReferrals(prev => prev.map(r => {
           if (r.id === selectedReferral.id) {
             return {
@@ -191,13 +165,11 @@ const AdminReferralsPanel: React.FC = () => {
     }
   };
 
-  // Open reject dialog
   const openRejectDialog = (referral: ReferralRecord) => {
     setSelectedReferral(referral);
     setRejectDialogOpen(true);
   };
 
-  // Handle bulk approve
   const handleBulkApprove = async () => {
     if (!user?.isAdmin || selectedReferrals.length === 0) return;
     
@@ -210,13 +182,10 @@ const AdminReferralsPanel: React.FC = () => {
       );
       
       if (success) {
-        // Update local state
         setReferrals(prev => prev.map(r => {
           if (selectedReferrals.includes(r.id) && r.status === 'pending') {
-            // Track which referrer's stats need updating
             const referrerId = r.referrerId;
             
-            // Update the referral
             const updated = {
               ...r,
               status: 'approved' as ReferralStatus,
@@ -225,7 +194,6 @@ const AdminReferralsPanel: React.FC = () => {
               adminName: user.username
             };
             
-            // Update the referrer stats
             updateUserStatsAfterApproval(referrerId);
             
             return updated;
@@ -233,7 +201,6 @@ const AdminReferralsPanel: React.FC = () => {
           return r;
         }));
         
-        // Clear selection
         setSelectedReferrals([]);
       }
     } finally {
@@ -241,15 +208,12 @@ const AdminReferralsPanel: React.FC = () => {
     }
   };
 
-  // Update user stats after approval
   const updateUserStatsAfterApproval = (referrerId: string) => {
     setUserStats(prev => prev.map(stat => {
       if (stat.userId === referrerId) {
-        // Get the updated stats for this user
         const updatedApproved = stat.approvedReferrals + 1;
         const updatedPending = stat.pendingReferrals - 1;
         
-        // Find the appropriate tier for the new approval count
         const appropriateTier = referralTiers.find(tier => 
           updatedApproved >= tier.minReferrals && 
           (tier.maxReferrals === null || updatedApproved <= tier.maxReferrals)
@@ -260,14 +224,12 @@ const AdminReferralsPanel: React.FC = () => {
           approvedReferrals: updatedApproved,
           pendingReferrals: updatedPending,
           level: appropriateTier.level,
-          // We'd also update bonus amounts here in a real implementation
         };
       }
       return stat;
     }));
   };
 
-  // Toggle referral selection
   const toggleReferralSelection = (referralId: string) => {
     setSelectedReferrals(prev => {
       if (prev.includes(referralId)) {
@@ -278,7 +240,6 @@ const AdminReferralsPanel: React.FC = () => {
     });
   };
 
-  // Calculate total statistics for the summary cards
   const totalAgents = userStats.length;
   const totalReferred = userStats.reduce((sum, r) => sum + r.totalReferrals, 0);
   const totalActiveReferrals = userStats.reduce((sum, r) => sum + r.approvedReferrals, 0);
@@ -291,7 +252,6 @@ const AdminReferralsPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-[#222B45]/80 border-[#33374D]">
           <CardContent className="p-6">
@@ -361,7 +321,6 @@ const AdminReferralsPanel: React.FC = () => {
         </Card>
       </div>
 
-      {/* Tabs for Agents and Referrals */}
       <Card className="bg-[#222B45]/80 border-[#33374D]">
         <CardHeader className="pb-3">
           <CardTitle className="text-white">Referral Management</CardTitle>
@@ -383,7 +342,6 @@ const AdminReferralsPanel: React.FC = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* Search and filter bar */}
             <div className="flex items-center gap-3 mb-6 flex-wrap">
               <div className="relative w-full md:w-64">
                 <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -437,7 +395,6 @@ const AdminReferralsPanel: React.FC = () => {
               )}
             </div>
             
-            {/* Agents tab content */}
             <TabsContent value="agents" className="mt-0">
               <div className="overflow-x-auto">
                 <Table>
@@ -510,7 +467,6 @@ const AdminReferralsPanel: React.FC = () => {
               </div>
             </TabsContent>
             
-            {/* Referrals tab content */}
             <TabsContent value="referrals" className="mt-0">
               <div className="overflow-x-auto">
                 <Table>
@@ -521,7 +477,6 @@ const AdminReferralsPanel: React.FC = () => {
                           type="checkbox" 
                           className="rounded bg-[#1A1F2C] border-[#33374D] text-[#8B5CF6]"
                           onChange={() => {
-                            // Select/deselect all pending referrals
                             if (selectedReferrals.length > 0) {
                               setSelectedReferrals([]);
                             } else {
@@ -645,7 +600,6 @@ const AdminReferralsPanel: React.FC = () => {
         </CardContent>
       </Card>
       
-      {/* Rejection Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent className="bg-[#222B45] border-[#33374D] text-white">
           <DialogHeader>

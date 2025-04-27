@@ -1,4 +1,3 @@
-
 import { ReferralRecord, UserReferralStats } from '@/types/referrals';
 import { showToast } from '@/utils/toastUtils';
 import { 
@@ -9,7 +8,8 @@ import {
   getUserReferralTier,
   calculateReferralBonus,
   generateReferralLink,
-  isReferralOverdue
+  isReferralOverdue,
+  processReferralReward
 } from './referralUtils';
 import { referralTiers } from '@/config/referralTiers';
 
@@ -88,6 +88,38 @@ export const bulkApproveReferrals = async (
     showToast(
       "Bulk Action Failed",
       "Could not complete the bulk approval",
+      "destructive"
+    );
+    return false;
+  }
+};
+
+export const handleProductPurchaseReferral = async (
+  userId: string,
+  referralCode: string | null,
+  purchaseAmount: number
+): Promise<boolean> => {
+  try {
+    if (!referralCode) return true; // No referral to process
+    
+    await new Promise(resolve => setTimeout(resolve, 800)); // Simulating API call
+    
+    // In a real implementation, you would:
+    // 1. Verify the referral code
+    // 2. Get referrer's stats
+    // 3. Process the referral reward
+    // 4. Update both users' records
+    
+    showToast(
+      "Referral Processed",
+      "Referral bonus has been credited to the referrer"
+    );
+    
+    return true;
+  } catch (error) {
+    showToast(
+      "Referral Processing Failed",
+      "Could not process the referral reward",
       "destructive"
     );
     return false;
