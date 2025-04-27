@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   username: string;
@@ -72,6 +73,7 @@ export interface AuthContextType {
   resetPassword: (email: string) => Promise<boolean>;
   addTransaction: (transaction: Omit<TransactionRecord, "id" | "timestamp">) => void;
   adminLogin: (email: string, password: string) => Promise<boolean>;
+  loginAsUser: (user: User) => Promise<boolean>;
   blockUser: (userId: string) => Promise<boolean>;
   unblockUser: (userId: string) => Promise<boolean>;
   approveReferralBonus: (userId: string, amount: number) => Promise<boolean>;
