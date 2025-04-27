@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { User } from "@/types/auth";
 import { createMockUser, loadUserFromStorage, saveUserToStorage } from "@/utils/authUtils";
@@ -41,7 +40,13 @@ export const useBasicAuth = () => {
     }
   };
 
-  const register = async (username: string, email: string, phone: string, password: string) => {
+  const register = async (
+    username: string, 
+    email: string, 
+    phone: string, 
+    password: string,
+    referralCode?: string
+  ) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
@@ -63,6 +68,13 @@ export const useBasicAuth = () => {
       }
       
       const mockUser = createMockUser(username, email, phone);
+      
+      // If referral code is provided, validate and store it
+      if (referralCode) {
+        // Store the referral code with the user
+        mockUser.referralCode = referralCode;
+      }
+      
       saveUser(mockUser);
       
       // Update users array in localStorage

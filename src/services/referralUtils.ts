@@ -2,6 +2,11 @@
 import { ReferralTier, UserReferralStats } from '@/types/referrals';
 import { referralTiers } from '@/config/referralTiers';
 
+// Generate a random 5-digit referral code
+const generateReferralCode = (): string => {
+  return Math.floor(10000 + Math.random() * 90000).toString();
+};
+
 export const getUserReferralTier = (approvedReferrals: number): ReferralTier => {
   for (let i = referralTiers.length - 1; i >= 0; i--) {
     const tier = referralTiers[i];
@@ -17,9 +22,10 @@ export const calculateReferralBonus = (referrerStats: UserReferralStats, transac
   return (transactionAmount * tier.bonusPercentage) / 100;
 };
 
-export const generateReferralLink = (userId: string, referralCode?: string): string => {
-  const code = referralCode || userId.substring(0, 8);
-  return `https://DuMoney.site/register?ref=${code}`;
+export const generateReferralCode = (userId: string): string => {
+  // Use a deterministic 5-digit code based on userId
+  const code = generateReferralCode();
+  return code;
 };
 
 export const isReferralOverdue = (dateCreated: string, thresholdHours: number = 48): boolean => {

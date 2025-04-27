@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
@@ -21,7 +20,7 @@ import {
 import { 
   referralTiers, 
   getUserReferralTier, 
-  generateReferralLink,
+  generateReferralCode,
   generateMockReferrals
 } from '@/services/referralService';
 import { TeamMember, TeamStats } from '@/types/team';
@@ -84,17 +83,16 @@ const Agent: React.FC = () => {
     .filter(r => r.status === 'approved')
     .reduce((sum, r) => sum + r.bonusAmount, 0);
 
-  // Copy invitation code
-  const handleCopyInvite = () => {
+  // Update copy function to copy the referral code
+  const handleCopyCode = () => {
     if (isAuthenticated && user) {
-      const inviteCode = user.id;
-      const inviteLink = generateReferralLink(inviteCode);
+      const referralCode = generateReferralCode(user.id);
       
-      navigator.clipboard.writeText(inviteLink).then(() => {
+      navigator.clipboard.writeText(referralCode).then(() => {
         setCopySuccess(true);
         toast({
           title: "Copied!",
-          description: "Invitation link copied to clipboard"
+          description: "Referral code copied to clipboard"
         });
         setTimeout(() => setCopySuccess(false), 2000);
       }).catch(err => {
@@ -107,7 +105,7 @@ const Agent: React.FC = () => {
     } else {
       toast({
         title: "Login Required",
-        description: "Please login to copy your invitation code",
+        description: "Please login to copy your referral code",
         variant: "destructive"
       });
     }
@@ -371,41 +369,40 @@ const Agent: React.FC = () => {
           </div>
         </div>
         
-        {/* Invitation Method */}
+        {/* Update Invitation Method section */}
         <div className="mb-6">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="h-0 w-16 border-t border-gray-700"></div>
-            <h2 className="text-white text-lg font-medium">Invitation Method</h2>
+            <h2 className="text-white text-lg font-medium">Your Referral Code</h2>
             <div className="h-0 w-16 border-t border-gray-700"></div>
           </div>
           
           <div className="bg-[#222222] rounded-lg p-6 text-center">
             <h3 className="text-yellow-500 text-2xl font-bold mb-2">
-              {user?.id.substring(0, 8) || '...'}
+              {isAuthenticated ? generateReferralCode(user?.id || '') : '...'}
             </h3>
-            <p className="text-gray-400 mb-4 text-sm break-words">
-              {isAuthenticated 
-                ? generateReferralLink(user?.id || '') 
-                : 'Please login to view your invitation link'
-              }
+            <p className="text-gray-400 mb-4 text-sm">
+              Share this 5-digit code with your friends to earn rewards
             </p>
-            <Button className="bg-yellow-500 hover:bg-yellow-600 text-white px-8" 
-              onClick={handleCopyInvite} 
+            <Button 
+              className="bg-yellow-500 hover:bg-yellow-600 text-white px-8" 
+              onClick={handleCopyCode} 
               disabled={!isAuthenticated}
             >
-              {copySuccess ? "Copied!" : "Copy"}
+              {copySuccess ? "Copied!" : "Copy Code"}
             </Button>
           </div>
         </div>
-        
-        {/* Invitation Banner */}
+
+        {/* Update Invitation Banner */}
         <div className="bg-gray-100 rounded-lg p-4 flex items-center">
           <div className="flex-1 text-black mr-4">
-            <h3 className="font-bold">Invite friends to earn rewards</h3>
-            <p className="text-xs">Build your team and unlock higher commission plans!</p>
+            <h3 className="font-bold">Share your referral code</h3>
+            <p className="text-xs">Help friends join and earn great rewards!</p>
           </div>
-          <Button className="bg-investment-gold hover:bg-investment-gold/90" 
-            onClick={handleCopyInvite} 
+          <Button 
+            className="bg-investment-gold hover:bg-investment-gold/90" 
+            onClick={handleCopyCode} 
             disabled={!isAuthenticated}
           >
             <Copy className="mr-2" size={16} />

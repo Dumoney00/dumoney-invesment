@@ -13,6 +13,7 @@ const RegisterForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const { register } = useAuth();
@@ -34,7 +35,7 @@ const RegisterForm: React.FC = () => {
         return;
       }
 
-      const success = await register(username, email, phone, password);
+      const success = await register(username, email, phone, password, referralCode);
       if (success) {
         navigate('/');
       }
@@ -100,6 +101,21 @@ const RegisterForm: React.FC = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          className="bg-[#222222] border-gray-700 text-white"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="referralCode" className="text-gray-300 mb-1 block">
+          Referral Code (Optional)
+        </label>
+        <Input
+          id="referralCode"
+          placeholder="Enter 5-digit referral code"
+          value={referralCode}
+          onChange={(e) => setReferralCode(e.target.value)}
+          maxLength={5}
+          pattern="[0-9]{5}"
           className="bg-[#222222] border-gray-700 text-white"
         />
       </div>
