@@ -15,3 +15,26 @@ export interface ReferralRecord {
   adminId?: string;
   adminName?: string;
 }
+
+export type ReferralTier = "bronze" | "silver" | "gold";
+
+export interface UserReferralStats {
+  userId: string;
+  username: string;
+  level: ReferralTier;
+  totalReferrals: number;
+  pendingReferrals: number;
+  approvedReferrals: number;
+  rejectedReferrals: number;
+  pendingBonus: number;
+  totalBonus: number;
+  activeSince: string;
+}
+
+export interface ReferralTierConfig {
+  level: ReferralTier;
+  minReferrals: number;
+  maxReferrals: number | null;
+  bonusRate: number;
+  description: string;
+}
