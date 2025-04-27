@@ -144,7 +144,7 @@ const Transaction: React.FC = () => {
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleTransaction)} className="space-y-6">
-              <AmountSelector form={form} presetAmounts={presetAmounts} />
+              <AmountSelector form={form} />
               
               <TransactionButton 
                 isProcessing={isProcessing} 
