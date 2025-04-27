@@ -1,6 +1,5 @@
-
 export type ReferralStatus = "pending" | "approved" | "rejected";
-export type ReferralLevel = "bronze" | "silver" | "gold";
+export type ReferralLevel = "bronze" | "silver" | "gold" | "platinum" | "diamond" | "crown";
 
 export interface ReferralTier {
   level: ReferralLevel;
