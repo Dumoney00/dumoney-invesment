@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { UsersRound, TrendingUp, Download, Upload, LineChart } from 'lucide-react';
 import { useAllUsers } from '@/hooks/useAllUsers';
@@ -6,9 +5,10 @@ import { useAllUserTransactions } from '@/hooks/useAllUserTransactions';
 import DashboardStatsCard from './stats/DashboardStatsCard';
 import ActivityChart from './activity/ActivityChart';
 import ActivityFeed from './activity/ActivityFeed';
+import { ChartDataPoint, generateChartData } from '@/utils/chartUtils';
 
 const AdminOverviewPanel: React.FC = () => {
-  const [timeRange, setTimeRange] = useState('weekly');
+  const [timeRange, setTimeRange] = useState<'weekly' | 'monthly'>('weekly');
   const { users } = useAllUsers();
   const { transactions } = useAllUserTransactions();
   
@@ -39,7 +39,7 @@ const AdminOverviewPanel: React.FC = () => {
   const todayPurchases = getTodayTransactions('purchase');
 
   const getLast7DaysData = () => {
-    const data = [];
+    const data: ChartDataPoint[] = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);

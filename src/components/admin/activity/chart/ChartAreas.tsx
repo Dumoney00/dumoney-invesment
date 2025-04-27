@@ -11,21 +11,21 @@ interface ChartAreaData {
 const ChartAreas: React.FC = () => {
   return (
     <>
-      <Area<ChartAreaData> 
+      <Area 
         type="monotone" 
         dataKey="deposits" 
         stroke="#4CAF50" 
         fillOpacity={1} 
         fill="url(#colorDeposits)" 
       />
-      <Area<ChartAreaData>
+      <Area
         type="monotone" 
         dataKey="withdrawals" 
         stroke="#F97316" 
         fillOpacity={1} 
         fill="url(#colorWithdrawals)" 
       />
-      <Area<ChartAreaData>
+      <Area
         type="monotone" 
         dataKey="purchases" 
         stroke="#8B5CF6" 
