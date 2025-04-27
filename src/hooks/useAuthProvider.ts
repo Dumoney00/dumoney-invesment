@@ -14,6 +14,7 @@ export const useAuthProvider = (): AuthContextType => {
     logout,
     resetPassword,
     adminLogin,
+    loginAsUser,
     blockUser,
     unblockUser,
     approveReferralBonus
@@ -65,6 +66,7 @@ export const useAuthProvider = (): AuthContextType => {
     resetPassword,
     addTransaction,
     adminLogin,
+    loginAsUser,
     blockUser,
     unblockUser,
     approveReferralBonus

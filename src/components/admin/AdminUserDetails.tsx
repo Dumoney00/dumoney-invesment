@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { User, TransactionRecord, UserOwnedProduct } from '@/types/auth';
+
+import React, { useState, useEffect } from 'react';
+import { User, TransactionRecord } from '@/types/auth';
 import { 
   Table, 
   TableBody, 
@@ -12,85 +13,101 @@ import { formatDate } from '@/utils/dateUtils';
 import TransactionTypeLabel from '@/components/transaction/TransactionTypeLabel';
 import TransactionStatus from '@/components/transaction/TransactionStatus';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { LogIn, ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { showToast } from '@/utils/toastUtils';
 
 interface UserDetailsProps {
   userId: string;
   onClose: () => void;
 }
 
-// Mock user data - in a real app, this would come from API/database
-const mockUserDetails: User = {
-  id: 'usr_123',
-  username: 'john_doe',
-  email: 'john@example.com',
-  phone: '9182475123',
-  balance: 500,
-  withdrawalBalance: 100,
-  totalDeposit: 1000,
-  totalWithdraw: 400,
-  dailyIncome: 35,
-  investmentQuantity: 2,
-  ownedProducts: [
-    {
-      productId: 1,
-      purchaseDate: new Date().toISOString(),
-      cycleDays: 45
-    },
-    {
-      productId: 2,
-      purchaseDate: new Date().toISOString(),
-      cycleDays: 30
-    }
-  ],
-  isBlocked: false,
-  referralCode: 'JOHN123',
-  level: 2,
-  bankDetails: {
-    accountNumber: 'XXXX1234',
-    ifscCode: 'ABCD0001234',
-    accountHolderName: 'John Doe'
-  },
-  upiId: 'john@upi',
-  transactions: [
-    {
-      id: 'trx_w1',
-      type: 'withdraw',
-      amount: 200,
-      timestamp: new Date(Date.now() - 86400000).toISOString(),
-      status: 'completed',
-      details: 'Withdrawal to bank account',
-      bankDetails: {
-        accountNumber: 'XXXX1234',
-        ifscCode: 'ABCD0001234', 
-        accountHolderName: 'John Doe'
-      }
-    },
-    {
-      id: 'trx_p1',
-      type: 'purchase',
-      amount: 500,
-      timestamp: new Date(Date.now() - 172800000).toISOString(),
-      status: 'completed',
-      details: 'Investment in Gold Plan',
-      productId: 1
-    }
-  ]
-};
-
 const AdminUserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
-  // In a real app, fetch user details based on userId
-  const [userDetails] = useState<User>(mockUserDetails);
+  const [userDetails, setUserDetails] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { loginAsUser } = useAuth();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const fetchUserDetails = () => {
+      try {
+        // Get all users from localStorage
+        const storedUsers = localStorage.getItem('investmentUsers');
+        if (storedUsers) {
+          const users = JSON.parse(storedUsers);
+          const user = users.find((u: User) => u.id === userId);
+          
+          if (user) {
+            setUserDetails(user);
+          } else {
+            showToast("User Not Found", "Could not find user details", "destructive");
+          }
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        showToast("Error", "Could not load user details", "destructive");
+        setLoading(false);
+      }
+    };
+    
+    fetchUserDetails();
+  }, [userId]);
+
+  const handleLoginAsUser = async () => {
+    if (!userDetails) return;
+    
+    const success = await loginAsUser(userDetails);
+    if (success) {
+      showToast("Success", `Logged in as ${userDetails.username}`, "default");
+      navigate('/');
+    }
+  };
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-gray-400">Loading user details...</p>
+      </div>
+    );
+  }
+  
+  if (!userDetails) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96">
+        <p className="text-red-400 mb-4">User not found</p>
+        <Button onClick={onClose} variant="outline">
+          <ArrowLeft className="mr-2" size={16} />
+          Back to Users List
+        </Button>
+      </div>
+    );
+  }
   
   return (
     <div className="bg-[#222222] rounded-lg p-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl text-white font-bold">User Details</h2>
-        <button 
-          onClick={onClose}
-          className="text-gray-400 hover:text-white"
+        <div className="flex items-center">
+          <Button 
+            onClick={onClose}
+            variant="ghost"
+            className="text-gray-400 hover:text-white mr-4"
+          >
+            <ArrowLeft size={16} className="mr-2" />
+            Back
+          </Button>
+          <h2 className="text-xl text-white font-bold">User Details</h2>
+        </div>
+        
+        <Button 
+          onClick={handleLoginAsUser}
+          className="bg-blue-600 hover:bg-blue-700"
         >
-          Back to Users List
-        </button>
+          <LogIn size={16} className="mr-2" />
+          Login as User
+        </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -136,23 +153,23 @@ const AdminUserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
             <dl className="space-y-2">
               <div className="grid grid-cols-3">
                 <dt className="text-gray-400">Balance:</dt>
-                <dd className="col-span-2">₹{userDetails.balance.toFixed(2)}</dd>
+                <dd className="col-span-2">₹{userDetails.balance?.toLocaleString() || '0.00'}</dd>
               </div>
               <div className="grid grid-cols-3">
                 <dt className="text-gray-400">Withdrawal Balance:</dt>
-                <dd className="col-span-2">₹{userDetails.withdrawalBalance.toFixed(2)}</dd>
+                <dd className="col-span-2">₹{userDetails.withdrawalBalance?.toLocaleString() || '0.00'}</dd>
               </div>
               <div className="grid grid-cols-3">
                 <dt className="text-gray-400">Total Deposit:</dt>
-                <dd className="col-span-2">₹{userDetails.totalDeposit.toFixed(2)}</dd>
+                <dd className="col-span-2">₹{userDetails.totalDeposit?.toLocaleString() || '0.00'}</dd>
               </div>
               <div className="grid grid-cols-3">
                 <dt className="text-gray-400">Total Withdraw:</dt>
-                <dd className="col-span-2">₹{userDetails.totalWithdraw.toFixed(2)}</dd>
+                <dd className="col-span-2">₹{userDetails.totalWithdraw?.toLocaleString() || '0.00'}</dd>
               </div>
               <div className="grid grid-cols-3">
                 <dt className="text-gray-400">Daily Income:</dt>
-                <dd className="col-span-2">₹{userDetails.dailyIncome.toFixed(2)}</dd>
+                <dd className="col-span-2">₹{userDetails.dailyIncome?.toLocaleString() || '0.00'}</dd>
               </div>
             </dl>
           </CardContent>
@@ -194,12 +211,12 @@ const AdminUserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
             <dl className="space-y-2">
               <div className="grid grid-cols-3">
                 <dt className="text-gray-400">Investment Count:</dt>
-                <dd className="col-span-2">{userDetails.investmentQuantity}</dd>
+                <dd className="col-span-2">{userDetails.investmentQuantity || 0}</dd>
               </div>
               <div className="grid grid-cols-3">
                 <dt className="text-gray-400">Product IDs:</dt>
                 <dd className="col-span-2">
-                  {userDetails.ownedProducts.length > 0 ? 
+                  {userDetails.ownedProducts && userDetails.ownedProducts.length > 0 ? 
                     userDetails.ownedProducts.map(product => product.productId).join(', ') : 
                     'No active investments'}
                 </dd>
@@ -243,7 +260,7 @@ const AdminUserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
                         <TransactionTypeLabel type={transaction.type} />
                       </TableCell>
                       <TableCell className="text-right text-white">
-                        ₹{transaction.amount.toFixed(2)}
+                        ₹{transaction.amount?.toLocaleString() || '0'}
                       </TableCell>
                       <TableCell className="text-white">
                         {formatDate(transaction.timestamp)}
@@ -293,7 +310,7 @@ const AdminUserDetails: React.FC<UserDetailsProps> = ({ userId, onClose }) => {
                       <TableRow key={transaction.id}>
                         <TableCell className="text-white font-mono">{transaction.id.substring(0, 8)}</TableCell>
                         <TableCell className="text-white">
-                          ₹{transaction.amount.toFixed(2)}
+                          ₹{transaction.amount?.toLocaleString() || '0'}
                         </TableCell>
                         <TableCell className="text-white">
                           {formatDate(transaction.timestamp)}

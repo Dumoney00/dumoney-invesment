@@ -19,6 +19,8 @@ export interface User {
   level?: number;
   bankDetails?: BankDetails;
   upiId?: string;
+  adminImpersonation?: boolean;
+  originalAdminId?: string;
 }
 
 export interface UserOwnedProduct {
