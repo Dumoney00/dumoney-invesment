@@ -13,12 +13,10 @@ const LiveStockChart: React.FC = () => {
     const interval = setInterval(() => {
       setData(currentData => {
         const newData = [...currentData];
-        // Remove oldest point
         newData.shift();
         
-        // Add new point with random fluctuation
         const lastValue = newData[newData.length - 1].value;
-        const randomChange = Math.random() * 10 - 5; // Random value between -5 and 5
+        const randomChange = Math.random() * 10 - 5;
         const newValue = Math.max(0, lastValue + randomChange);
         
         const now = new Date();
@@ -27,25 +25,24 @@ const LiveStockChart: React.FC = () => {
           value: newValue
         });
 
-        // Update trend
         setTrend(newValue > lastValue ? 'up' : 'down');
         
         return newData;
       });
-    }, 2000); // Update every 2 seconds
+    }, 2000);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <Card className="bg-[#222222] border-gray-800">
+    <Card className="bg-gradient-to-br from-[#1A1F2C] to-[#222B45] border-none shadow-xl">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-white flex items-center gap-2">
-          Live Market
+        <CardTitle className="text-white/90 font-medium flex items-center gap-2">
+          Market Trend
           {trend === 'up' ? (
-            <TrendingUp className="text-green-500" size={20} />
+            <TrendingUp className="text-emerald-400" size={20} />
           ) : (
-            <TrendingDown className="text-red-500" size={20} />
+            <TrendingDown className="text-rose-400" size={20} />
           )}
         </CardTitle>
       </CardHeader>
@@ -55,7 +52,7 @@ const LiveStockChart: React.FC = () => {
             data={data}
             height={200}
             colors={{
-              stroke: trend === 'up' ? '#22c55e' : '#ef4444',
+              stroke: trend === 'up' ? '#10B981' : '#F43F5E',
               fill: trend === 'up' ? 'url(#greenGradient)' : 'url(#redGradient)'
             }}
           />
