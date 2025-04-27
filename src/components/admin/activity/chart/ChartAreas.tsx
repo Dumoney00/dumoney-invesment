@@ -2,24 +2,30 @@
 import React from 'react';
 import { Area } from 'recharts';
 
-const ChartAreas = () => {
+interface ChartAreaData {
+  deposits: number;
+  withdrawals: number;
+  purchases: number;
+}
+
+const ChartAreas: React.FC = () => {
   return (
     <>
-      <Area 
+      <Area<ChartAreaData> 
         type="monotone" 
         dataKey="deposits" 
         stroke="#4CAF50" 
         fillOpacity={1} 
         fill="url(#colorDeposits)" 
       />
-      <Area 
+      <Area<ChartAreaData>
         type="monotone" 
         dataKey="withdrawals" 
         stroke="#F97316" 
         fillOpacity={1} 
         fill="url(#colorWithdrawals)" 
       />
-      <Area 
+      <Area<ChartAreaData>
         type="monotone" 
         dataKey="purchases" 
         stroke="#8B5CF6" 

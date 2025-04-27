@@ -1,14 +1,16 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartLegend from './ChartLegend';
 import ChartGradients from './chart/ChartGradients';
 import ChartAreas from './chart/ChartAreas';
+import { ChartDataPoint } from '@/utils/chartUtils';
 
 interface ActivityChartProps {
-  data: any[];
-  timeRange: string;
-  onTimeRangeChange: (range: string) => void;
+  data: ChartDataPoint[];
+  timeRange: 'weekly' | 'monthly';
+  onTimeRangeChange: (range: 'weekly' | 'monthly') => void;
 }
 
 const ActivityChart: React.FC<ActivityChartProps> = ({ 
