@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,6 +13,7 @@ import SearchBar from '@/components/products/SearchBar';
 import SortSelector from '@/components/products/SortSelector';
 import { investmentData } from '@/data/investments';
 import ActivityFeed, { mapTransactionToActivity } from '@/components/home/ActivityFeed';
+import LiveStockChart from '@/components/home/LiveStockChart';
 
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -63,7 +63,6 @@ const Index: React.FC = () => {
       }
     });
 
-  // Map user transactions to activities
   const activities = user?.transactions 
     ? user.transactions.map(transaction => mapTransactionToActivity({
         ...transaction,
@@ -104,6 +103,10 @@ const Index: React.FC = () => {
           activities={activities.slice(0, 5)}
           showHeader={true}
         />
+      </div>
+      
+      <div className="px-4 mb-20">
+        <LiveStockChart />
       </div>
       
       {selectedProduct && (
