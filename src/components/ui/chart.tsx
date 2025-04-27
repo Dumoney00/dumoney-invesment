@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
@@ -236,9 +237,12 @@ const ChartTooltipContent = React.forwardRef<
                           {itemConfig?.label || item.name}
                         </span>
                       </div>
-                      {item.value && (
+                      {/* Fix for toLocaleString error: Check if item.value is defined before calling toLocaleString */}
+                      {item.value !== undefined && item.value !== null && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
-                          {item.value.toLocaleString()}
+                          {typeof item.value === 'number' || typeof item.value === 'bigint' 
+                            ? item.value.toLocaleString() 
+                            : item.value.toString()}
                         </span>
                       )}
                     </div>

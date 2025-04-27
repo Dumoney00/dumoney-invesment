@@ -10,11 +10,13 @@ interface ChartAreasProps {
 const ChartAreas: React.FC<ChartAreasProps> = ({ data = [] }) => {
   // Check if we have valid data with the required properties
   const hasValidData = data && data.length > 0 && 
+    typeof data[0] === 'object' &&
     'deposits' in data[0] && 
     'withdrawals' in data[0] && 
     'purchases' in data[0];
 
   if (!hasValidData) {
+    console.warn('ChartAreas: Invalid or missing data', data);
     return null; // Don't render areas if data is invalid
   }
 
