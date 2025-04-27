@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, ShoppingCart, DollarSign, Lock } from 'lucide-react';
 import ProductDetailsDialog from './ProductDetailsDialog';
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +31,22 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
   onInvest,
   onSell
 }) => {
+  const [currentViewCount, setCurrentViewCount] = useState(viewCount);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentViewCount(prev => {
+        const maxCount = 10000000;
+        if (prev >= maxCount) {
+          return maxCount;
+        }
+        return prev + Math.floor(Math.random() * 10) + 1;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const [showDetails, setShowDetails] = useState(false);
   const { user, isAuthenticated, addOwnedProduct } = useAuth();
   
@@ -55,24 +70,19 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
     }
     
     if (owned) {
-      // For selling, show confirmation dialog
       if (onSell) {
         onSell();
       }
       return;
     }
     
-    // Show product details dialog
     setShowDetails(true);
   };
   
   const handleConfirmInvest = () => {
-    // Check if user has enough balance
     if (user && user.balance >= price) {
-      // Debit from wallet and add product to owned products
       addOwnedProduct(id, price);
       
-      // Call onInvest callback if provided
       if (onInvest) {
         onInvest();
       }
@@ -99,8 +109,8 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
             alt={title} 
             className={`w-full h-44 object-cover ${locked ? 'opacity-50' : ''}`}
           />
-          <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full flex items-center gap-1">
-            <span>{viewCount}</span>
+          <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full flex items-center gap-1 animate-pulse">
+            <span>{currentViewCount.toLocaleString()}</span>
             <Eye size={18} />
           </div>
           {owned && (

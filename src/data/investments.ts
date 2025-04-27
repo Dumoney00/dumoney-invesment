@@ -1,4 +1,3 @@
-
 export const investmentData = [
   {
     id: 1,
@@ -7,7 +6,7 @@ export const investmentData = [
     price: 1200.00,
     dailyIncome: 40.00,
     cycleDays: 45,
-    viewCount: 6351,
+    viewCount: 635100,
     locked: false,
   },
   {
@@ -17,7 +16,7 @@ export const investmentData = [
     price: 2400.00,
     dailyIncome: 80.00,
     cycleDays: 45,
-    viewCount: 1730,
+    viewCount: 473000,
     locked: false,
   },
   {
@@ -27,7 +26,7 @@ export const investmentData = [
     price: 4800.00,
     dailyIncome: 160.00,
     cycleDays: 45,
-    viewCount: 4677,
+    viewCount: 767700,
     locked: false,
   },
   {
@@ -37,7 +36,7 @@ export const investmentData = [
     price: 10000.00,
     dailyIncome: 500.00,
     cycleDays: 30,
-    viewCount: 4329,
+    viewCount: 832900,
     locked: true,
     requiredProductId: 1,
   },
@@ -48,7 +47,7 @@ export const investmentData = [
     price: 12000.00,
     dailyIncome: 700.00,
     cycleDays: 30,
-    viewCount: 2295,
+    viewCount: 929500,
     locked: true,
     requiredProductId: 2,
   },
@@ -59,7 +58,7 @@ export const investmentData = [
     price: 15000.00,
     dailyIncome: 900.00,
     cycleDays: 30,
-    viewCount: 3187,
+    viewCount: 618700,
     locked: true,
     requiredProductId: 3,
   },
@@ -70,7 +69,7 @@ export const investmentData = [
     price: 18000.00,
     dailyIncome: 1200.00,
     cycleDays: 30,
-    viewCount: 2514,
+    viewCount: 551400,
     locked: true,
     requiredProductId: 4,
   },
@@ -81,7 +80,7 @@ export const investmentData = [
     price: 22000.00,
     dailyIncome: 1500.00,
     cycleDays: 30,
-    viewCount: 1876,
+    viewCount: 387600,
     locked: true,
     requiredProductId: 5,
   }
