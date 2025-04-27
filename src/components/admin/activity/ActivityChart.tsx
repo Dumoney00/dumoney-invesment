@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { generateChartData } from '@/utils/chartUtils';
+import { AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import ChartLegend from './ChartLegend';
+import ChartGradients from './chart/ChartGradients';
+import ChartAreas from './chart/ChartAreas';
 
 interface ActivityChartProps {
   data: any[];
@@ -47,20 +47,7 @@ const ActivityChart: React.FC<ActivityChartProps> = ({
               data={data}
               margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
             >
-              <defs>
-                <linearGradient id="colorDeposits" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4CAF50" stopOpacity={0.5}/>
-                  <stop offset="95%" stopColor="#4CAF50" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorWithdrawals" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F97316" stopOpacity={0.5}/>
-                  <stop offset="95%" stopColor="#F97316" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorPurchases" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.5}/>
-                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
+              <ChartGradients />
               <CartesianGrid strokeDasharray="3 3" stroke="#33374D" vertical={false} />
               <XAxis dataKey="name" stroke="#6B7280" />
               <YAxis stroke="#6B7280" />
@@ -71,27 +58,7 @@ const ActivityChart: React.FC<ActivityChartProps> = ({
                   color: '#fff'
                 }}
               />
-              <Area 
-                type="monotone" 
-                dataKey="deposits" 
-                stroke="#4CAF50" 
-                fillOpacity={1} 
-                fill="url(#colorDeposits)" 
-              />
-              <Area 
-                type="monotone" 
-                dataKey="withdrawals" 
-                stroke="#F97316" 
-                fillOpacity={1} 
-                fill="url(#colorWithdrawals)" 
-              />
-              <Area 
-                type="monotone" 
-                dataKey="purchases" 
-                stroke="#8B5CF6" 
-                fillOpacity={1} 
-                fill="url(#colorPurchases)" 
-              />
+              <ChartAreas />
             </AreaChart>
           </ResponsiveContainer>
         </div>
