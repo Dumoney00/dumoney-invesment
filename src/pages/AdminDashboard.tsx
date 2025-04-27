@@ -24,6 +24,9 @@ const AdminDashboard: React.FC = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
+  // Check if there are any overdue referrals to highlight the tab
+  const hasOverdueReferrals = false; // This would be determined dynamically in a real app
+
   if (!isAuthenticated || !user?.isAdmin) {
     return null;
   }
@@ -47,9 +50,12 @@ const AdminDashboard: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger 
               value="referrals" 
-              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white relative"
             >
               Referrals
+              {hasOverdueReferrals && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+              )}
             </TabsTrigger>
           </TabsList>
           

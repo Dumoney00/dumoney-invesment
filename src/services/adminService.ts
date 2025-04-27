@@ -69,7 +69,7 @@ export const handleReferralBonus = async (userId: string, amount: number): Promi
     await new Promise(resolve => setTimeout(resolve, 800));
     showToast(
       "Bonus Approved",
-      `Referral bonus of $${amount} approved for user ${userId}`
+      `Referral bonus of ₹${amount.toLocaleString()} approved for user ${userId}`
     );
     return true;
   } catch (error) {
@@ -80,4 +80,57 @@ export const handleReferralBonus = async (userId: string, amount: number): Promi
     );
     return false;
   }
+};
+
+// Add these new functions for audit logging
+export const logAdminAction = async (
+  adminId: string, 
+  adminName: string, 
+  action: string, 
+  targetId?: string, 
+  details?: string
+): Promise<boolean> => {
+  try {
+    // This would log to a database in a real implementation
+    console.log(`ADMIN ACTION: ${adminName} (${adminId}) ${action} ${targetId || ''} ${details || ''}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to log admin action:', error);
+    return false;
+  }
+};
+
+export const getAdminAuditLogs = async (
+  filters?: { adminId?: string; dateFrom?: Date; dateTo?: Date; action?: string }
+): Promise<any[]> => {
+  // This would fetch from a database in a real implementation
+  return [];
+};
+
+// Handle security verification for referrals
+export const verifyReferral = async (
+  referrerId: string,
+  referredId: string,
+  ipAddress: string,
+  deviceInfo: string
+): Promise<{ valid: boolean; reason?: string }> => {
+  // This function would perform checks for:
+  // 1. Self-referral (same person)
+  // 2. IP address matching (potential fake accounts)
+  // 3. Device fingerprinting (same device creating multiple accounts)
+  // 4. Previous referral patterns (fraud detection)
+  
+  // For demo, we'll just return valid
+  return { valid: true };
+};
+
+// Function to notify users about referral status changes
+export const sendReferralNotification = async (
+  userId: string, 
+  notificationType: 'approval' | 'rejection' | 'tier-change',
+  details?: any
+): Promise<boolean> => {
+  // This would send notifications in a real implementation
+  console.log(`NOTIFICATION to ${userId}: ${notificationType}`, details);
+  return true;
 };
