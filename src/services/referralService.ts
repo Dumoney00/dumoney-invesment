@@ -1,39 +1,58 @@
 
-import { ReferralRecord, ReferralStatus, UserReferralStats, ReferralTierConfig } from '@/types/referrals';
+import { ReferralRecord, UserReferralStats, ReferralLevel, ReferralTier } from '@/types/referrals';
+import { User } from '@/types/auth';
+import { showToast } from '@/utils/toastUtils';
 import { v4 as uuidv4 } from 'uuid';
 
-// Define referral tiers
-export const referralTiers: ReferralTierConfig[] = [
+// Define the referral tiers configuration
+export const referralTiers: ReferralTier[] = [
   {
     level: 'bronze',
-    minReferrals: 0,
+    name: 'Bronze',
+    minReferrals: 1,
     maxReferrals: 5,
-    bonusRate: 0.05,
-    description: 'Bronze Level - 5% bonus rate'
+    bonusPercentage: 5,
+    benefits: ['5% bonus per referral'],
+    color: 'text-amber-600 bg-amber-500/20 border-amber-500/30'
   },
   {
     level: 'silver',
+    name: 'Silver',
     minReferrals: 6,
-    maxReferrals: 20,
-    bonusRate: 0.10,
-    description: 'Silver Level - 10% bonus rate + priority support'
+    maxReferrals: 19,
+    bonusPercentage: 10,
+    benefits: ['10% bonus per referral', 'Priority support'],
+    color: 'text-gray-400 bg-gray-500/20 border-gray-400/30'
   },
   {
     level: 'gold',
-    minReferrals: 21,
+    name: 'Gold',
+    minReferrals: 20,
     maxReferrals: null,
-    bonusRate: 0.15,
-    description: 'Gold Level - 15% bonus rate + exclusive features'
+    bonusPercentage: 15,
+    benefits: ['15% bonus per referral', 'Priority support', 'Exclusive features'],
+    color: 'text-yellow-500 bg-yellow-500/20 border-yellow-500/30'
   }
 ];
 
-// Generate a referral link for a user
-export const generateReferralLink = (userId: string, referralCode?: string): string => {
-  const code = referralCode || userId.substring(0, 8);
-  return `https://energy-investment.site/register?ref=${code}`;
+// Get referral tier based on number of approved referrals
+export const getUserReferralTier = (approvedReferrals: number): ReferralTier => {
+  for (let i = referralTiers.length - 1; i >= 0; i--) {
+    const tier = referralTiers[i];
+    if (approvedReferrals >= tier.minReferrals) {
+      return tier;
+    }
+  }
+  return referralTiers[0]; // Default to bronze
 };
 
-// Generate mock referral records for testing
+// Calculate bonus amount based on user's tier and transaction amount
+export const calculateReferralBonus = (referrerStats: UserReferralStats, transactionAmount: number): number => {
+  const tier = getUserReferralTier(referrerStats.approvedReferrals);
+  return (transactionAmount * tier.bonusPercentage) / 100;
+};
+
+// Mock data generation for development
 export const generateMockReferrals = (): ReferralRecord[] => {
   const statuses: ReferralStatus[] = ['pending', 'approved', 'rejected'];
   const referrals: ReferralRecord[] = [];
@@ -42,11 +61,11 @@ export const generateMockReferrals = (): ReferralRecord[] => {
   for (let i = 0; i < 15; i++) {
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const dateCreated = new Date();
-    dateCreated.setDate(dateCreated.getDate() - Math.floor(Math.random() * 30));
+    dateCreated.setDate(dateCreated.getDate() - Math.floor(Math.random() * 30)); // Random date in the last 30 days
     
     const dateUpdated = new Date(dateCreated);
     if (status !== 'pending') {
-      dateUpdated.setDate(dateUpdated.getDate() + Math.floor(Math.random() * 5) + 1);
+      dateUpdated.setDate(dateUpdated.getDate() + Math.floor(Math.random() * 5) + 1); // 1-5 days after creation
     }
     
     referrals.push({
@@ -68,12 +87,58 @@ export const generateMockReferrals = (): ReferralRecord[] => {
   return referrals;
 };
 
+// Generate mock user referral stats
+export const generateMockUserReferralStats = (): UserReferralStats[] => {
+  const stats: UserReferralStats[] = [];
+  
+  // Generate 5 mock user stats records
+  for (let i = 1; i <= 5; i++) {
+    const approvedReferrals = Math.floor(Math.random() * 30); // 0-29 approved referrals
+    const pendingReferrals = Math.floor(Math.random() * 5); // 0-4 pending referrals
+    const rejectedReferrals = Math.floor(Math.random() * 3); // 0-2 rejected referrals
+    const totalReferrals = approvedReferrals + pendingReferrals + rejectedReferrals;
+    
+    // Determine level based on approved referrals
+    const tier = getUserReferralTier(approvedReferrals);
+    
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - Math.floor(Math.random() * 6)); // Random date 0-6 months ago
+    
+    stats.push({
+      userId: `usr_${i}`,
+      username: `user${i}`,
+      totalReferrals,
+      approvedReferrals,
+      pendingReferrals,
+      rejectedReferrals,
+      level: tier.level,
+      pendingBonus: pendingReferrals * (Math.floor(Math.random() * 200) + 50),
+      totalBonus: approvedReferrals * (Math.floor(Math.random() * 500) + 100),
+      activeSince: startDate.toISOString()
+    });
+  }
+  
+  return stats;
+};
+
 // Approve a referral
 export const approveReferral = async (referralId: string, adminId: string, adminName: string, comment?: string): Promise<boolean> => {
   try {
+    // This is where you would integrate with your actual API
+    // For now, we'll just simulate the behavior
     await new Promise(resolve => setTimeout(resolve, 800));
+    
+    showToast(
+      "Referral Approved",
+      `Referral ${referralId} has been approved successfully`
+    );
     return true;
   } catch (error) {
+    showToast(
+      "Action Failed",
+      "Could not approve the referral",
+      "destructive"
+    );
     return false;
   }
 };
@@ -81,9 +146,20 @@ export const approveReferral = async (referralId: string, adminId: string, admin
 // Reject a referral
 export const rejectReferral = async (referralId: string, adminId: string, adminName: string, reason: string): Promise<boolean> => {
   try {
+    // This is where you would integrate with your actual API
     await new Promise(resolve => setTimeout(resolve, 800));
+    
+    showToast(
+      "Referral Rejected",
+      `Referral ${referralId} has been rejected`
+    );
     return true;
   } catch (error) {
+    showToast(
+      "Action Failed",
+      "Could not reject the referral",
+      "destructive"
+    );
     return false;
   }
 };
@@ -91,66 +167,34 @@ export const rejectReferral = async (referralId: string, adminId: string, adminN
 // Bulk approve referrals
 export const bulkApproveReferrals = async (referralIds: string[], adminId: string, adminName: string): Promise<boolean> => {
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // This is where you would integrate with your actual API
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    showToast(
+      "Bulk Action Completed",
+      `${referralIds.length} referrals were approved successfully`
+    );
     return true;
   } catch (error) {
+    showToast(
+      "Bulk Action Failed",
+      "Could not complete the bulk approval",
+      "destructive"
+    );
     return false;
   }
 };
 
-// Check if a referral is overdue (older than 48 hours)
-export const isReferralOverdue = (dateCreated: string): boolean => {
-  const createdDate = new Date(dateCreated);
+// Generate a referral link for a user
+export const generateReferralLink = (userId: string, referralCode?: string): string => {
+  const code = referralCode || userId.substring(0, 8);
+  return `https://energy-investment.site/register?ref=${code}`;
+};
+
+// Check if a referral is overdue for review (older than 48 hours)
+export const isReferralOverdue = (dateCreated: string, thresholdHours: number = 48): boolean => {
+  const created = new Date(dateCreated);
   const now = new Date();
-  const diffHours = (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60);
-  return diffHours > 48;
-};
-
-// Generate mock referral stats for admin dashboard
-export const generateMockReferralStats = () => {
-  return {
-    totalReferrals: 42,
-    pendingReferrals: 15,
-    approvedReferrals: 22,
-    rejectedReferrals: 5,
-    totalBonusAmount: 5200
-  };
-};
-
-// Generate mock user referral stats for the user list in admin panel
-export const generateMockUserReferralStats = (): UserReferralStats[] => {
-  const stats: UserReferralStats[] = [];
-  
-  for (let i = 1; i <= 10; i++) {
-    const totalReferrals = Math.floor(Math.random() * 30) + 1;
-    const pendingReferrals = Math.floor(Math.random() * 5);
-    const rejectedReferrals = Math.floor(Math.random() * 3);
-    const approvedReferrals = totalReferrals - pendingReferrals - rejectedReferrals;
-    
-    // Determine level based on approved referrals
-    const level = approvedReferrals >= 21 ? 'gold' : approvedReferrals >= 6 ? 'silver' : 'bronze';
-    
-    // Calculate bonus amounts
-    const bonusRate = level === 'gold' ? 0.15 : level === 'silver' ? 0.10 : 0.05;
-    const pendingBonus = pendingReferrals * 200 * bonusRate;
-    const totalBonus = approvedReferrals * 200 * bonusRate;
-    
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 365));
-    
-    stats.push({
-      userId: `usr_${i}`,
-      username: `user${i}`,
-      level,
-      totalReferrals,
-      pendingReferrals,
-      approvedReferrals,
-      rejectedReferrals,
-      pendingBonus,
-      totalBonus,
-      activeSince: startDate.toISOString()
-    });
-  }
-  
-  return stats;
+  const diffHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+  return diffHours > thresholdHours;
 };

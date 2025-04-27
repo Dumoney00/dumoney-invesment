@@ -1,5 +1,16 @@
 
 export type ReferralStatus = "pending" | "approved" | "rejected";
+export type ReferralLevel = "bronze" | "silver" | "gold";
+
+export interface ReferralTier {
+  level: ReferralLevel;
+  name: string;
+  minReferrals: number;
+  maxReferrals: number | null;
+  bonusPercentage: number;
+  benefits: string[];
+  color: string;
+}
 
 export interface ReferralRecord {
   id: string;
@@ -16,25 +27,21 @@ export interface ReferralRecord {
   adminName?: string;
 }
 
-export type ReferralTier = "bronze" | "silver" | "gold";
-
 export interface UserReferralStats {
   userId: string;
   username: string;
-  level: ReferralTier;
   totalReferrals: number;
-  pendingReferrals: number;
   approvedReferrals: number;
+  pendingReferrals: number;
   rejectedReferrals: number;
+  level: ReferralLevel;
   pendingBonus: number;
   totalBonus: number;
   activeSince: string;
 }
 
-export interface ReferralTierConfig {
-  level: ReferralTier;
-  minReferrals: number;
-  maxReferrals: number | null;
-  bonusRate: number;
-  description: string;
+export interface ReferralSystemConfig {
+  tiers: ReferralTier[];
+  referralExpiryDays: number;
+  notificationThresholdHours: number;
 }
