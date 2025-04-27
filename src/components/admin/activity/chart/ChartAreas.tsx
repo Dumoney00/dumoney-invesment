@@ -1,14 +1,23 @@
 
 import React from 'react';
 import { Area } from 'recharts';
+import { ChartDataPoint } from '@/utils/chartUtils';
 
-interface ChartAreaData {
-  deposits: number;
-  withdrawals: number;
-  purchases: number;
+interface ChartAreasProps {
+  data?: ChartDataPoint[];
 }
 
-const ChartAreas: React.FC = () => {
+const ChartAreas: React.FC<ChartAreasProps> = ({ data = [] }) => {
+  // Check if we have valid data with the required properties
+  const hasValidData = data && data.length > 0 && 
+    'deposits' in data[0] && 
+    'withdrawals' in data[0] && 
+    'purchases' in data[0];
+
+  if (!hasValidData) {
+    return null; // Don't render areas if data is invalid
+  }
+
   return (
     <>
       <Area 

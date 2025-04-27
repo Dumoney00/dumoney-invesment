@@ -60,7 +60,7 @@ const ActivityChart: React.FC<ActivityChartProps> = ({
                   color: '#fff'
                 }}
               />
-              <ChartAreas />
+              <ChartAreas data={data} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
