@@ -32,22 +32,18 @@ const Agent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('team');
   const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
 
-  // Load mock referral data
   useEffect(() => {
     if (isAuthenticated) {
       setReferrals(generateMockReferrals());
     }
   }, [isAuthenticated]);
 
-  // Mock team members data - in a real app this would come from backend
   const teamMembers: TeamMember[] = [];
-  
-  // Filter referrals to only show for the current user
+
   const userReferrals = referrals.filter(r => 
     isAuthenticated && user && r.referrerId === user.id
   );
-  
-  // Format date helper
+
   const formatDate = (isoDate: string): string => {
     return new Date(isoDate).toLocaleDateString('en-IN', {
       day: 'numeric',
@@ -56,25 +52,21 @@ const Agent: React.FC = () => {
     });
   };
 
-  // Calculate team stats based on active members (those who purchased)
   const teamStats: TeamStats = {
     totalPeople: teamMembers.length,
     activePeople: teamMembers.filter(member => member.hasPurchased).length,
-    teamInvestment: 0, // Would be calculated from actual purchases in real implementation
+    teamInvestment: 0,
   };
 
-  // Get user's referral tier - default to bronze if no user or approved referrals
   const userTier = isAuthenticated && user 
     ? getUserReferralTier(userReferrals.filter(r => r.status === 'approved').length)
     : referralTiers[0];
 
-  // Calculate counts by status
   const approvedCount = userReferrals.filter(r => r.status === 'approved').length;
   const pendingCount = userReferrals.filter(r => r.status === 'pending').length;
   const rejectedCount = userReferrals.filter(r => r.status === 'rejected').length;
   const totalCount = userReferrals.length;
 
-  // Calculate pending and earned bonuses
   const pendingBonus = userReferrals
     .filter(r => r.status === 'pending')
     .reduce((sum, r) => sum + r.bonusAmount, 0);
@@ -83,7 +75,6 @@ const Agent: React.FC = () => {
     .filter(r => r.status === 'approved')
     .reduce((sum, r) => sum + r.bonusAmount, 0);
 
-  // Update copy function to copy the referral code
   const handleCopyCode = () => {
     if (isAuthenticated && user) {
       const referralCode = generateReferralCode(user.id);
@@ -92,7 +83,7 @@ const Agent: React.FC = () => {
         setCopySuccess(true);
         toast({
           title: "Copied!",
-          description: "Referral code copied to clipboard"
+          description: "Your 5-digit referral code has been copied to clipboard"
         });
         setTimeout(() => setCopySuccess(false), 2000);
       }).catch(err => {
@@ -105,7 +96,7 @@ const Agent: React.FC = () => {
     } else {
       toast({
         title: "Login Required",
-        description: "Please login to copy your referral code",
+        description: "Please login to get your referral code",
         variant: "destructive"
       });
     }
@@ -113,16 +104,13 @@ const Agent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black pb-24">
-      {/* Header */}
       <header className="bg-[#333333] py-4">
         <h1 className="text-white text-xl text-center font-medium">Agent Center</h1>
       </header>
       
-      {/* Yellow Banner */}
       <div className="bg-investment-yellow h-2"></div>
       
       <div className="p-4">
-        {/* Referral Status Card */}
         <div className="mb-6">
           <Card className="bg-[#222222] border-gray-700 overflow-hidden">
             <div className="h-2 bg-gradient-to-r from-investment-gold to-yellow-500"></div>
@@ -182,7 +170,6 @@ const Agent: React.FC = () => {
           </Card>
         </div>
         
-        {/* Tabs for Team and Referral History */}
         <Card className="bg-[#222222] border-gray-700 mb-6">
           <CardContent className="p-4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -202,7 +189,6 @@ const Agent: React.FC = () => {
               </TabsList>
               
               <TabsContent value="team" className="mt-0">
-                {/* Team Stats Cards */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-gradient-to-r from-orange-500 to-yellow-500 rounded-xl p-4">
                     <p className="text-white text-3xl font-bold mb-1">
@@ -219,7 +205,6 @@ const Agent: React.FC = () => {
                   </div>
                 </div>
                 
-                {/* Team Members List - Empty state if no members */}
                 {teamMembers.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     <Users size={48} className="mx-auto opacity-20 mb-3" />
@@ -289,7 +274,6 @@ const Agent: React.FC = () => {
           </CardContent>
         </Card>
         
-        {/* Commission Plans Section */}
         <div className="mb-6">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="h-0 w-16 border-t border-gray-700"></div>
@@ -297,7 +281,6 @@ const Agent: React.FC = () => {
             <div className="h-0 w-16 border-t border-gray-700"></div>
           </div>
           
-          {/* Commission Plans - Refactored to use referralTiers data */}
           <div className="space-y-4">
             {referralTiers.map((tier, index) => {
               const isCurrentTier = userTier.level === tier.level;
@@ -369,7 +352,6 @@ const Agent: React.FC = () => {
           </div>
         </div>
         
-        {/* Update Invitation Method section */}
         <div className="mb-6">
           <div className="flex items-center justify-center gap-2 mb-4">
             <div className="h-0 w-16 border-t border-gray-700"></div>
@@ -394,7 +376,6 @@ const Agent: React.FC = () => {
           </div>
         </div>
 
-        {/* Update Invitation Banner */}
         <div className="bg-gray-100 rounded-lg p-4 flex items-center">
           <div className="flex-1 text-black mr-4">
             <h3 className="font-bold">Share your referral code</h3>

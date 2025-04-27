@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   username: string;
@@ -16,6 +15,7 @@ export interface User {
   isAdmin?: boolean;
   isBlocked?: boolean;
   referralCode?: string;
+  referralStatus?: 'pending' | 'approved';
   referredBy?: string;
   level?: number;
   bankDetails?: BankDetails;

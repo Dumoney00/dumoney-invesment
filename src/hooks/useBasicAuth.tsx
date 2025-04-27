@@ -69,10 +69,10 @@ export const useBasicAuth = () => {
       
       const mockUser = createMockUser(username, email, phone);
       
-      // If referral code is provided, validate and store it
+      // If referral code is provided, validate and store it as pending
       if (referralCode) {
-        // Store the referral code with the user
         mockUser.referralCode = referralCode;
+        mockUser.referralStatus = 'pending'; // Will be updated to 'approved' after first purchase
       }
       
       saveUser(mockUser);

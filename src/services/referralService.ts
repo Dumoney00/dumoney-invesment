@@ -1,3 +1,4 @@
+
 import { ReferralRecord, UserReferralStats } from '@/types/referrals';
 import { showToast } from '@/utils/toastUtils';
 import { 
@@ -7,7 +8,7 @@ import {
 import {
   getUserReferralTier,
   calculateReferralBonus,
-  generateReferralLink,
+  generateReferralCode,
   isReferralOverdue,
   processReferralReward
 } from './referralUtils';
@@ -17,83 +18,13 @@ export {
   referralTiers,
   getUserReferralTier,
   calculateReferralBonus,
-  generateReferralLink,
+  generateReferralCode,
   isReferralOverdue,
   generateMockReferrals,
   generateMockUserReferralStats
 };
 
-// Approve a referral
-export const approveReferral = async (
-  referralId: string, 
-  adminId: string, 
-  adminName: string, 
-  comment?: string
-): Promise<boolean> => {
-  try {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    showToast(
-      "Referral Approved",
-      `Referral ${referralId} has been approved successfully`
-    );
-    return true;
-  } catch (error) {
-    showToast(
-      "Action Failed",
-      "Could not approve the referral",
-      "destructive"
-    );
-    return false;
-  }
-};
-
-// Reject a referral
-export const rejectReferral = async (
-  referralId: string, 
-  adminId: string, 
-  adminName: string, 
-  reason: string
-): Promise<boolean> => {
-  try {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    showToast(
-      "Referral Rejected",
-      `Referral ${referralId} has been rejected`
-    );
-    return true;
-  } catch (error) {
-    showToast(
-      "Action Failed",
-      "Could not reject the referral",
-      "destructive"
-    );
-    return false;
-  }
-};
-
-// Bulk approve referrals
-export const bulkApproveReferrals = async (
-  referralIds: string[], 
-  adminId: string, 
-  adminName: string
-): Promise<boolean> => {
-  try {
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    showToast(
-      "Bulk Action Completed",
-      `${referralIds.length} referrals were approved successfully`
-    );
-    return true;
-  } catch (error) {
-    showToast(
-      "Bulk Action Failed",
-      "Could not complete the bulk approval",
-      "destructive"
-    );
-    return false;
-  }
-};
-
+// Approve a referral after product purchase
 export const handleProductPurchaseReferral = async (
   userId: string,
   referralCode: string | null,
@@ -105,14 +36,14 @@ export const handleProductPurchaseReferral = async (
     await new Promise(resolve => setTimeout(resolve, 800)); // Simulating API call
     
     // In a real implementation, you would:
-    // 1. Verify the referral code
-    // 2. Get referrer's stats
-    // 3. Process the referral reward
+    // 1. Verify the referral code and get referrer data
+    // 2. Update referral status to approved
+    // 3. Process referral reward for the referrer
     // 4. Update both users' records
     
     showToast(
       "Referral Processed",
-      "Referral bonus has been credited to the referrer"
+      "Referral bonus will be credited after verification"
     );
     
     return true;

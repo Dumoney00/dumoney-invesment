@@ -3,7 +3,8 @@ import { ReferralTier, UserReferralStats } from '@/types/referrals';
 import { referralTiers } from '@/config/referralTiers';
 
 // Generate a random 5-digit referral code
-const generateReferralCode = (): string => {
+export const generateReferralCode = (userId: string): string => {
+  // Use a deterministic 5-digit code based on userId
   return Math.floor(10000 + Math.random() * 90000).toString();
 };
 
@@ -20,12 +21,6 @@ export const getUserReferralTier = (approvedReferrals: number): ReferralTier => 
 export const calculateReferralBonus = (referrerStats: UserReferralStats, transactionAmount: number): number => {
   const tier = getUserReferralTier(referrerStats.approvedReferrals);
   return (transactionAmount * tier.bonusPercentage) / 100;
-};
-
-export const generateReferralCode = (userId: string): string => {
-  // Use a deterministic 5-digit code based on userId
-  const code = generateReferralCode();
-  return code;
 };
 
 export const isReferralOverdue = (dateCreated: string, thresholdHours: number = 48): boolean => {
@@ -50,4 +45,3 @@ export const processReferralReward = async (
   
   return bonusAmount;
 };
-
