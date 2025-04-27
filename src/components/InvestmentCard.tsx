@@ -36,11 +36,15 @@ const InvestmentCard: React.FC<InvestmentCardProps> = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentViewCount(prev => {
-        const maxCount = 10000000;
-        if (prev >= maxCount) {
-          return maxCount;
-        }
-        return prev + Math.floor(Math.random() * 10) + 1;
+        const minCount = 1000;
+        const maxCount = 1000000; // 10 lakhs
+        const randomChange = Math.floor(Math.random() * 1000) - 500; // Random value between -500 and 500
+        const newCount = prev + randomChange;
+        
+        // Keep the count within bounds
+        if (newCount < minCount) return minCount;
+        if (newCount > maxCount) return maxCount;
+        return newCount;
       });
     }, 3000);
 
