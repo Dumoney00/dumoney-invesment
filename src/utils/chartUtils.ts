@@ -1,13 +1,18 @@
-
 /**
  * Utility functions for chart data processing
  */
 
+// Add the ChartDataPoint type definition
+export interface ChartDataPoint {
+  date: string;
+  value: number;
+}
+
 /**
  * Generate chart data points for time series data
  */
-export const generateChartData = (days = 30) => {
-  const data = [];
+export const generateChartData = (days = 30): ChartDataPoint[] => {
+  const data: ChartDataPoint[] = [];
   const now = new Date();
   
   for (let i = days; i >= 0; i--) {
