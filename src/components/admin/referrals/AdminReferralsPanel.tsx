@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Check, X, TrendingUp, Users, AlertTriangle, Filter } from 'lucide-react';
+import { Search, Check, X, TrendingUp, Users, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Table, 
@@ -138,7 +137,7 @@ const AdminReferralsPanel: React.FC = () => {
           if (r.id === referralId) {
             return {
               ...r,
-              status: 'approved',
+              status: 'approved' as ReferralStatus,
               dateUpdated: new Date().toISOString(),
               adminId: user.id,
               adminName: user.username
@@ -174,7 +173,7 @@ const AdminReferralsPanel: React.FC = () => {
           if (r.id === selectedReferral.id) {
             return {
               ...r,
-              status: 'rejected',
+              status: 'rejected' as ReferralStatus,
               dateUpdated: new Date().toISOString(),
               adminId: user.id,
               adminName: user.username,
@@ -220,7 +219,7 @@ const AdminReferralsPanel: React.FC = () => {
             // Update the referral
             const updated = {
               ...r,
-              status: 'approved',
+              status: 'approved' as ReferralStatus,
               dateUpdated: new Date().toISOString(),
               adminId: user.id,
               adminName: user.username

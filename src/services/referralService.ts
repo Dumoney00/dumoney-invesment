@@ -1,5 +1,5 @@
 
-import { ReferralRecord, UserReferralStats, ReferralLevel, ReferralTier } from '@/types/referrals';
+import { ReferralRecord, UserReferralStats, ReferralLevel, ReferralTier, ReferralStatus } from '@/types/referrals';
 import { User } from '@/types/auth';
 import { showToast } from '@/utils/toastUtils';
 import { v4 as uuidv4 } from 'uuid';
@@ -164,7 +164,7 @@ export const rejectReferral = async (referralId: string, adminId: string, adminN
   }
 };
 
-// Bulk approve referrals
+// Bulk approve referrals - adding this missing function
 export const bulkApproveReferrals = async (referralIds: string[], adminId: string, adminName: string): Promise<boolean> => {
   try {
     // This is where you would integrate with your actual API
@@ -197,4 +197,10 @@ export const isReferralOverdue = (dateCreated: string, thresholdHours: number = 
   const now = new Date();
   const diffHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
   return diffHours > thresholdHours;
+};
+
+// Added function that was referenced in AdminReferralsPanel but not defined
+export const generateMockReferralStats = (): any[] => {
+  // Simplified implementation for now - this function wasn't fully implemented
+  return [];
 };
