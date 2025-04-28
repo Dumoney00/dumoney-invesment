@@ -1,78 +1,81 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import AdminDashboardLayout from '@/components/admin/AdminDashboardLayout';
-import AdminDepositsPanel from '@/components/admin/deposits/AdminDepositsPanel';
-import AdminWithdrawalsPanel from '@/components/admin/withdrawals/AdminWithdrawalsPanel';
-import AdminReferralsPanel from '@/components/admin/referrals/AdminReferralsPanel';
+import AdminLayout from '@/components/admin/layout/AdminLayout';
+import DashboardOverview from '@/components/admin/dashboard/DashboardOverview';
+import UsersPanel from '@/components/admin/users/UsersPanel';
+import FinancialPanel from '@/components/admin/financial/FinancialPanel';
+import ReferralPanel from '@/components/admin/referrals/ReferralPanel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAllUsers } from '@/hooks/useAllUsers';
 
 const AdminDashboard: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("deposits");
+  const [activeTab, setActiveTab] = useState("overview");
+  const { users } = useAllUsers();
 
-  useEffect(() => {
+  // Protect admin route
+  React.useEffect(() => {
     if (!isAuthenticated || !user?.isAdmin) {
       navigate('/admin-login');
     }
   }, [isAuthenticated, user, navigate]);
-
-  // Check if there are any overdue referrals to highlight the tab
-  const hasOverdueReferrals = false; // This would be determined dynamically in a real app
 
   if (!isAuthenticated || !user?.isAdmin) {
     return null;
   }
 
   return (
-    <AdminDashboardLayout>
-      <div className="p-6">
-        <Tabs defaultValue="deposits" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 bg-[#1A1F2C]/80 mb-6 p-1 rounded-lg">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-4 bg-[#1A1F2C]/80 mb-6 p-1 rounded-lg">
             <TabsTrigger 
-              value="deposits" 
+              value="overview" 
               className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
             >
-              Deposits
+              Overview
             </TabsTrigger>
             <TabsTrigger 
-              value="withdrawals" 
+              value="users" 
               className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
             >
-              Withdrawals
+              Users
+            </TabsTrigger>
+            <TabsTrigger 
+              value="financial" 
+              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
+            >
+              Financial
             </TabsTrigger>
             <TabsTrigger 
               value="referrals" 
-              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white relative"
+              className="data-[state=active]:bg-[#8B5CF6] data-[state=active]:text-white"
             >
               Referrals
-              {hasOverdueReferrals && (
-                <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
-              )}
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="deposits">
-            <AdminDepositsPanel />
+          <TabsContent value="overview">
+            <DashboardOverview users={users} />
           </TabsContent>
           
-          <TabsContent value="withdrawals">
-            <AdminWithdrawalsPanel />
+          <TabsContent value="users">
+            <UsersPanel />
+          </TabsContent>
+          
+          <TabsContent value="financial">
+            <FinancialPanel />
           </TabsContent>
           
           <TabsContent value="referrals">
-            <AdminReferralsPanel />
+            <ReferralPanel />
           </TabsContent>
         </Tabs>
       </div>
-    </AdminDashboardLayout>
+    </AdminLayout>
   );
 };
 
