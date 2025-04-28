@@ -1,4 +1,3 @@
-
 import { ReferralRecord, UserReferralStats } from '@/types/referrals';
 import { showToast } from '@/utils/toastUtils';
 import { 
@@ -46,9 +45,8 @@ export const handleProductPurchaseReferral = async (
     
     if (referrer) {
       // Get referrer's stats - get the first one matching the referrer's ID
-      const referrerStats = generateMockUserReferralStats().find(
-        stats => stats.userId === referrer.id
-      );
+      const referrerStatsArray = generateMockUserReferralStats(referrer.id);
+      const referrerStats = referrerStatsArray.length > 0 ? referrerStatsArray[0] : null;
       
       if (referrerStats) {
         // Calculate and process bonus
