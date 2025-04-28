@@ -14,7 +14,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
-import { showToast } from '@/utils/toastUtils';
 
 const registerFormSchema = z.object({
   username: z.string().min(2, {
@@ -29,6 +28,7 @@ const registerFormSchema = z.object({
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
   }),
+  referralCode: z.string().optional(),
 });
 
 type RegisterFormData = z.infer<typeof registerFormSchema>;
@@ -45,6 +45,7 @@ const RegisterForm = () => {
       email: "",
       phone: "",
       password: "",
+      referralCode: "",
     },
   });
 
@@ -54,7 +55,8 @@ const RegisterForm = () => {
       data.username,
       data.email,
       data.phone,
-      data.password
+      data.password,
+      data.referralCode || undefined
     );
     
     if (success) {
@@ -113,6 +115,19 @@ const RegisterForm = () => {
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input type="password" placeholder="Enter your password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="referralCode"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Referral Code (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter referral code if you have one" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
