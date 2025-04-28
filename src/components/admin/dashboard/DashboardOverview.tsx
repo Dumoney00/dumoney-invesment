@@ -5,7 +5,7 @@ import { User, CreditCard, ArrowUp, ArrowDown, Users } from 'lucide-react';
 import { User as UserType, TransactionRecord } from '@/types/auth';
 import { Line } from 'recharts';
 import ActivityChart from '../activity/ActivityChart';
-import UserStatsCards from '../stats/UserStatsCards';
+import { UserStatsCards } from '../stats/UserStatsCards';
 import LatestUsers from './LatestUsers';
 import RecentTransactions from './RecentTransactions';
 import { useAllUserTransactions } from '@/hooks/useAllUserTransactions';
@@ -41,7 +41,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ users }) => {
   
   return (
     <div className="space-y-6">
-      <UserStatsCards />
+      <UserStatsCards users={users} />
       
       {/* Data overview grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -53,7 +53,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ users }) => {
               <div className="text-sm text-gray-400">Last 7 days</div>
             </div>
             
-            <ActivityChart height={250} />
+            <ActivityChart />
           </CardContent>
         </Card>
         

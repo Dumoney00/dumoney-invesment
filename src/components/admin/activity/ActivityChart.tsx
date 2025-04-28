@@ -8,15 +8,26 @@ import ChartAreas from './chart/ChartAreas';
 import { ChartDataPoint } from '@/utils/chartUtils';
 
 interface ActivityChartProps {
-  data: ChartDataPoint[];
-  timeRange: 'weekly' | 'monthly';
-  onTimeRangeChange: (range: 'weekly' | 'monthly') => void;
+  data?: ChartDataPoint[];
+  timeRange?: 'weekly' | 'monthly';
+  onTimeRangeChange?: (range: 'weekly' | 'monthly') => void;
 }
 
+// Sample data if none is provided
+const sampleData = [
+  { name: 'Mon', deposits: 4000, withdrawals: 2400, investments: 2400 },
+  { name: 'Tue', deposits: 3000, withdrawals: 1398, investments: 2210 },
+  { name: 'Wed', deposits: 2000, withdrawals: 9800, investments: 2290 },
+  { name: 'Thu', deposits: 2780, withdrawals: 3908, investments: 2000 },
+  { name: 'Fri', deposits: 1890, withdrawals: 4800, investments: 2181 },
+  { name: 'Sat', deposits: 2390, withdrawals: 3800, investments: 2500 },
+  { name: 'Sun', deposits: 3490, withdrawals: 4300, investments: 2100 },
+];
+
 const ActivityChart: React.FC<ActivityChartProps> = ({ 
-  data, 
-  timeRange, 
-  onTimeRangeChange 
+  data = sampleData, 
+  timeRange = 'weekly', 
+  onTimeRangeChange = () => {} 
 }) => {
   return (
     <Card className="bg-[#222B45]/80 border-[#33374D]">

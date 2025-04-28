@@ -80,8 +80,8 @@ const UsersPanel: React.FC = () => {
           <UserFilters
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
-            statusFilter={filterStatus}
-            onStatusFilterChange={setFilterStatus}
+            filterStatus={filterStatus}
+            onFilterChange={setFilterStatus}
           />
           
           <div className="mt-4 overflow-x-auto">

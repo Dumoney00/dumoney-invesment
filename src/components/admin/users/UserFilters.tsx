@@ -13,9 +13,10 @@ interface UserFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   onFilterChange: (filter: 'all' | 'active' | 'blocked') => void;
+  filterStatus?: 'all' | 'active' | 'blocked';
 }
 
-export const UserFilters = ({ searchTerm, onSearchChange, onFilterChange }: UserFiltersProps) => {
+export const UserFilters = ({ searchTerm, onSearchChange, onFilterChange, filterStatus = 'all' }: UserFiltersProps) => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
       <div className="flex items-center gap-3 w-full md:w-auto">
