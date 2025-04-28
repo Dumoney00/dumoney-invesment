@@ -1,22 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Check, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { ReferralStatus, UserReferralStats, ReferralRecord } from '@/types/referrals';
 import { referralTiers } from '@/config/referralTiers';
+import { 
+  generateMockReferrals,
+  generateMockUserReferralStats,
+  approveReferral,
+  rejectReferral,
+  bulkApproveReferrals,
+  isReferralOverdue
+} from '@/services/referralService';
 import ReferralDashboardStats from './ReferralDashboardStats';
 import AgentsTable from './AgentsTable';
 import ReferralsTable from './ReferralsTable';
+import { ReferralFilters } from './ReferralFilters';
+import { ReferralRejectDialog } from './ReferralRejectDialog';
 
 const AdminReferralsPanel: React.FC = () => {
-  const { user, approveReferralBonus } = useAuth();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('agents');
   const [userStats, setUserStats] = useState<UserReferralStats[]>([]);
@@ -26,7 +30,6 @@ const AdminReferralsPanel: React.FC = () => {
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedReferral, setSelectedReferral] = useState<ReferralRecord | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
   const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
 
   useEffect(() => {
@@ -104,46 +107,6 @@ const AdminReferralsPanel: React.FC = () => {
     }
   };
 
-  const handleRejectReferral = async () => {
-    if (!user?.isAdmin || !selectedReferral) return;
-    
-    setLoading(true);
-    try {
-      const success = await rejectReferral(
-        selectedReferral.id,
-        user.id,
-        user.username,
-        rejectReason
-      );
-      
-      if (success) {
-        setReferrals(prev => prev.map(r => {
-          if (r.id === selectedReferral.id) {
-            return {
-              ...r,
-              status: 'rejected' as ReferralStatus,
-              dateUpdated: new Date().toISOString(),
-              adminId: user.id,
-              adminName: user.username,
-              adminComment: rejectReason
-            };
-          }
-          return r;
-        }));
-      }
-    } finally {
-      setLoading(false);
-      setRejectDialogOpen(false);
-      setSelectedReferral(null);
-      setRejectReason('');
-    }
-  };
-
-  const openRejectDialog = (referral: ReferralRecord) => {
-    setSelectedReferral(referral);
-    setRejectDialogOpen(true);
-  };
-
   const handleBulkApprove = async () => {
     if (!user?.isAdmin || selectedReferrals.length === 0) return;
     
@@ -204,26 +167,6 @@ const AdminReferralsPanel: React.FC = () => {
     }));
   };
 
-  const toggleReferralSelection = (referralId: string) => {
-    setSelectedReferrals(prev => {
-      if (prev.includes(referralId)) {
-        return prev.filter(id => id !== referralId);
-      } else {
-        return [...prev, referralId];
-      }
-    });
-  };
-
-  const totalAgents = userStats.length;
-  const totalReferred = userStats.reduce((sum, r) => sum + r.totalReferrals, 0);
-  const totalActiveReferrals = userStats.reduce((sum, r) => sum + r.approvedReferrals, 0);
-  const totalPendingBonus = userStats.reduce((sum, r) => sum + r.pendingBonus, 0);
-  const totalBonusPaid = userStats.reduce((sum, r) => sum + r.totalBonus, 0);
-  const pendingReferralCount = referrals.filter(r => r.status === 'pending').length;
-  const overdueReferralCount = referrals.filter(r => 
-    r.status === 'pending' && isReferralOverdue(r.dateCreated)
-  ).length;
-
   return (
     <div className="space-y-6">
       <ReferralDashboardStats 
@@ -253,58 +196,18 @@ const AdminReferralsPanel: React.FC = () => {
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex items-center gap-3 mb-6 flex-wrap">
-              <div className="relative w-full md:w-64">
-                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className="bg-[#1A1F2C] border-[#33374D] text-white pl-10"
-                />
-              </div>
-              
-              {activeTab === 'referrals' && (
-                <>
-                  <div className="flex-1 flex items-center gap-2">
-                    <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ReferralStatus | 'all')}>
-                      <SelectTrigger className="bg-[#1A1F2C] border-[#33374D] text-white w-[140px]">
-                        <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#1A1F2C] border-[#33374D] text-white">
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={dateFilter} onValueChange={(value) => setDateFilter(value as 'all' | 'today' | 'week' | 'month')}>
-                      <SelectTrigger className="bg-[#1A1F2C] border-[#33374D] text-white w-[140px]">
-                        <SelectValue placeholder="Filter by date" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#1A1F2C] border-[#33374D] text-white">
-                        <SelectItem value="all">All Time</SelectItem>
-                        <SelectItem value="today">Today</SelectItem>
-                        <SelectItem value="week">Last 7 Days</SelectItem>
-                        <SelectItem value="month">Last 30 Days</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
-                    disabled={selectedReferrals.length === 0 || loading}
-                    onClick={handleBulkApprove}
-                  >
-                    <Check size={16} className="mr-1" />
-                    Bulk Approve ({selectedReferrals.length})
-                  </Button>
-                </>
-              )}
-            </div>
+            <ReferralFilters 
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              activeTab={activeTab}
+              statusFilter={statusFilter}
+              setStatusFilter={setStatusFilter}
+              dateFilter={dateFilter}
+              setDateFilter={setDateFilter}
+              selectedReferrals={selectedReferrals}
+              loading={loading}
+              onBulkApprove={handleBulkApprove}
+            />
             
             <TabsContent value="agents" className="mt-0">
               <AgentsTable users={filteredUserStats} />
@@ -316,7 +219,9 @@ const AdminReferralsPanel: React.FC = () => {
                 selectedReferrals={selectedReferrals}
                 loading={loading}
                 isReferralOverdue={isReferralOverdue}
-                onToggleSelect={toggleReferralSelection}
+                onToggleSelect={id => setSelectedReferrals(prev => 
+                  prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+                )}
                 onToggleSelectAll={() => {
                   if (selectedReferrals.length > 0) {
                     setSelectedReferrals([]);
@@ -328,49 +233,53 @@ const AdminReferralsPanel: React.FC = () => {
                   }
                 }}
                 onApprove={handleApproveReferral}
-                onReject={openRejectDialog}
+                onReject={referral => {
+                  setSelectedReferral(referral);
+                  setRejectDialogOpen(true);
+                }}
               />
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
-      
-      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-        <DialogContent className="bg-[#222B45] border-[#33374D] text-white">
-          <DialogHeader>
-            <DialogTitle>Reject Referral</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Please provide a reason for rejection. This will be visible to the referrer.
-            </DialogDescription>
-          </DialogHeader>
+
+      <ReferralRejectDialog 
+        open={rejectDialogOpen}
+        onOpenChange={setRejectDialogOpen}
+        onReject={async (reason: string) => {
+          if (!user?.isAdmin || !selectedReferral) return;
           
-          <Textarea
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-            placeholder="Reason for rejection..."
-            className="bg-[#1A1F2C] border-[#33374D] text-white"
-          />
-          
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setRejectDialogOpen(false)}
-              className="border-[#33374D] text-gray-300 hover:bg-[#1A1F2C]"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              onClick={handleRejectReferral}
-              disabled={!rejectReason.trim() || loading}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
-              <X size={16} className="mr-1" />
-              Reject Referral
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          setLoading(true);
+          try {
+            const success = await rejectReferral(
+              selectedReferral.id,
+              user.id,
+              user.username,
+              reason
+            );
+            
+            if (success) {
+              setReferrals(prev => prev.map(r => {
+                if (r.id === selectedReferral.id) {
+                  return {
+                    ...r,
+                    status: 'rejected' as ReferralStatus,
+                    dateUpdated: new Date().toISOString(),
+                    adminId: user.id,
+                    adminName: user.username,
+                    adminComment: reason
+                  };
+                }
+                return r;
+              }));
+            }
+          } finally {
+            setLoading(false);
+            setRejectDialogOpen(false);
+            setSelectedReferral(null);
+          }
+        }}
+      />
     </div>
   );
 };

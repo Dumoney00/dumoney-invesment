@@ -1,3 +1,4 @@
+
 import { ReferralRecord, UserReferralStats } from '@/types/referrals';
 import { showToast } from '@/utils/toastUtils';
 import { 
