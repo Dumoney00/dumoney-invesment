@@ -1,4 +1,3 @@
-
 import { ReferralRecord, UserReferralStats, ReferralStatus } from '@/types/referrals';
 import { v4 as uuidv4 } from 'uuid';
 import { getUserReferralTier } from './referralUtils';
@@ -36,7 +35,7 @@ export const generateMockReferrals = (): ReferralRecord[] => {
   return referrals;
 };
 
-export const generateMockUserReferralStats = (): UserReferralStats[] => {
+export const generateMockUserReferralStats = (userId?: string): UserReferralStats[] => {
   const stats: UserReferralStats[] = [];
   
   for (let i = 1; i <= 5; i++) {
@@ -50,8 +49,11 @@ export const generateMockUserReferralStats = (): UserReferralStats[] => {
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - Math.floor(Math.random() * 6));
     
+    const currentUserId = `usr_${i}`;
+    if (userId && currentUserId !== userId) continue;
+    
     stats.push({
-      userId: `usr_${i}`,
+      userId: currentUserId,
       username: `user${i}`,
       totalReferrals,
       approvedReferrals,

@@ -1,3 +1,4 @@
+
 import { ReferralRecord, UserReferralStats } from '@/types/referrals';
 import { showToast } from '@/utils/toastUtils';
 import { 
@@ -44,26 +45,30 @@ export const handleProductPurchaseReferral = async (
     );
     
     if (referrer) {
-      // Get referrer's stats
-      const referrerStats = generateMockUserReferralStats(referrer.id);
-      
-      // Calculate and process bonus
-      const bonusAmount = await processReferralReward(
-        referrer.id,
-        purchaseAmount,
-        referrerStats
+      // Get referrer's stats - get the first one matching the referrer's ID
+      const referrerStats = generateMockUserReferralStats().find(
+        stats => stats.userId === referrer.id
       );
       
-      // Update referrer's balance
-      referrer.balance = (referrer.balance || 0) + bonusAmount;
-      
-      // Update users array in localStorage
-      localStorage.setItem('investmentUsers', JSON.stringify(users));
-      
-      showToast(
-        "Referral Processed",
-        "Referral bonus will be credited after verification"
-      );
+      if (referrerStats) {
+        // Calculate and process bonus
+        const bonusAmount = await processReferralReward(
+          referrer.id,
+          purchaseAmount,
+          referrerStats
+        );
+        
+        // Update referrer's balance
+        referrer.balance = (referrer.balance || 0) + bonusAmount;
+        
+        // Update users array in localStorage
+        localStorage.setItem('investmentUsers', JSON.stringify(users));
+        
+        showToast(
+          "Referral Processed",
+          "Referral bonus will be credited after verification"
+        );
+      }
     }
     
     return true;
