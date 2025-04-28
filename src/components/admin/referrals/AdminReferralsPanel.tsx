@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Check } from 'lucide-react';
+import { Search, Check, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ReferralStatus } from '@/types/referrals';
-import { generateMockReferrals, referralTiers, approveReferral, rejectReferral, bulkApproveReferrals, generateMockUserReferralStats, isReferralOverdue } from '@/services/referralService';
-
+import { ReferralStatus, UserReferralStats, ReferralRecord } from '@/types/referrals';
+import { referralTiers } from '@/config/referralTiers';
 import ReferralDashboardStats from './ReferralDashboardStats';
 import AgentsTable from './AgentsTable';
 import ReferralsTable from './ReferralsTable';

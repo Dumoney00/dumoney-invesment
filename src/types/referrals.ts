@@ -1,3 +1,4 @@
+
 export type ReferralStatus = "pending" | "approved" | "rejected";
 export type ReferralLevel = "bronze" | "silver" | "gold" | "platinum" | "diamond" | "crown";
 
