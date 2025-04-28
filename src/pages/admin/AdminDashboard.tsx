@@ -1,6 +1,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import TransactionHistory from "@/components/admin/TransactionHistory";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,9 +10,21 @@ import { useAllUserTransactions } from "@/hooks/useAllUserTransactions";
 const AdminDashboard = () => {
   const { user } = useAuth();
   const { users, transactions } = useAllUserTransactions();
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (user && !user.isAdmin) {
+      navigate('/');
+    }
+    
+    if (!user) {
+      navigate('/admin-login');
+    }
+  }, [user, navigate]);
 
-  if (!user?.isAdmin) {
-    return <Navigate to="/" replace />;
+  // If no user or not admin, redirect to login
+  if (!user) {
+    return <Navigate to="/admin-login" replace />;
   }
 
   // Calculate total users

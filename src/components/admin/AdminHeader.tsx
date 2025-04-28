@@ -1,9 +1,16 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const AdminHeader = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/admin-login');
+  };
   
   return (
     <header className="bg-[#222222] border-b border-gray-800">
@@ -20,13 +27,13 @@ const AdminHeader = () => {
           <Button 
             variant="outline"
             className="bg-gray-800 hover:bg-gray-700 text-white border-gray-700"
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigate('/')}
           >
             Go to App
           </Button>
           <Button 
             variant="outline" 
-            onClick={logout}
+            onClick={handleLogout}
             className="bg-red-900 hover:bg-red-800 text-white border-red-800"
           >
             Logout

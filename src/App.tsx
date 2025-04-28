@@ -16,6 +16,7 @@ import AuthForm from "./components/AuthForm";
 import Guide from "./pages/Guide";
 import Transaction from "./pages/Transaction";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminLogin from "./pages/admin/AdminLogin";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/deposit" element={<Transaction />} />
             <Route path="/withdraw" element={<Transaction />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
