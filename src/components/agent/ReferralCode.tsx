@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -11,19 +11,15 @@ interface ReferralCodeProps {
 }
 
 const ReferralCode: React.FC<ReferralCodeProps> = ({ isAuthenticated, userId }) => {
-  const [copySuccess, setCopySuccess] = useState(false);
-  
   const handleCopyCode = () => {
     if (!isAuthenticated) return;
     
     const referralCode = generateReferralCode(userId);
     navigator.clipboard.writeText(referralCode).then(() => {
-      setCopySuccess(true);
       toast({
         title: "Copied!",
-        description: "Your 5-digit referral code has been copied to clipboard"
+        description: "Your permanent referral code has been copied to clipboard"
       });
-      setTimeout(() => setCopySuccess(false), 2000);
     }).catch(err => {
       toast({
         title: "Failed to copy",
@@ -39,7 +35,7 @@ const ReferralCode: React.FC<ReferralCodeProps> = ({ isAuthenticated, userId }) 
         {isAuthenticated ? generateReferralCode(userId) : '...'}
       </h3>
       <p className="text-gray-400 mb-4 text-sm">
-        Share this 5-digit code with your friends to earn rewards
+        This is your permanent referral code. Share it with unlimited friends to earn rewards!
       </p>
       <Button 
         className="bg-yellow-500 hover:bg-yellow-600 text-white px-8" 
@@ -47,7 +43,7 @@ const ReferralCode: React.FC<ReferralCodeProps> = ({ isAuthenticated, userId }) 
         disabled={!isAuthenticated}
       >
         <Copy className="mr-2" size={16} />
-        {copySuccess ? "Copied!" : "Copy Code"}
+        Copy Code
       </Button>
     </div>
   );

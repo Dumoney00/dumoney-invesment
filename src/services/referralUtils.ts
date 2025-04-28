@@ -1,11 +1,19 @@
-
 import { ReferralTier, UserReferralStats } from '@/types/referrals';
 import { referralTiers } from '@/config/referralTiers';
 
-// Generate a random 5-digit referral code
+// Generate a permanent 5-digit referral code based on userId
 export const generateReferralCode = (userId: string): string => {
-  // Use a deterministic 5-digit code based on userId
-  return Math.floor(10000 + Math.random() * 90000).toString();
+  // Use the first 5 characters of userId hash to create a permanent code
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  // Make sure it's positive and 5 digits
+  const positiveHash = Math.abs(hash);
+  const fiveDigitCode = (positiveHash % 90000 + 10000).toString();
+  return fiveDigitCode;
 };
 
 export const getUserReferralTier = (approvedReferrals: number): ReferralTier => {
