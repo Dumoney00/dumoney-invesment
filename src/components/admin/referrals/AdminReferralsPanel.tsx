@@ -1,46 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Check, X, TrendingUp, Users, AlertTriangle } from 'lucide-react';
+import { Search, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { formatCurrency, formatDate } from '@/utils/formatUtils';
+import { ReferralStatus } from '@/types/referrals';
+import { generateMockReferrals, referralTiers, approveReferral, rejectReferral, bulkApproveReferrals, generateMockUserReferralStats, isReferralOverdue } from '@/services/referralService';
 
-import { 
-  UserReferralStats, 
-  ReferralRecord, 
-  ReferralStatus, 
-  ReferralTier 
-} from '@/types/referrals';
-import { 
-  generateMockReferrals, 
-  referralTiers, 
-  approveReferral, 
-  rejectReferral, 
-  bulkApproveReferrals, 
-  generateMockUserReferralStats, 
-  isReferralOverdue 
-} from '@/services/referralService';
+import ReferralDashboardStats from './ReferralDashboardStats';
+import AgentsTable from './AgentsTable';
+import ReferralsTable from './ReferralsTable';
 
 const AdminReferralsPanel: React.FC = () => {
   const { user, approveReferralBonus } = useAuth();
@@ -253,74 +226,11 @@ const AdminReferralsPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-[#222B45]/80 border-[#33374D]">
-          <CardContent className="p-6">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Total Agents</p>
-                <h3 className="text-2xl font-bold mt-1 text-white">{totalAgents}</h3>
-              </div>
-              <div className="bg-blue-500/20 p-2 rounded-lg">
-                <Users size={24} className="text-blue-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-[#222B45]/80 border-[#33374D]">
-          <CardContent className="p-6">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Total Referrals</p>
-                <h3 className="text-2xl font-bold mt-1 text-white">{totalReferred}</h3>
-                <p className="text-xs text-gray-500">{totalActiveReferrals} approved referrals</p>
-              </div>
-              <div className="bg-green-500/20 p-2 rounded-lg">
-                <Users size={24} className="text-green-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-[#222B45]/80 border-[#33374D]">
-          <CardContent className="p-6">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Pending Bonus</p>
-                <h3 className="text-2xl font-bold mt-1 text-white">{formatCurrency(totalPendingBonus)}</h3>
-                <div className="flex items-center mt-1">
-                  <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/30">
-                    {pendingReferralCount} pending
-                  </Badge>
-                  {overdueReferralCount > 0 && (
-                    <Badge variant="outline" className="bg-red-500/10 text-red-400 border-red-500/30 ml-2">
-                      {overdueReferralCount} overdue
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div className="bg-amber-500/20 p-2 rounded-lg">
-                <AlertTriangle size={24} className="text-amber-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-[#222B45]/80 border-[#33374D]">
-          <CardContent className="p-6">
-            <div className="flex justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Total Bonus Paid</p>
-                <h3 className="text-2xl font-bold mt-1 text-white">{formatCurrency(totalBonusPaid)}</h3>
-              </div>
-              <div className="bg-purple-500/20 p-2 rounded-lg">
-                <TrendingUp size={24} className="text-purple-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <ReferralDashboardStats 
+        userStats={userStats} 
+        referrals={referrals}
+        isReferralOverdue={isReferralOverdue}
+      />
 
       <Card className="bg-[#222B45]/80 border-[#33374D]">
         <CardHeader className="pb-3">
@@ -397,205 +307,29 @@ const AdminReferralsPanel: React.FC = () => {
             </div>
             
             <TabsContent value="agents" className="mt-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-[#1A1F2C]/50">
-                    <TableRow className="border-[#33374D] hover:bg-[#1A1F2C]/70">
-                      <TableHead className="text-gray-400">Agent ID</TableHead>
-                      <TableHead className="text-gray-400">Username</TableHead>
-                      <TableHead className="text-gray-400">Level</TableHead>
-                      <TableHead className="text-gray-400">Total Referrals</TableHead>
-                      <TableHead className="text-gray-400">Active Referrals</TableHead>
-                      <TableHead className="text-gray-400">Active Since</TableHead>
-                      <TableHead className="text-gray-400 text-right">Pending Bonus</TableHead>
-                      <TableHead className="text-gray-400 text-right">Total Earned</TableHead>
-                      <TableHead className="text-gray-400">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUserStats.map(user => (
-                      <TableRow key={user.userId} className="border-[#33374D] hover:bg-[#1A1F2C]/70">
-                        <TableCell className="text-gray-300 font-mono">{user.userId.substring(0, 8)}</TableCell>
-                        <TableCell className="text-gray-300">{user.username}</TableCell>
-                        <TableCell>
-                          {user.level === 'bronze' && (
-                            <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                              Bronze
-                            </Badge>
-                          )}
-                          {user.level === 'silver' && (
-                            <Badge className="bg-gray-400/20 text-gray-300 border border-gray-400/30">
-                              Silver
-                            </Badge>
-                          )}
-                          {user.level === 'gold' && (
-                            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                              Gold
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-gray-300">{user.totalReferrals}</TableCell>
-                        <TableCell className="text-gray-300">{user.approvedReferrals}</TableCell>
-                        <TableCell className="text-gray-300">{formatDate(user.activeSince)}</TableCell>
-                        <TableCell className="text-right text-gray-300">
-                          {formatCurrency(user.pendingBonus)}
-                        </TableCell>
-                        <TableCell className="text-right text-gray-300">
-                          {formatCurrency(user.totalBonus)}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20"
-                            onClick={() => {/* Navigate to agent details */}}
-                          >
-                            View Details
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    
-                    {filteredUserStats.length === 0 && (
-                      <TableRow className="border-[#33374D]">
-                        <TableCell colSpan={9} className="text-center py-8 text-gray-400">
-                          No agents found matching your search criteria
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+              <AgentsTable users={filteredUserStats} />
             </TabsContent>
             
             <TabsContent value="referrals" className="mt-0">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader className="bg-[#1A1F2C]/50">
-                    <TableRow className="border-[#33374D] hover:bg-[#1A1F2C]/70">
-                      <TableHead className="text-gray-400 w-[30px]">
-                        <input 
-                          type="checkbox" 
-                          className="rounded bg-[#1A1F2C] border-[#33374D] text-[#8B5CF6]"
-                          onChange={() => {
-                            if (selectedReferrals.length > 0) {
-                              setSelectedReferrals([]);
-                            } else {
-                              const pendingIds = filteredReferrals
-                                .filter(r => r.status === 'pending')
-                                .map(r => r.id);
-                              setSelectedReferrals(pendingIds);
-                            }
-                          }}
-                          checked={selectedReferrals.length > 0 && selectedReferrals.length === filteredReferrals.filter(r => r.status === 'pending').length}
-                        />
-                      </TableHead>
-                      <TableHead className="text-gray-400">Referral ID</TableHead>
-                      <TableHead className="text-gray-400">Referrer</TableHead>
-                      <TableHead className="text-gray-400">Referred User</TableHead>
-                      <TableHead className="text-gray-400">Date</TableHead>
-                      <TableHead className="text-gray-400">Status</TableHead>
-                      <TableHead className="text-gray-400 text-right">Bonus Amount</TableHead>
-                      <TableHead className="text-gray-400">Admin Notes</TableHead>
-                      <TableHead className="text-gray-400">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredReferrals.map(referral => (
-                      <TableRow 
-                        key={referral.id} 
-                        className={`border-[#33374D] hover:bg-[#1A1F2C]/70 ${isReferralOverdue(referral.dateCreated) && referral.status === 'pending' ? 'bg-red-900/10' : ''}`}
-                      >
-                        <TableCell>
-                          {referral.status === 'pending' && (
-                            <input 
-                              type="checkbox" 
-                              className="rounded bg-[#1A1F2C] border-[#33374D] text-[#8B5CF6]"
-                              checked={selectedReferrals.includes(referral.id)}
-                              onChange={() => toggleReferralSelection(referral.id)}
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell className="text-gray-300 font-mono">{referral.id}</TableCell>
-                        <TableCell className="text-gray-300">{referral.referrerName}</TableCell>
-                        <TableCell className="text-gray-300">{referral.referredName}</TableCell>
-                        <TableCell className="text-gray-300">
-                          {formatDate(referral.dateCreated)}
-                          {referral.status !== 'pending' && (
-                            <div className="text-xs text-gray-500">
-                              Updated: {formatDate(referral.dateUpdated)}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {referral.status === 'pending' && (
-                            <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                              {isReferralOverdue(referral.dateCreated) ? 'Overdue' : 'Pending'}
-                            </Badge>
-                          )}
-                          {referral.status === 'approved' && (
-                            <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">
-                              Approved
-                            </Badge>
-                          )}
-                          {referral.status === 'rejected' && (
-                            <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">
-                              Rejected
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right text-gray-300">
-                          {formatCurrency(referral.bonusAmount)}
-                        </TableCell>
-                        <TableCell className="text-gray-300 max-w-xs truncate">
-                          {referral.adminComment}
-                          {referral.adminName && (
-                            <div className="text-xs text-gray-500">
-                              By: {referral.adminName}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            {referral.status === 'pending' && (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20"
-                                  onClick={() => handleApproveReferral(referral.id)}
-                                  disabled={loading}
-                                >
-                                  <Check size={16} className="mr-1" />
-                                  Approve
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
-                                  onClick={() => openRejectDialog(referral)}
-                                  disabled={loading}
-                                >
-                                  <X size={16} className="mr-1" />
-                                  Reject
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    
-                    {filteredReferrals.length === 0 && (
-                      <TableRow className="border-[#33374D]">
-                        <TableCell colSpan={9} className="text-center py-8 text-gray-400">
-                          No referrals found matching your search criteria
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+              <ReferralsTable 
+                referrals={filteredReferrals}
+                selectedReferrals={selectedReferrals}
+                loading={loading}
+                isReferralOverdue={isReferralOverdue}
+                onToggleSelect={toggleReferralSelection}
+                onToggleSelectAll={() => {
+                  if (selectedReferrals.length > 0) {
+                    setSelectedReferrals([]);
+                  } else {
+                    const pendingIds = filteredReferrals
+                      .filter(r => r.status === 'pending')
+                      .map(r => r.id);
+                    setSelectedReferrals(pendingIds);
+                  }
+                }}
+                onApprove={handleApproveReferral}
+                onReject={openRejectDialog}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>
