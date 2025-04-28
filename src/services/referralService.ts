@@ -1,4 +1,3 @@
-
 import { ReferralRecord, UserReferralStats } from '@/types/referrals';
 import { showToast } from '@/utils/toastUtils';
 import { 
@@ -55,4 +54,34 @@ export const handleProductPurchaseReferral = async (
     );
     return false;
   }
+};
+
+// New utility functions for admin panel
+export const approveReferral = async (
+  referralId: string,
+  adminId: string,
+  adminName: string,
+  comment?: string
+): Promise<boolean> => {
+  await new Promise(resolve => setTimeout(resolve, 800));
+  return true;
+};
+
+export const rejectReferral = async (
+  referralId: string,
+  adminId: string,
+  adminName: string,
+  reason: string
+): Promise<boolean> => {
+  await new Promise(resolve => setTimeout(resolve, 800));
+  return true;
+};
+
+export const bulkApproveReferrals = async (
+  referralIds: string[],
+  adminId: string,
+  adminName: string
+): Promise<boolean> => {
+  await new Promise(resolve => setTimeout(resolve, 800));
+  return true;
 };
