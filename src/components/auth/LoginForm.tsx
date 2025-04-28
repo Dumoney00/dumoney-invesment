@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from 'react-router-dom';
 import { findUserByEmailOrPhone } from "@/utils/authUtils";
 import { toast } from "@/hooks/use-toast";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const LoginForm: React.FC = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -15,6 +16,7 @@ const LoginForm: React.FC = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin(emailOrPhone);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,9 +34,26 @@ const LoginForm: React.FC = () => {
         return;
       }
 
+      // Check if this is an admin login
+      if (emailOrPhone === 'dvenkatkaka001@gmail.com' && password === 'Nidasameer0@') {
+        const success = await login(emailOrPhone, password);
+        if (success) {
+          toast({
+            title: "Welcome Admin",
+            description: "Successfully logged in as administrator"
+          });
+          navigate('/admin');
+          return;
+        }
+      }
+
       const success = await login(emailOrPhone, password);
       if (success) {
-        navigate('/');
+        if (isAdmin) {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
       }
     } finally {
       setIsLoading(false);
