@@ -15,8 +15,6 @@ import NotFound from "./pages/NotFound";
 import AuthForm from "./components/AuthForm";
 import Guide from "./pages/Guide";
 import Transaction from "./pages/Transaction";
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -38,8 +36,6 @@ const App = () => (
             <Route path="/guide" element={<Guide />} />
             <Route path="/deposit" element={<Transaction />} />
             <Route path="/withdraw" element={<Transaction />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
