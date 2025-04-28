@@ -13,15 +13,15 @@ interface ActivityChartProps {
   onTimeRangeChange?: (range: 'weekly' | 'monthly') => void;
 }
 
-// Sample data if none is provided
-const sampleData = [
-  { name: 'Mon', deposits: 4000, withdrawals: 2400, investments: 2400 },
-  { name: 'Tue', deposits: 3000, withdrawals: 1398, investments: 2210 },
-  { name: 'Wed', deposits: 2000, withdrawals: 9800, investments: 2290 },
-  { name: 'Thu', deposits: 2780, withdrawals: 3908, investments: 2000 },
-  { name: 'Fri', deposits: 1890, withdrawals: 4800, investments: 2181 },
-  { name: 'Sat', deposits: 2390, withdrawals: 3800, investments: 2500 },
-  { name: 'Sun', deposits: 3490, withdrawals: 4300, investments: 2100 },
+// Sample data if none is provided - make sure it matches the ChartDataPoint interface
+const sampleData: ChartDataPoint[] = [
+  { date: 'Mon', value: 4000 },
+  { date: 'Tue', value: 3000 },
+  { date: 'Wed', value: 2000 },
+  { date: 'Thu', value: 2780 },
+  { date: 'Fri', value: 1890 },
+  { date: 'Sat', value: 2390 },
+  { date: 'Sun', value: 3490 }
 ];
 
 const ActivityChart: React.FC<ActivityChartProps> = ({ 
@@ -62,7 +62,7 @@ const ActivityChart: React.FC<ActivityChartProps> = ({
             >
               <ChartGradients />
               <CartesianGrid strokeDasharray="3 3" stroke="#33374D" vertical={false} />
-              <XAxis dataKey="name" stroke="#6B7280" />
+              <XAxis dataKey="date" stroke="#6B7280" />
               <YAxis stroke="#6B7280" />
               <Tooltip 
                 contentStyle={{ 

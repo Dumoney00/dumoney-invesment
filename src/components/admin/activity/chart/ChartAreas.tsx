@@ -2,12 +2,10 @@
 import React from 'react';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { formatCurrency } from '@/utils/chartUtils';
+import { ChartDataPoint } from '@/utils/chartUtils';
 
 interface ChartAreasProps {
-  data: Array<{
-    date: string;
-    value: number;
-  }>;
+  data: ChartDataPoint[];
   height?: number;
   colors?: {
     stroke: string;
