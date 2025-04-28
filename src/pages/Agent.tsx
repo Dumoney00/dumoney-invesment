@@ -7,7 +7,7 @@ import AgentHeader from '@/components/agent/AgentHeader';
 import ReferralStats from '@/components/agent/ReferralStats';
 import ReferralCode from '@/components/agent/ReferralCode';
 import ReferralShare from '@/components/agent/ReferralShare';
-import ReferralTiers3D from '@/components/agent/ReferralTiers3D';
+import ReferralPlansLocked from '@/components/agent/ReferralPlansLocked';
 import { 
   getUserReferralTier,
   referralTiers,
@@ -63,7 +63,10 @@ const Agent: React.FC = () => {
             />
 
             <div className="my-6">
-              <ReferralTiers3D tiers={referralTiers} />
+              <ReferralPlansLocked 
+                tiers={referralTiers}
+                userReferralCount={approvedCount}
+              />
             </div>
 
             <ReferralCode
