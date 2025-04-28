@@ -20,7 +20,7 @@ const TierCard = ({ tier, index }: { tier: ReferralTier; index: number }) => {
       <mesh>
         <boxGeometry args={[3, 4, 0.2]} />
         <meshStandardMaterial 
-          color={tier.level === 'crown' ? '#FFD700' : '#1A1F2C'} 
+          color={tier.level === 'crown' ? '#FFD700' : '#1A1F2C'}
           metalness={0.8}
           roughness={0.2}
         />
@@ -33,7 +33,9 @@ const TierCard = ({ tier, index }: { tier: ReferralTier; index: number }) => {
           curveSegments={12}
         >
           {tier.name}
-          <meshStandardMaterial color={tier.level === 'crown' ? '#ffffff' : '#F97316'} />
+          <meshStandardMaterial 
+            color={tier.level === 'crown' ? '#ffffff' : '#F97316'} 
+          />
         </Text3D>
       </Center>
       <Center position={[0, 0, 0.15]}>
@@ -44,7 +46,9 @@ const TierCard = ({ tier, index }: { tier: ReferralTier; index: number }) => {
           curveSegments={12}
         >
           {`${tier.bonusPercentage}%`}
-          <meshStandardMaterial color="#ffffff" />
+          <meshStandardMaterial 
+            color="#ffffff" 
+          />
         </Text3D>
       </Center>
       <Center position={[0, -0.5, 0.15]}>
@@ -55,7 +59,9 @@ const TierCard = ({ tier, index }: { tier: ReferralTier; index: number }) => {
           curveSegments={12}
         >
           {tier.benefits[0]}
-          <meshStandardMaterial color="#ffffff" />
+          <meshStandardMaterial 
+            color="#ffffff" 
+          />
         </Text3D>
       </Center>
     </Float>
