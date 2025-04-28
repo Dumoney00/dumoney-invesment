@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { X } from 'lucide-react';
+import { showToast } from '@/utils/toastUtils';
 
 interface ReferralRejectDialogProps {
   open: boolean;
@@ -17,10 +18,32 @@ export const ReferralRejectDialog: React.FC<ReferralRejectDialogProps> = ({
   onReject
 }) => {
   const [rejectReason, setRejectReason] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleReject = async () => {
-    await onReject(rejectReason);
-    setRejectReason('');
+    if (!rejectReason.trim()) {
+      showToast(
+        "Validation Error", 
+        "Please provide a reason for rejection",
+        "destructive"
+      );
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await onReject(rejectReason);
+      setRejectReason('');
+      showToast("Success", "Referral rejected successfully");
+    } catch (error) {
+      showToast(
+        "Error", 
+        "Failed to reject referral. Please try again.",
+        "destructive"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -37,7 +60,7 @@ export const ReferralRejectDialog: React.FC<ReferralRejectDialogProps> = ({
           value={rejectReason}
           onChange={(e) => setRejectReason(e.target.value)}
           placeholder="Reason for rejection..."
-          className="bg-[#1A1F2C] border-[#33374D] text-white"
+          className="bg-[#1A1F2C] border-[#33374D] text-white min-h-[100px]"
         />
         
         <DialogFooter>
@@ -45,17 +68,18 @@ export const ReferralRejectDialog: React.FC<ReferralRejectDialogProps> = ({
             variant="outline"
             onClick={() => onOpenChange(false)}
             className="border-[#33374D] text-gray-300 hover:bg-[#1A1F2C]"
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button
             variant="default"
             onClick={handleReject}
-            disabled={!rejectReason.trim()}
+            disabled={!rejectReason.trim() || isSubmitting}
             className="bg-red-500 hover:bg-red-600 text-white"
           >
             <X size={16} className="mr-1" />
-            Reject Referral
+            {isSubmitting ? "Rejecting..." : "Reject Referral"}
           </Button>
         </DialogFooter>
       </DialogContent>

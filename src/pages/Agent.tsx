@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,24 +10,20 @@ import ReferralCode from '@/components/agent/ReferralCode';
 import ReferralShare from '@/components/agent/ReferralShare';
 import { 
   getUserReferralTier,
-  generateMockReferrals,
-  referralTiers
+  referralTiers,
+  fetchUserReferrals
 } from '@/services/referralService';
-import { ReferralRecord } from '@/types/referrals';
 
 const Agent: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
-  const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      setReferrals(generateMockReferrals());
-    }
-  }, [isAuthenticated]);
-
-  const userReferrals = referrals.filter(r => 
-    isAuthenticated && user && r.referrerId === user.id
-  );
+  // Use React Query to fetch and cache referrals
+  const { data: userReferrals = [], isLoading } = useQuery({
+    queryKey: ['userReferrals', user?.id],
+    queryFn: () => fetchUserReferrals(user?.id || ''),
+    enabled: isAuthenticated && !!user?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   const approvedCount = userReferrals.filter(r => r.status === 'approved').length;
   const pendingCount = userReferrals.filter(r => r.status === 'pending').length;
@@ -35,7 +32,7 @@ const Agent: React.FC = () => {
     .reduce((sum, r) => sum + r.bonusAmount, 0);
 
   const userTier = isAuthenticated && user 
-    ? getUserReferralTier(userReferrals.filter(r => r.status === 'approved').length)
+    ? getUserReferralTier(approvedCount)
     : referralTiers[0];
 
   const handleCopyCode = () => {
@@ -52,23 +49,31 @@ const Agent: React.FC = () => {
       <AgentHeader />
       
       <div className="p-4">
-        <ReferralStats
-          userTier={userTier}
-          userReferrals={userReferrals}
-          approvedCount={approvedCount}
-          pendingCount={pendingCount}
-          earnedBonus={earnedBonus}
-        />
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-pulse text-gray-400">Loading referral data...</div>
+          </div>
+        ) : (
+          <>
+            <ReferralStats
+              userTier={userTier}
+              userReferrals={userReferrals}
+              approvedCount={approvedCount}
+              pendingCount={pendingCount}
+              earnedBonus={earnedBonus}
+            />
 
-        <ReferralCode
-          isAuthenticated={isAuthenticated}
-          userId={user?.id || ''}
-        />
+            <ReferralCode
+              isAuthenticated={isAuthenticated}
+              userId={user?.id || ''}
+            />
 
-        <ReferralShare
-          onCopyCode={handleCopyCode}
-          isAuthenticated={isAuthenticated}
-        />
+            <ReferralShare
+              onCopyCode={handleCopyCode}
+              isAuthenticated={isAuthenticated}
+            />
+          </>
+        )}
       </div>
       
       <Navigation />
