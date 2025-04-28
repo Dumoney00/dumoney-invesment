@@ -4,6 +4,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Float, Text3D, Center } from '@react-three/drei';
 import { ReferralTier } from '@/types/referrals';
 import { Card } from '@/components/ui/card';
+import * as THREE from 'three';
 
 interface ReferralTiers3DProps {
   tiers: ReferralTier[];
