@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReferralStatus } from '@/types/referrals';
 import { isReferralOverdue } from '@/services/referralService';
 import { ReferralRejectDialog } from './ReferralRejectDialog';
 import ReferralTabManager from './ReferralTabManager';
+import ReferralDashboardStats from './ReferralDashboardStats';
 import { useReferralStats } from '@/hooks/useReferralStats';
 import { useReferralManagement } from '@/hooks/useReferralManagement';
 import { generateMockReferrals } from '@/services/referralService';

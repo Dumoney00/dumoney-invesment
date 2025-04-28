@@ -55,7 +55,7 @@ export const useReferralManagement = () => {
     }
   };
 
-  const handleReject = async (reason: string) => {
+  const handleReject = async (reason: string): Promise<void> => {
     if (!user?.isAdmin || !selectedReferral) return;
     
     setLoading(true);
@@ -71,7 +71,6 @@ export const useReferralManagement = () => {
         setRejectDialogOpen(false);
         setSelectedReferral(null);
       }
-      return success;
     } finally {
       setLoading(false);
     }

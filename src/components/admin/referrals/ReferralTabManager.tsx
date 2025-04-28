@@ -5,7 +5,7 @@ import ReferralDashboardStats from './ReferralDashboardStats';
 import AgentsTable from './AgentsTable';
 import ReferralsTable from './ReferralsTable';
 import { ReferralFilters } from './ReferralFilters';
-import { UserReferralStats, ReferralRecord } from '@/types/referrals';
+import { UserReferralStats, ReferralRecord, ReferralStatus } from '@/types/referrals';
 
 interface ReferralTabManagerProps {
   activeTab: string;
@@ -15,10 +15,10 @@ interface ReferralTabManagerProps {
   filteredUserStats: UserReferralStats[];
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  statusFilter: string;
-  setStatusFilter: (status: any) => void;
-  dateFilter: string;
-  setDateFilter: (filter: any) => void;
+  statusFilter: ReferralStatus | 'all';
+  setStatusFilter: (status: ReferralStatus | 'all') => void;
+  dateFilter: 'all' | 'today' | 'week' | 'month';
+  setDateFilter: (filter: 'all' | 'today' | 'week' | 'month') => void;
   selectedReferrals: string[];
   loading: boolean;
   onBulkApprove: () => void;
