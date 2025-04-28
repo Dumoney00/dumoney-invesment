@@ -11,7 +11,7 @@ export interface AuthService {
   isAuthenticated: boolean;
   saveUser: (updatedUser: User | null) => void;
   login: (emailOrPhone: string, password: string) => Promise<boolean>;
-  register: (username: string, email: string, phone: string, password: string) => Promise<boolean>;
+  register: (username: string, email: string, phone: string, password: string, referralCode?: string) => Promise<boolean>;
   adminLogin: (email: string, password: string) => Promise<boolean>;
   loginAsUser: (user: User) => Promise<boolean>;
   logout: () => void;
