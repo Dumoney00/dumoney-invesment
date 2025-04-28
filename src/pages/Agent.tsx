@@ -8,6 +8,7 @@ import AgentHeader from '@/components/agent/AgentHeader';
 import ReferralStats from '@/components/agent/ReferralStats';
 import ReferralCode from '@/components/agent/ReferralCode';
 import ReferralShare from '@/components/agent/ReferralShare';
+import ReferralTiersTable from '@/components/agent/ReferralTiersTable';
 import { 
   getUserReferralTier,
   referralTiers,
@@ -62,6 +63,8 @@ const Agent: React.FC = () => {
               pendingCount={pendingCount}
               earnedBonus={earnedBonus}
             />
+
+            <ReferralTiersTable tiers={referralTiers} />
 
             <ReferralCode
               isAuthenticated={isAuthenticated}
