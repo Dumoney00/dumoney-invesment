@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Navigation from '@/components/Navigation';
 import FloatingActionButton from '@/components/FloatingActionButton';
@@ -8,7 +7,7 @@ import AgentHeader from '@/components/agent/AgentHeader';
 import ReferralStats from '@/components/agent/ReferralStats';
 import ReferralCode from '@/components/agent/ReferralCode';
 import ReferralShare from '@/components/agent/ReferralShare';
-import ReferralTiersTable from '@/components/agent/ReferralTiersTable';
+import ReferralTiers3D from '@/components/agent/ReferralTiers3D';
 import { 
   getUserReferralTier,
   referralTiers,
@@ -18,7 +17,6 @@ import {
 const Agent: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
 
-  // Use React Query to fetch and cache referrals
   const { data: userReferrals = [], isLoading } = useQuery({
     queryKey: ['userReferrals', user?.id],
     queryFn: () => fetchUserReferrals(user?.id || ''),
@@ -64,7 +62,9 @@ const Agent: React.FC = () => {
               earnedBonus={earnedBonus}
             />
 
-            <ReferralTiersTable tiers={referralTiers} />
+            <div className="my-6">
+              <ReferralTiers3D tiers={referralTiers} />
+            </div>
 
             <ReferralCode
               isAuthenticated={isAuthenticated}
