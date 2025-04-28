@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { useBasicAuth } from './useBasicAuth';
 import { AuthService } from "@/types/auth-service";
 import { showToast } from '@/utils/toastUtils';
