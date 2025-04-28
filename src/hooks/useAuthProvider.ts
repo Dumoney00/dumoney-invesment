@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { AuthContextType } from "@/types/auth";
 import { useAuth } from './useAuth';
-import { useUserManagement } from './useUserManagement';
+import { useUserTransactions } from './useUserTransactions';
 
 export const useAuthProvider = (): AuthContextType => {
   const { 
@@ -12,12 +12,7 @@ export const useAuthProvider = (): AuthContextType => {
     login, 
     register, 
     logout,
-    resetPassword,
-    adminLogin,
-    loginAsUser,
-    blockUser,
-    unblockUser,
-    approveReferralBonus
+    resetPassword
   } = useAuth();
 
   const {
@@ -28,7 +23,7 @@ export const useAuthProvider = (): AuthContextType => {
     sellOwnedProduct,
     updateUserProfile,
     addTransaction
-  } = useUserManagement(user, saveUser);
+  } = useUserTransactions(user, saveUser);
 
   // Sync user data with localStorage whenever it changes
   useEffect(() => {
@@ -64,11 +59,6 @@ export const useAuthProvider = (): AuthContextType => {
     sellOwnedProduct,
     updateUserProfile,
     resetPassword,
-    addTransaction,
-    adminLogin,
-    loginAsUser,
-    blockUser,
-    unblockUser,
-    approveReferralBonus
+    addTransaction
   };
 };
