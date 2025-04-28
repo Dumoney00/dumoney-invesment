@@ -5,6 +5,7 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DashboardOverview } from "@/components/admin/DashboardOverview";
 import { TransactionsTable } from "@/components/admin/TransactionsTable";
+import { UsersTable } from "@/components/admin/UsersTable";
 import { ReferralAgentsChart } from "@/components/admin/ReferralAgentsChart";
 import { ActiveUsersOverview } from "@/components/admin/ActiveUsersOverview";
 import { useAuth } from "@/contexts/AuthContext";
@@ -92,12 +93,12 @@ const AdminDashboard = () => {
                 <h1 className="text-xl md:text-2xl font-bold text-gray-100">Admin Dashboard</h1>
                 <DashboardOverview />
                 
+                <TransactionsTable />
+                
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                   <ReferralAgentsChart />
                   <ActiveUsersOverview />
                 </div>
-                
-                <TransactionsTable />
               </>
             )}
             
@@ -109,10 +110,10 @@ const AdminDashboard = () => {
             )}
             
             {currentTab === "users" && (
-              <div>
+              <>
                 <h1 className="text-2xl font-bold text-gray-100">User Management</h1>
-                <p className="text-gray-400 mt-4">Full user management features coming soon.</p>
-              </div>
+                <UsersTable />
+              </>
             )}
             
             {currentTab === "referrals" && (

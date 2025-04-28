@@ -54,10 +54,6 @@ export const useAllUserTransactions = () => {
       
       setTransactions(sortedTransactions);
       setLoading(false);
-      
-      // Debug log to verify data
-      console.log('Fetched users:', allUsers);
-      console.log('Fetched transactions:', sortedTransactions);
     } catch (err) {
       console.error("Error fetching data:", err);
       setError(err instanceof Error ? err : new Error('Failed to fetch data'));
@@ -79,8 +75,8 @@ export const useAllUserTransactions = () => {
     // Listen for storage changes
     window.addEventListener('storage', handleStorageChange);
     
-    // Set up a refresh interval to check for new data every 2 seconds
-    const intervalId = setInterval(fetchData, 2000);
+    // Set up a polling interval to check for new data regularly
+    const intervalId = setInterval(fetchData, 5000);
     
     // Clean up listeners on component unmount
     return () => {
@@ -89,5 +85,5 @@ export const useAllUserTransactions = () => {
     };
   }, []);
   
-  return { transactions, users, loading, error };
+  return { transactions, users, loading, error, refreshData: fetchData };
 };
