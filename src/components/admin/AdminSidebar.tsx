@@ -2,7 +2,11 @@
 import { Home, Users, BarChart4, CreditCard, Settings, LogOut, Activity } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
-export const AdminSidebar = () => {
+interface AdminSidebarProps {
+  onClose?: () => void;
+}
+
+export const AdminSidebar = ({ onClose }: AdminSidebarProps) => {
   const location = useLocation();
   
   const menuItems = [
@@ -15,7 +19,7 @@ export const AdminSidebar = () => {
   ];
   
   return (
-    <div className="h-screen bg-gradient-to-b from-gray-900 to-black w-64 p-4 text-white flex flex-col border-r border-gray-800">
+    <div className="h-screen bg-gradient-to-b from-gray-900 to-black w-full p-4 text-white flex flex-col border-r border-gray-800">
       <div className="mb-8 p-4">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-500">
           InvestDash
@@ -33,6 +37,7 @@ export const AdminSidebar = () => {
               <li key={item.path}>
                 <Link 
                   to={item.path}
+                  onClick={onClose}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-200 ${
                     isActive 
                       ? "bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 font-medium" 
@@ -52,7 +57,11 @@ export const AdminSidebar = () => {
       </nav>
       
       <div className="mt-auto pb-8">
-        <Link to="/" className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-gray-100 hover:bg-gray-800/50 transition-all duration-200">
+        <Link 
+          to="/" 
+          onClick={onClose}
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-400 hover:text-gray-100 hover:bg-gray-800/50 transition-all duration-200"
+        >
           <LogOut className="h-5 w-5" />
           <span>Exit Admin</span>
         </Link>

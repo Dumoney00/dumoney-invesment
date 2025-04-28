@@ -1,24 +1,28 @@
 
 import { Bell, Search } from "lucide-react";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const AdminHeader = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifications, setNotifications] = useState(3);
+  const [notifications] = useState(3);
+  const isMobile = useIsMobile();
   
   return (
     <header className="bg-gray-900/50 backdrop-blur-xl border-b border-gray-800 sticky top-0 z-30 flex h-16 items-center gap-4 px-4">
       <div className="flex flex-1 items-center gap-4">
-        <div className="relative max-w-md">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <input
-            type="search"
-            placeholder="Search transactions, users..."
-            className="rounded-full bg-gray-800 pl-8 pr-4 py-2 text-sm w-80 focus:outline-none focus:ring-1 focus:ring-amber-500 text-gray-300"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        {!isMobile && (
+          <div className="relative max-w-md hidden md:block">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <input
+              type="search"
+              placeholder="Search transactions, users..."
+              className="rounded-full bg-gray-800 pl-8 pr-4 py-2 text-sm w-80 focus:outline-none focus:ring-1 focus:ring-amber-500 text-gray-300"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        )}
       </div>
       
       <nav className="flex items-center gap-4">
