@@ -44,11 +44,13 @@ export const useAllUserTransactions = () => {
         totalWithdraw: user.total_withdraw,
         dailyIncome: user.daily_income,
         investmentQuantity: user.investment_quantity,
+        ownedProducts: [], // Empty array as default
+        transactions: [], // Empty array as default
         lastIncomeCollection: user.last_income_collection,
         isAdmin: user.is_admin,
         isBlocked: user.is_blocked,
         referralCode: user.referral_code,
-        referralStatus: user.referral_status,
+        referralStatus: user.referral_status as "pending" | "approved" | undefined,
         referredBy: user.referred_by,
         level: user.level
       }));

@@ -63,7 +63,7 @@ export const SupabaseAuthProvider: React.FC<{children: ReactNode}> = ({ children
       isAdmin: userData.is_admin,
       isBlocked: userData.is_blocked,
       referralCode: userData.referral_code,
-      referralStatus: userData.referral_status,
+      referralStatus: userData.referral_status as "pending" | "approved" | undefined,
       referredBy: userData.referred_by,
       level: userData.level
     };
