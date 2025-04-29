@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -52,14 +51,17 @@ const AdminDashboard = () => {
       }
 
       // Try to find if this user already exists in auth
-      const { data: userExists } = await supabase.auth.admin.listUsers({
-        filters: {
-          email: 'dvenkatkaka001@gmail.com'
-        }
+      // Changed to correct API parameters - using page params instead of filters
+      const { data: usersList } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 10
       });
+      
+      // Check if the admin user exists in the list
+      const adminUser = usersList?.users?.find(u => u.email === 'dvenkatkaka001@gmail.com');
 
       // If the user doesn't exist in auth, create them
-      if (!userExists || userExists.users.length === 0) {
+      if (!adminUser) {
         // Create the admin user in auth
         try {
           const { data, error } = await supabase.auth.admin.createUser({
@@ -102,6 +104,7 @@ const AdminDashboard = () => {
     };
     
     // Only run this once on component mount
+    ensureAdminExists();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
