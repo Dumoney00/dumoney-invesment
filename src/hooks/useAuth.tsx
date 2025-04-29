@@ -2,6 +2,7 @@
 import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
 import { AuthService } from "@/types/auth-service";
 import { showToast } from '@/utils/toastUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useAuth = (): AuthService => {
   const {
@@ -16,11 +17,28 @@ export const useAuth = (): AuthService => {
   // Create a function that matches the resetPassword signature in AuthService
   const resetPassword = async (email: string): Promise<boolean> => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      // Track password reset attempt in transactions for admin dashboard
+      if (user) {
+        await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            type: 'account_security',
+            amount: 0,
+            status: 'pending',
+            details: `Password reset requested for email: ${email}`
+          });
+      }
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/change-password`,
+      });
+      
       if (error) {
         showToast("Error", error.message, "destructive");
         return false;
       }
+      
       showToast("Success", "Password reset email sent", "default");
       return true;
     } catch (error) {
@@ -40,6 +58,3 @@ export const useAuth = (): AuthService => {
     resetPassword
   };
 };
-
-// Import supabase at the top of the file
-import { supabase } from '@/integrations/supabase/client';

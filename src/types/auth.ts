@@ -37,13 +37,23 @@ export interface BankDetails {
   accountHolderName: string;
 }
 
-export type TransactionType = "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome" | "referralBonus";
+export type TransactionType = 
+  | "deposit" 
+  | "withdraw" 
+  | "purchase" 
+  | "sale" 
+  | "dailyIncome" 
+  | "referralBonus" 
+  | "account_created" 
+  | "account_activity" 
+  | "account_update" 
+  | "account_security";
 
 export type TransactionStatus = "completed" | "pending" | "failed";
 
 export interface TransactionRecord {
   id: string;
-  type: TransactionType;
+  type: TransactionType | string;
   amount: number;
   timestamp: string;
   status: TransactionStatus;

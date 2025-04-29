@@ -11,16 +11,18 @@ import {
 import { useAllUserTransactions } from "@/hooks/useAllUserTransactions";
 import { useTransactionManagement } from "@/hooks/useTransactionManagement";
 import { TransactionRecord, TransactionType } from "@/types/auth";
-import { Check, MoreHorizontal, X, Filter } from "lucide-react";
+import { Check, MoreHorizontal, X, Filter, Eye } from "lucide-react";
 import { getTransactionIcon, getTransactionIconClass } from "@/utils/transactionUtils";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/utils/dateUtils";
 import { formatCurrency } from "@/utils/formatUtils";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 export const TransactionsTable = () => {
   const { transactions, loading, refreshData } = useAllUserTransactions();
-  const [filter, setFilter] = useState<'all' | 'deposit' | 'withdraw' | 'pending' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'deposit' | 'withdraw' | 'pending' | 'completed' | 'account_activity'>('all');
   const { selectedTransactions, isApproving, handleSelectTransaction, handleSelectAll, handleApproveWithdrawals } = useTransactionManagement();
   
   // Filter and sort transactions
@@ -30,6 +32,7 @@ export const TransactionsTable = () => {
     if (filter === 'withdraw') return t.type === 'withdraw';
     if (filter === 'pending') return t.status === 'pending';
     if (filter === 'completed') return t.status === 'completed';
+    if (filter === 'account_activity') return ['account_created', 'account_activity', 'account_update', 'account_security'].includes(t.type);
     return true;
   });
   
@@ -65,6 +68,29 @@ export const TransactionsTable = () => {
           </span>
         );
     }
+  };
+  
+  const renderTransactionType = (type: string) => {
+    const typeMap: Record<string, {color: string, label: string}> = {
+      'deposit': { color: 'bg-emerald-500/20 text-emerald-500', label: 'Deposit' },
+      'withdraw': { color: 'bg-amber-500/20 text-amber-500', label: 'Withdraw' },
+      'purchase': { color: 'bg-blue-500/20 text-blue-500', label: 'Purchase' },
+      'sale': { color: 'bg-purple-500/20 text-purple-500', label: 'Sale' },
+      'dailyIncome': { color: 'bg-cyan-500/20 text-cyan-500', label: 'Daily Income' },
+      'referralBonus': { color: 'bg-pink-500/20 text-pink-500', label: 'Referral Bonus' },
+      'account_created': { color: 'bg-teal-500/20 text-teal-500', label: 'Account Created' },
+      'account_activity': { color: 'bg-violet-500/20 text-violet-500', label: 'Account Activity' },
+      'account_update': { color: 'bg-indigo-500/20 text-indigo-500', label: 'Profile Update' },
+      'account_security': { color: 'bg-red-500/20 text-red-500', label: 'Security Action' }
+    };
+    
+    const { color, label } = typeMap[type] || { color: 'bg-gray-500/20 text-gray-500', label: type };
+    
+    return (
+      <Badge variant="outline" className={`${color} border-current/30`}>
+        {label}
+      </Badge>
+    );
   };
   
   if (loading) {
@@ -119,6 +145,13 @@ export const TransactionsTable = () => {
             >
               Completed
             </Button>
+            <Button 
+              variant={filter === 'account_activity' ? 'default' : 'outline'} 
+              onClick={() => setFilter('account_activity')}
+              className="w-full"
+            >
+              User Activity
+            </Button>
           </div>
           
           {pendingWithdrawals.length > 0 && (
@@ -139,7 +172,7 @@ export const TransactionsTable = () => {
     <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/50 backdrop-blur-sm">
       <div className="flex items-center justify-between p-4 bg-gray-800/50 flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-medium text-gray-200">Transactions</h3>
+          <h3 className="text-lg font-medium text-gray-200">Transactions & Activities</h3>
           <div className="bg-gray-700 text-gray-300 text-xs font-medium px-2 py-1 rounded-full">
             {filteredTransactions.length}
           </div>
@@ -180,6 +213,12 @@ export const TransactionsTable = () => {
               onClick={() => setFilter('completed')}
             >
               Completed
+            </button>
+            <button 
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${filter === 'account_activity' ? 'bg-amber-500 text-white' : 'text-gray-400 hover:text-gray-200'}`}
+              onClick={() => setFilter('account_activity')}
+            >
+              User Activity
             </button>
           </div>
           
@@ -223,17 +262,18 @@ export const TransactionsTable = () => {
               <TableHead className="text-gray-400">User</TableHead>
               <TableHead className="text-gray-400">Type</TableHead>
               <TableHead className="text-gray-400 text-right">Amount</TableHead>
-              <TableHead className="text-gray-400 hidden md:table-cell">Date</TableHead>
+              <TableHead className="text-gray-400 hidden md:table-cell">Date/Time</TableHead>
               <TableHead className="text-gray-400">Status</TableHead>
-              <TableHead className="text-gray-400 text-right hidden md:table-cell">Actions</TableHead>
+              <TableHead className="text-gray-400 text-right">Details</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredTransactions.length > 0 ? (
               filteredTransactions.map((transaction: TransactionRecord) => {
-                const TransactionIcon = getTransactionIcon(transaction.type);
-                const iconClass = getTransactionIconClass(transaction.type);
+                const TransactionIcon = getTransactionIcon(transaction.type as TransactionType);
+                const iconClass = getTransactionIconClass(transaction.type as TransactionType);
                 const isPendingWithdrawal = transaction.type === 'withdraw' && transaction.status === 'pending';
+                const isAccountActivity = ['account_created', 'account_activity', 'account_update', 'account_security'].includes(transaction.type);
                 
                 return (
                   <TableRow key={transaction.id} className="border-gray-700 hover:bg-gray-800/20">
@@ -257,14 +297,24 @@ export const TransactionsTable = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className={`p-1 rounded-md ${iconClass}`}>
-                          <TransactionIcon className="h-4 w-4" />
-                        </div>
-                        <span className="capitalize text-gray-300">{transaction.type}</span>
+                        {!isAccountActivity ? (
+                          <div className={`p-1 rounded-md ${iconClass}`}>
+                            <TransactionIcon className="h-4 w-4" />
+                          </div>
+                        ) : (
+                          <div className="p-1 rounded-md bg-purple-500/20 text-purple-500">
+                            <Eye className="h-4 w-4" />
+                          </div>
+                        )}
+                        {renderTransactionType(transaction.type)}
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatCurrency(transaction.amount)}
+                      {isAccountActivity ? (
+                        <span className="text-gray-400">-</span>
+                      ) : (
+                        formatCurrency(transaction.amount)
+                      )}
                     </TableCell>
                     <TableCell className="text-gray-400 hidden md:table-cell">
                       {formatDate(transaction.timestamp)}
@@ -272,10 +322,19 @@ export const TransactionsTable = () => {
                     <TableCell>
                       {renderTransactionStatus(transaction.status)}
                     </TableCell>
-                    <TableCell className="text-right hidden md:table-cell">
-                      <button className="p-1 rounded-md hover:bg-gray-700">
-                        <MoreHorizontal className="h-4 w-4 text-gray-400" />
-                      </button>
+                    <TableCell className="text-right">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4 text-gray-400" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="text-sm">{transaction.details || 'No additional details'}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </TableCell>
                   </TableRow>
                 );

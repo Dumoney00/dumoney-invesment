@@ -160,7 +160,10 @@ export const SupabaseAuthProvider: React.FC<{children: ReactNode}> = ({ children
           data: {
             username,
             phone
-          }
+          },
+          emailRedirectTo: window.location.origin,
+          // Skip email verification - directly confirm users
+          emailConfirm: false
         }
       });
 
@@ -182,7 +185,30 @@ export const SupabaseAuthProvider: React.FC<{children: ReactNode}> = ({ children
             .eq('id', data.user.id);
         }
 
+        // Track user registration in transactions for admin dashboard
+        await supabase
+          .from('transactions')
+          .insert({
+            user_id: data.user.id,
+            type: 'account_created',
+            amount: 0,
+            status: 'completed',
+            details: `New user registered with username: ${username}`
+          });
+
         showToast("Registration Successful", "Your account has been created");
+        
+        // Auto-login the user after registration
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        
+        if (loginError) {
+          console.error("Auto-login error:", loginError);
+          showToast("Auto-login Failed", "Please log in manually", "destructive");
+        }
+        
         return true;
       }
 
@@ -196,6 +222,19 @@ export const SupabaseAuthProvider: React.FC<{children: ReactNode}> = ({ children
 
   // Logout function
   const logout = async (): Promise<void> => {
+    if (user) {
+      // Track user logout in transactions for admin dashboard
+      await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'account_activity',
+          amount: 0,
+          status: 'completed',
+          details: `User logged out: ${user.username}`
+        });
+    }
+    
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Logout error:", error);
@@ -236,6 +275,17 @@ export const SupabaseAuthProvider: React.FC<{children: ReactNode}> = ({ children
         showToast("Update Failed", error.message, "destructive");
         return false;
       }
+
+      // Track profile updates in transactions for admin dashboard
+      await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'account_update',
+          amount: 0,
+          status: 'completed',
+          details: `Profile updated: ${Object.keys(updates).join(', ')}`
+        });
 
       // Update our local user state with the updates
       setUser(prev => prev ? { ...prev, ...updates } : null);
