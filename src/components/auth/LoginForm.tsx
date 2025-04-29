@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { LogIn } from 'lucide-react';
 import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -12,7 +11,7 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { login, isAdmin } = useSupabaseAuth();
+  const { login } = useSupabaseAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,15 +26,7 @@ const LoginForm: React.FC = () => {
           title: "Login Successful",
           description: "Welcome back!"
         });
-        
-        // Add slight delay before navigation to ensure context is updated
-        setTimeout(() => {
-          if (isAdmin) {
-            navigate('/admin');
-          } else {
-            navigate('/');
-          }
-        }, 300);
+        navigate('/');
       }
     } catch (error) {
       console.error("Login error:", error);

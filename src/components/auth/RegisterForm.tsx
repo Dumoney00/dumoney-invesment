@@ -1,144 +1,124 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm, SubmitHandler } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
-
-const registerFormSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  phone: z.string().min(10, {
-    message: "Phone number must be at least 10 digits.",
-  }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
-  }),
-  referralCode: z.string().optional(),
-});
-
-type RegisterFormData = z.infer<typeof registerFormSchema>;
+import { toast } from "@/hooks/use-toast";
 
 const RegisterForm = () => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
+  
   const navigate = useNavigate();
   const { register: registerUser } = useSupabaseAuth();
-  
-  const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerFormSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      phone: "",
-      password: "",
-      referralCode: "",
-    },
-  });
 
-  const handleSubmit: SubmitHandler<RegisterFormData> = async (data) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    const success = await registerUser(
-      data.username,
-      data.email,
-      data.phone,
-      data.password,
-      data.referralCode || undefined
-    );
     
-    if (success) {
-      navigate('/');
+    try {
+      const success = await registerUser(
+        username,
+        email,
+        phone,
+        password,
+        referralCode || undefined
+      );
+      
+      if (success) {
+        toast({
+          title: "Registration Successful",
+          description: "Your account has been created!"
+        });
+        navigate('/');
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration Failed",
+        description: "Please check your information and try again",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your username" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="username" className="text-gray-300 mb-1 block">Username</label>
+        <Input
+          id="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter your username"
+          required
+          className="bg-[#222222] border-gray-700 text-white"
         />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your email" type="email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      
+      <div>
+        <label htmlFor="email" className="text-gray-300 mb-1 block">Email</label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          required
+          className="bg-[#222222] border-gray-700 text-white"
         />
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your phone number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      
+      <div>
+        <label htmlFor="phone" className="text-gray-300 mb-1 block">Phone</label>
+        <Input
+          id="phone"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="Enter your phone number"
+          className="bg-[#222222] border-gray-700 text-white"
         />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input type="password" placeholder="Enter your password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      
+      <div>
+        <label htmlFor="password" className="text-gray-300 mb-1 block">Password</label>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter your password"
+          required
+          className="bg-[#222222] border-gray-700 text-white"
         />
-        <FormField
-          control={form.control}
-          name="referralCode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Referral Code (Optional)</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter referral code if you have one" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      </div>
+      
+      <div>
+        <label htmlFor="referralCode" className="text-gray-300 mb-1 block">Referral Code (Optional)</label>
+        <Input
+          id="referralCode"
+          value={referralCode}
+          onChange={(e) => setReferralCode(e.target.value)}
+          placeholder="Enter referral code if you have one"
+          className="bg-[#222222] border-gray-700 text-white"
         />
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Registering..." : "Register"}
-        </Button>
-      </form>
-    </Form>
+      </div>
+      
+      <Button 
+        type="submit" 
+        className="w-full bg-investment-gold hover:bg-investment-gold/90"
+        disabled={loading}
+      >
+        {loading ? "Registering..." : "Register"}
+      </Button>
+    </form>
   );
 };
 
