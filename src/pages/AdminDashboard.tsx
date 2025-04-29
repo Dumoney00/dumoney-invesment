@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Database, Loader2 } from "lucide-react";
 import { triggerDataMigration } from "@/utils/dataMigration";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
   const { user, isAdmin } = useSupabaseAuth();
@@ -32,6 +33,77 @@ const AdminDashboard = () => {
       setCurrentTab("dashboard");
     }
   }, [location.search]);
+  
+  useEffect(() => {
+    // Ensure our admin user exists
+    const ensureAdminExists = async () => {
+      // Check if this admin email is already in the admin_users table
+      const { data: adminData } = await supabase
+        .from('admin_users')
+        .select('email')
+        .eq('email', 'dvenkatkaka001@gmail.com')
+        .maybeSingle();
+      
+      // If not, add it
+      if (!adminData) {
+        await supabase
+          .from('admin_users')
+          .insert({ email: 'dvenkatkaka001@gmail.com' });
+      }
+
+      // Try to find if this user already exists in auth
+      const { data: userExists } = await supabase.auth.admin.listUsers({
+        filters: {
+          email: 'dvenkatkaka001@gmail.com'
+        }
+      });
+
+      // If the user doesn't exist in auth, create them
+      if (!userExists || userExists.users.length === 0) {
+        // Create the admin user in auth
+        try {
+          const { data, error } = await supabase.auth.admin.createUser({
+            email: 'dvenkatkaka001@gmail.com',
+            password: 'Nidasameer0@',
+            email_confirm: true, // Auto-confirm email
+            user_metadata: {
+              username: 'Admin',
+              is_admin: true
+            }
+          });
+          
+          if (error) {
+            console.error("Error creating admin user:", error);
+          } else if (data && data.user) {
+            // Ensure user is also in the users table
+            const { error: userInsertError } = await supabase
+              .from('users')
+              .insert({
+                id: data.user.id,
+                username: 'Admin',
+                email: 'dvenkatkaka001@gmail.com',
+                is_admin: true,
+                balance: 0,
+                withdrawal_balance: 0,
+                total_deposit: 0,
+                total_withdraw: 0,
+                daily_income: 0,
+                investment_quantity: 0
+              });
+              
+            if (userInsertError) {
+              console.error("Error inserting admin into users table:", userInsertError);
+            }
+          }
+        } catch (error) {
+          console.error("Error in admin user creation:", error);
+        }
+      }
+    };
+    
+    // Only run this once on component mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const handleMigrateData = async () => {
     setIsMigrating(true);
