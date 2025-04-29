@@ -28,12 +28,22 @@ const LoginForm: React.FC = () => {
           description: "Welcome back!"
         });
         
-        if (isAdmin) {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
+        // Add slight delay before navigation to ensure context is updated
+        setTimeout(() => {
+          if (isAdmin) {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
+        }, 300);
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login Failed", 
+        description: "Please check your credentials and try again",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }

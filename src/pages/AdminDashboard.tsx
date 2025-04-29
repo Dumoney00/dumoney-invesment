@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -58,7 +59,8 @@ const AdminDashboard = () => {
       });
       
       // Check if the admin user exists in the list
-      const adminUser = usersList?.users?.find(u => u.email === 'dvenkatkaka001@gmail.com');
+      // Type casting to any to avoid TypeScript errors with the response structure
+      const adminUser = usersList?.users?.find((u: any) => u.email === 'dvenkatkaka001@gmail.com');
 
       // If the user doesn't exist in auth, create them
       if (!adminUser) {

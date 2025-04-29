@@ -72,47 +72,71 @@ export const SupabaseAuthProvider: React.FC<{children: ReactNode}> = ({ children
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      
-      if (session?.user) {
-        setSupabaseUser(session.user);
-        const formattedUser = await formatUserData(session.user);
-        setUser(formattedUser);
-        setIsAdmin(formattedUser?.isAdmin || false);
-      }
-      
-      setIsLoading(false);
-    };
+      try {
+        // Set up auth state listener FIRST
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, newSession) => {
+            console.log('Auth state changed:', event);
+            setSession(newSession);
+            
+            if (newSession?.user) {
+              setSupabaseUser(newSession.user);
+              
+              // Use setTimeout to prevent potential Supabase auth callback deadlocks
+              setTimeout(async () => {
+                const formattedUser = await formatUserData(newSession.user);
+                setUser(formattedUser);
+                
+                // Check admin status
+                const { data: adminData } = await supabase
+                  .from('admin_users')
+                  .select('id')
+                  .eq('email', newSession.user.email)
+                  .maybeSingle();
+                  
+                setIsAdmin(!!adminData || formattedUser?.isAdmin || false);
+                setIsLoading(false);
+              }, 0);
+            } else {
+              setSupabaseUser(null);
+              setUser(null);
+              setIsAdmin(false);
+              setIsLoading(false);
+            }
+          }
+        );
 
-    initializeAuth();
-
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        setSession(session);
+        // THEN check for existing session
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+        setSession(existingSession);
         
-        if (session?.user) {
-          setSupabaseUser(session.user);
-          const formattedUser = await formatUserData(session.user);
+        if (existingSession?.user) {
+          setSupabaseUser(existingSession.user);
+          const formattedUser = await formatUserData(existingSession.user);
           setUser(formattedUser);
-          setIsAdmin(formattedUser?.isAdmin || false);
-        } else {
-          setSupabaseUser(null);
-          setUser(null);
-          setIsAdmin(false);
+          
+          // Check admin status
+          const { data: adminData } = await supabase
+            .from('admin_users')
+            .select('id')
+            .eq('email', existingSession.user.email)
+            .maybeSingle();
+            
+          setIsAdmin(!!adminData || formattedUser?.isAdmin || false);
         }
         
         setIsLoading(false);
+        
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        setIsLoading(false);
       }
-    );
-
-    // Clean up subscription
-    return () => {
-      subscription.unsubscribe();
     };
+
+    initializeAuth();
   }, []);
 
   // Login function
@@ -240,15 +264,19 @@ export const SupabaseAuthProvider: React.FC<{children: ReactNode}> = ({ children
   const logout = async (): Promise<void> => {
     if (user) {
       // Track user logout in transactions for admin dashboard
-      await supabase
-        .from('transactions')
-        .insert({
-          user_id: user.id,
-          type: 'account_activity',
-          amount: 0,
-          status: 'completed',
-          details: `User logged out: ${user.username}`
-        });
+      try {
+        await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            type: 'account_activity',
+            amount: 0,
+            status: 'completed',
+            details: `User logged out: ${user.username}`
+          });
+      } catch (err) {
+        console.error("Error logging logout activity:", err);
+      }
     }
     
     const { error } = await supabase.auth.signOut();
