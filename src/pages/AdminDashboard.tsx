@@ -8,15 +8,19 @@ import { TransactionsTable } from "@/components/admin/TransactionsTable";
 import { UsersTable } from "@/components/admin/UsersTable";
 import { ReferralAgentsChart } from "@/components/admin/ReferralAgentsChart";
 import { ActiveUsersOverview } from "@/components/admin/ActiveUsersOverview";
-import { useAuth } from "@/contexts/AuthContext";
+import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { Database, Loader2 } from "lucide-react";
+import { triggerDataMigration } from "@/utils/dataMigration";
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useSupabaseAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [currentTab, setCurrentTab] = useState<string>("dashboard");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
   const isMobile = useIsMobile();
   
   useEffect(() => {
@@ -29,7 +33,11 @@ const AdminDashboard = () => {
     }
   }, [location.search]);
   
-  const isAdmin = true;
+  const handleMigrateData = async () => {
+    setIsMigrating(true);
+    await triggerDataMigration();
+    setIsMigrating(false);
+  };
   
   if (!isAdmin) {
     return (
@@ -90,7 +98,27 @@ const AdminDashboard = () => {
           <div className="max-w-7xl mx-auto space-y-6">
             {currentTab === "dashboard" && (
               <>
-                <h1 className="text-xl md:text-2xl font-bold text-gray-100">Admin Dashboard</h1>
+                <div className="flex justify-between items-center">
+                  <h1 className="text-xl md:text-2xl font-bold text-gray-100">Admin Dashboard</h1>
+                  <Button
+                    variant="outline"
+                    onClick={handleMigrateData}
+                    disabled={isMigrating}
+                    className="flex items-center gap-2 bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500 hover:text-white"
+                  >
+                    {isMigrating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Migrating Data...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="h-4 w-4" />
+                        Migrate Data to Supabase
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <DashboardOverview />
                 
                 <TransactionsTable />

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Table, 
   TableHeader, 
@@ -14,10 +14,13 @@ import { formatCurrency } from "@/utils/formatUtils";
 import { formatDate } from "@/utils/dateUtils";
 import { Check, X, Lock, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export const UsersTable = () => {
-  const { users, loading } = useAllUserTransactions();
+  const { users, loading, refreshData } = useAllUserTransactions();
   const [searchQuery, setSearchQuery] = useState("");
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   
   // Filter users based on search
   const filteredUsers = users.filter(user => 
@@ -28,19 +31,59 @@ export const UsersTable = () => {
   const renderUserStatus = (isBlocked?: boolean) => {
     if (isBlocked) {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/20 text-red-500 text-xs font-medium">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/20 text-red-400 text-xs font-medium">
           <Lock className="h-3 w-3" />
           Blocked
         </span>
       );
     } else {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-500 text-xs font-medium">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
           <UserCheck className="h-3 w-3" />
           Active
         </span>
       );
     }
+  };
+  
+  const handleToggleUserStatus = async (userId: string, isCurrentlyBlocked: boolean | undefined) => {
+    try {
+      setUpdatingUserId(userId);
+      
+      const { error } = await supabase
+        .from('users')
+        .update({ is_blocked: !isCurrentlyBlocked })
+        .eq('id', userId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: isCurrentlyBlocked ? "User Unblocked" : "User Blocked",
+        description: isCurrentlyBlocked 
+          ? "User can now access their account" 
+          : "User is now blocked from accessing their account"
+      });
+      
+      refreshData();
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      toast({
+        title: "Operation Failed",
+        description: "Could not update user status",
+        variant: "destructive"
+      });
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
+  
+  const handleViewDetails = (userId: string) => {
+    // This would navigate to a user details page
+    console.log("View details for user", userId);
+    toast({
+      title: "Coming Soon",
+      description: "User details view will be implemented in a future update"
+    });
   };
   
   if (loading) {
@@ -94,14 +137,32 @@ export const UsersTable = () => {
                     {formatCurrency(user.balance)}
                   </TableCell>
                   <TableCell className="text-gray-400">
-                    {formatDate(user.lastIncomeCollection || new Date().toISOString())}
+                    {user.lastIncomeCollection && formatDate(user.lastIncomeCollection)}
                   </TableCell>
                   <TableCell>
                     {renderUserStatus(user.isBlocked)}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm" className="text-xs">
-                      View Details
+                  <TableCell className="text-right space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => handleViewDetails(user.id)}
+                    >
+                      View
+                    </Button>
+                    <Button 
+                      variant={user.isBlocked ? "default" : "destructive"} 
+                      size="sm" 
+                      className="text-xs"
+                      disabled={updatingUserId === user.id}
+                      onClick={() => handleToggleUserStatus(user.id, user.isBlocked)}
+                    >
+                      {updatingUserId === user.id 
+                        ? "Updating..." 
+                        : user.isBlocked 
+                          ? "Unblock" 
+                          : "Block"}
                     </Button>
                   </TableCell>
                 </TableRow>

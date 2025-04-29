@@ -1,6 +1,8 @@
 
 import { useEffect, useState } from 'react';
 import { TransactionRecord, User } from '@/types/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export const useAllUserTransactions = () => {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
@@ -8,51 +10,68 @@ export const useAllUserTransactions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchData = () => {
+  const fetchData = async () => {
     try {
-      // Get all users from localStorage
-      const storedUsers = localStorage.getItem('investmentUsers');
-      const currentUser = localStorage.getItem('investmentUser');
+      setLoading(true);
       
-      let allUsers: User[] = [];
+      // Fetch all users from Supabase
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('*');
       
-      // Parse stored users if available
-      if (storedUsers) {
-        allUsers = JSON.parse(storedUsers);
-      }
+      if (usersError) throw usersError;
       
-      // Add current user if available and not already in the list
-      if (currentUser) {
-        const parsedUser = JSON.parse(currentUser) as User;
-        if (!allUsers.some(u => u.id === parsedUser.id)) {
-          allUsers.push(parsedUser);
-        }
-      }
+      // Fetch all transactions from Supabase
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          users:user_id (username)
+        `)
+        .order('timestamp', { ascending: false });
       
-      // Set users state
-      setUsers(allUsers);
+      if (transactionsError) throw transactionsError;
       
-      // Extract all transactions with user information
-      const allTransactions: TransactionRecord[] = [];
+      // Format users data to match our User type
+      const formattedUsers: User[] = usersData.map((user: any) => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+        balance: user.balance,
+        withdrawalBalance: user.withdrawal_balance,
+        totalDeposit: user.total_deposit,
+        totalWithdraw: user.total_withdraw,
+        dailyIncome: user.daily_income,
+        investmentQuantity: user.investment_quantity,
+        lastIncomeCollection: user.last_income_collection,
+        isAdmin: user.is_admin,
+        isBlocked: user.is_blocked,
+        referralCode: user.referral_code,
+        referralStatus: user.referral_status,
+        referredBy: user.referred_by,
+        level: user.level
+      }));
       
-      allUsers.forEach(user => {
-        if (user.transactions && user.transactions.length > 0) {
-          // Add user information to each transaction
-          const userTransactions = user.transactions.map(transaction => ({
-            ...transaction,
-            userId: user.id,
-            userName: user.username
-          }));
-          allTransactions.push(...userTransactions);
-        }
-      });
+      // Format transactions data to match our TransactionRecord type
+      const formattedTransactions: TransactionRecord[] = transactionsData.map((transaction: any) => ({
+        id: transaction.id,
+        type: transaction.type as any,
+        amount: transaction.amount,
+        timestamp: transaction.timestamp,
+        status: transaction.status as any,
+        details: transaction.details,
+        userId: transaction.user_id,
+        userName: transaction.users?.username || 'Unknown User',
+        withdrawalTime: transaction.withdrawal_time,
+        approvedBy: transaction.approved_by,
+        approvalTimestamp: transaction.approval_timestamp,
+        productId: transaction.product_id,
+        productName: transaction.product_name
+      }));
       
-      // Sort transactions by timestamp, newest first
-      const sortedTransactions = allTransactions.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      
-      setTransactions(sortedTransactions);
+      setUsers(formattedUsers);
+      setTransactions(formattedTransactions);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -64,24 +83,34 @@ export const useAllUserTransactions = () => {
   useEffect(() => {
     fetchData();
     
-    // Set up a storage event listener for real-time updates
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'investmentUsers' || event.key === 'investmentUser') {
-        console.log('Storage changed, refreshing data');
-        fetchData();
-      }
-    };
-
-    // Listen for storage changes
-    window.addEventListener('storage', handleStorageChange);
+    // Set up real-time subscription for users table
+    const usersSubscription = supabase
+      .channel('public:users')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'users' }, 
+        () => {
+          console.log('Users table changed, refreshing data');
+          fetchData();
+        }
+      )
+      .subscribe();
     
-    // Set up a polling interval to check for new data regularly
-    const intervalId = setInterval(fetchData, 5000);
+    // Set up real-time subscription for transactions table
+    const transactionsSubscription = supabase
+      .channel('public:transactions')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'transactions' }, 
+        () => {
+          console.log('Transactions table changed, refreshing data');
+          fetchData();
+        }
+      )
+      .subscribe();
     
-    // Clean up listeners on component unmount
+    // Clean up subscriptions on component unmount
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      clearInterval(intervalId);
+      supabase.removeChannel(usersSubscription);
+      supabase.removeChannel(transactionsSubscription);
     };
   }, []);
   

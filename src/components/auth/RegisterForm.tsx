@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuth } from '@/contexts/AuthContext';
+import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
 
 const registerFormSchema = z.object({
   username: z.string().min(2, {
@@ -36,7 +37,7 @@ type RegisterFormData = z.infer<typeof registerFormSchema>;
 const RegisterForm = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register: registerUser } = useSupabaseAuth();
   
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerFormSchema),
@@ -51,7 +52,7 @@ const RegisterForm = () => {
 
   const handleSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setLoading(true);
-    const success = await register(
+    const success = await registerUser(
       data.username,
       data.email,
       data.phone,
@@ -88,7 +89,7 @@ const RegisterForm = () => {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your email" {...field} />
+                <Input placeholder="Enter your email" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

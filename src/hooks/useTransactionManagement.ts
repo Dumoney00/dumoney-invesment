@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { TransactionRecord } from '@/types/auth';
 import { showToast } from '@/utils/toastUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useTransactionManagement = () => {
   const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
@@ -24,66 +25,29 @@ export const useTransactionManagement = () => {
     }
   };
 
-  const handleApproveWithdrawals = async (selectedTransactions: string[], userId?: string) => {
+  const handleApproveWithdrawals = async (selectedTransactions: string[], adminId?: string) => {
     setIsApproving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Get current users from storage
-      const storedUsers = localStorage.getItem('investmentUsers');
-      const currentUser = localStorage.getItem('investmentUser');
-      
-      let allUsers = storedUsers ? JSON.parse(storedUsers) : [];
-      let updatedCurrentUser = null;
-      
-      // Update transactions in all users
-      allUsers = allUsers.map(user => {
-        if (user.transactions) {
-          user.transactions = user.transactions.map(transaction => {
-            if (selectedTransactions.includes(transaction.id)) {
-              return {
-                ...transaction,
-                status: 'completed',
-                approvedBy: userId,
-                approvalTimestamp: new Date().toISOString()
-              };
-            }
-            return transaction;
-          });
-        }
-        return user;
-      });
-      
-      // Update current user if needed
-      if (currentUser) {
-        updatedCurrentUser = JSON.parse(currentUser);
-        if (updatedCurrentUser.transactions) {
-          updatedCurrentUser.transactions = updatedCurrentUser.transactions.map(transaction => {
-            if (selectedTransactions.includes(transaction.id)) {
-              return {
-                ...transaction,
-                status: 'completed',
-                approvedBy: userId,
-                approvalTimestamp: new Date().toISOString()
-              };
-            }
-            return transaction;
-          });
-        }
-      }
-      
-      // Save updated users back to storage
-      localStorage.setItem('investmentUsers', JSON.stringify(allUsers));
-      if (updatedCurrentUser) {
-        localStorage.setItem('investmentUser', JSON.stringify(updatedCurrentUser));
-      }
+      // Update all selected transactions to "completed" status
+      const { error } = await supabase
+        .from('transactions')
+        .update({
+          status: 'completed',
+          approved_by: adminId,
+          approval_timestamp: new Date().toISOString()
+        })
+        .in('id', selectedTransactions);
+
+      if (error) throw error;
       
       showToast(
         "Withdrawals Approved",
         `Successfully approved ${selectedTransactions.length} withdrawal requests`
       );
+      
       setSelectedTransactions([]);
     } catch (error) {
+      console.error("Error approving withdrawals:", error);
       showToast(
         "Approval Failed",
         "Could not approve withdrawals",
