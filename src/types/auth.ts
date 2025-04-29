@@ -47,13 +47,14 @@ export type TransactionType =
   | "account_created" 
   | "account_activity" 
   | "account_update" 
-  | "account_security";
+  | "account_security"
+  | string; // Adding string to accept any string value
 
 export type TransactionStatus = "completed" | "pending" | "failed";
 
 export interface TransactionRecord {
   id: string;
-  type: TransactionType | string;
+  type: TransactionType;
   amount: number;
   timestamp: string;
   status: TransactionStatus;

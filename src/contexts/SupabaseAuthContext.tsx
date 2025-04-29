@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -161,9 +160,7 @@ export const SupabaseAuthProvider: React.FC<{children: ReactNode}> = ({ children
             username,
             phone
           },
-          emailRedirectTo: window.location.origin,
-          // Skip email verification - directly confirm users
-          emailConfirm: false
+          emailRedirectTo: window.location.origin
         }
       });
 
