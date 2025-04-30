@@ -32,6 +32,7 @@ const LoginForm: React.FC = () => {
           description: "No account found with this email or phone number",
           variant: "destructive"
         });
+        setIsLoading(false);
         return;
       }
 

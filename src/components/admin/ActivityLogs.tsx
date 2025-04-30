@@ -19,7 +19,8 @@ import {
   ArrowUpCircle, 
   ShoppingCart, 
   DollarSign,
-  Filter
+  Filter,
+  Globe
 } from "lucide-react";
 import { useActivityLogs, ActivityLog } from "@/hooks/useActivityLogs";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,10 +31,11 @@ export const ActivityLogs = () => {
   const { activities, loading, error, fetchAllActivities, setupRealtimeSubscription } = useActivityLogs(user);
   const [filter, setFilter] = useState<string | null>(null);
   const [showAmount, setShowAmount] = useState<boolean>(true);
+  const [showLocation, setShowLocation] = useState<boolean>(true);
 
   useEffect(() => {
     if (user?.isAdmin) {
-      fetchAllActivities();
+      fetchAllActivities(200); // Increase limit to see more activities
       const unsubscribe = setupRealtimeSubscription();
       return unsubscribe;
     }
@@ -47,6 +49,7 @@ export const ActivityLogs = () => {
       case 'withdraw': return <ArrowUpCircle className="h-4 w-4 text-amber-500" />;
       case 'purchase': return <ShoppingCart className="h-4 w-4 text-purple-500" />;
       case 'sale': return <DollarSign className="h-4 w-4 text-pink-500" />;
+      case 'logout': return <LogIn className="h-4 w-4 text-gray-500 transform rotate-180" />;
       default: return <Activity className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -70,6 +73,14 @@ export const ActivityLogs = () => {
               {showAmount ? 'Hide Amounts' : 'Show Amounts'}
             </Button>
             <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowLocation(!showLocation)}
+              className="text-gray-400 hover:text-white"
+            >
+              {showLocation ? 'Hide Location' : 'Show Location'}
+            </Button>
+            <Button 
               variant="outline" 
               size="sm"
               className="flex gap-1"
@@ -86,19 +97,22 @@ export const ActivityLogs = () => {
           <Table>
             <TableHeader className="bg-gray-800/50">
               <TableRow className="hover:bg-transparent border-gray-700">
-                <TableHead className="text-gray-400 w-1/4">User</TableHead>
+                <TableHead className="text-gray-400 w-1/5">User</TableHead>
                 <TableHead className="text-gray-400 w-1/6">Activity</TableHead>
                 {showAmount && (
                   <TableHead className="text-gray-400 w-1/6 text-right">Amount</TableHead>
                 )}
                 <TableHead className="text-gray-400">Details</TableHead>
+                {showLocation && (
+                  <TableHead className="text-gray-400 w-1/6">Location</TableHead>
+                )}
                 <TableHead className="text-gray-400 w-1/6">Time</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={showAmount ? 5 : 4} className="text-center py-10">
+                  <TableCell colSpan={showAmount && showLocation ? 6 : (showAmount || showLocation ? 5 : 4)} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="h-6 w-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
                       <p className="text-gray-400">Loading activities...</p>
@@ -107,7 +121,7 @@ export const ActivityLogs = () => {
                 </TableRow>
               ) : filteredActivities.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={showAmount ? 5 : 4} className="text-center py-10">
+                  <TableCell colSpan={showAmount && showLocation ? 6 : (showAmount || showLocation ? 5 : 4)} className="text-center py-10">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <Activity className="h-8 w-8 text-gray-500" />
                       <p className="text-gray-400">No activities found</p>
@@ -162,6 +176,18 @@ export const ActivityLogs = () => {
                     <TableCell className="text-gray-300">
                       {activity.details || <span className="text-gray-500">No details</span>}
                     </TableCell>
+                    {showLocation && (
+                      <TableCell className="text-gray-300">
+                        {activity.ip_address ? (
+                          <div className="flex items-center gap-1">
+                            <Globe className="h-3.5 w-3.5 text-blue-400" />
+                            <span>{activity.ip_address}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500">—</span>
+                        )}
+                      </TableCell>
+                    )}
                     <TableCell className="text-gray-400 text-sm">
                       {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
                     </TableCell>

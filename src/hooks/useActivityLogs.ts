@@ -8,7 +8,7 @@ export interface ActivityLog {
   id: string;
   user_id: string;
   username: string;
-  activity_type: 'login' | 'register' | 'deposit' | 'withdraw' | 'purchase' | 'sale' | 'daily_income';
+  activity_type: 'login' | 'register' | 'deposit' | 'withdraw' | 'purchase' | 'sale' | 'daily_income' | 'logout';
   amount: number | null;
   details: string | null;
   ip_address: string | null;
@@ -56,6 +56,16 @@ export const useActivityLogs = (user: User | null) => {
     if (!user) return false;
     
     try {
+      // Get IP address for location tracking
+      let ipAddress = null;
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        ipAddress = data.ip;
+      } catch (ipError) {
+        console.error('Failed to fetch IP address:', ipError);
+      }
+      
       const { error } = await supabase
         .from('activity_logs')
         .insert({
@@ -64,7 +74,7 @@ export const useActivityLogs = (user: User | null) => {
           activity_type: activityType,
           amount: amount,
           details: details,
-          ip_address: null // We don't track IP on client side for privacy
+          ip_address: ipAddress
         });
       
       if (error) throw error;
@@ -78,7 +88,7 @@ export const useActivityLogs = (user: User | null) => {
 
   // Setup realtime subscription (for admin)
   const setupRealtimeSubscription = () => {
-    if (!user?.isAdmin) return;
+    if (!user?.isAdmin) return () => {};
     
     const channel = supabase
       .channel('activity_logs_changes')

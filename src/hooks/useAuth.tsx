@@ -29,7 +29,8 @@ export const useAuth = (): AuthService => {
             user_id: user.id,
             username: user.username,
             activity_type: 'login',
-            details: `Logged in with ${emailOrPhone.includes('@') ? 'email' : 'phone'}`
+            details: `Logged in with ${emailOrPhone.includes('@') ? 'email' : 'phone'}`,
+            ip_address: await fetchIpAddress() // Get IP address for location tracking
           });
       } catch (error) {
         console.error('Failed to log login activity', error);
@@ -58,7 +59,8 @@ export const useAuth = (): AuthService => {
             user_id: user.id,
             username: user.username,
             activity_type: 'register',
-            details: referralCode ? `Registered with referral code: ${referralCode}` : 'New registration'
+            details: referralCode ? `Registered with referral code: ${referralCode}` : 'New registration',
+            ip_address: await fetchIpAddress() // Get IP address for location tracking
           });
       } catch (error) {
         console.error('Failed to log register activity', error);
@@ -82,7 +84,8 @@ export const useAuth = (): AuthService => {
                 user_id: user.id,
                 username: user.username,
                 activity_type: 'logout',
-                details: 'User logged out'
+                details: 'User logged out',
+                ip_address: await fetchIpAddress() // Get IP address for location tracking
               });
             
             console.log('Logout activity logged');
@@ -100,6 +103,18 @@ export const useAuth = (): AuthService => {
     } else {
       // If no user, just perform the logout
       basicLogout();
+    }
+  };
+
+  // Utility function to get user's IP address
+  const fetchIpAddress = async () => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      console.error('Failed to fetch IP address:', error);
+      return null;
     }
   };
 
