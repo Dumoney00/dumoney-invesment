@@ -73,27 +73,34 @@ export const useAuth = (): AuthService => {
     // Log activity before logout (if user is authenticated)
     if (user) {
       try {
-        supabase
-          .from('activity_logs')
-          .insert({
-            user_id: user.id,
-            username: user.username,
-            activity_type: 'login',
-            details: 'User logged out'
-          })
-          .then(() => {
+        // Use async/await pattern with try/catch instead of promise.catch()
+        (async () => {
+          try {
+            await supabase
+              .from('activity_logs')
+              .insert({
+                user_id: user.id,
+                username: user.username,
+                activity_type: 'logout',
+                details: 'User logged out'
+              });
+            
             console.log('Logout activity logged');
-          })
-          .catch(error => {
+          } catch (error) {
             console.error('Failed to log logout activity', error);
-          });
+          }
+          
+          // Proceed with normal logout after logging activity (success or failure)
+          basicLogout();
+        })();
       } catch (error) {
-        console.error('Failed to log logout activity', error);
+        console.error('Failed to initiate logout activity logging', error);
+        basicLogout(); // Still logout even if activity logging fails
       }
+    } else {
+      // If no user, just perform the logout
+      basicLogout();
     }
-    
-    // Proceed with normal logout
-    basicLogout();
   };
 
   return {
