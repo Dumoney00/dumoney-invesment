@@ -3,17 +3,98 @@ import React from 'react';
 import { useBasicAuth } from './useBasicAuth';
 import { AuthService } from "@/types/auth-service";
 import { showToast } from '@/utils/toastUtils';
+import { supabase } from "@/integrations/supabase/client";
 
 export const useAuth = (): AuthService => {
   const {
     user,
     isAuthenticated,
     saveUser,
-    login,
-    register,
-    logout,
+    login: basicLogin,
+    register: basicRegister,
+    logout: basicLogout,
     resetPassword
   } = useBasicAuth();
+  
+  // Enhanced login with activity logging
+  const login = async (emailOrPhone: string, password: string) => {
+    const success = await basicLogin(emailOrPhone, password);
+    
+    // Log activity after successful login
+    if (success && user) {
+      try {
+        await supabase
+          .from('activity_logs')
+          .insert({
+            user_id: user.id,
+            username: user.username,
+            activity_type: 'login',
+            details: `Logged in with ${emailOrPhone.includes('@') ? 'email' : 'phone'}`
+          });
+      } catch (error) {
+        console.error('Failed to log login activity', error);
+      }
+    }
+    
+    return success;
+  };
+  
+  // Enhanced register with activity logging
+  const register = async (
+    username: string, 
+    email: string, 
+    phone: string, 
+    password: string,
+    referralCode?: string
+  ) => {
+    const success = await basicRegister(username, email, phone, password, referralCode);
+    
+    // Log activity after successful registration
+    if (success && user) {
+      try {
+        await supabase
+          .from('activity_logs')
+          .insert({
+            user_id: user.id,
+            username: user.username,
+            activity_type: 'register',
+            details: referralCode ? `Registered with referral code: ${referralCode}` : 'New registration'
+          });
+      } catch (error) {
+        console.error('Failed to log register activity', error);
+      }
+    }
+    
+    return success;
+  };
+  
+  // Enhanced logout with activity logging
+  const logout = () => {
+    // Log activity before logout (if user is authenticated)
+    if (user) {
+      try {
+        supabase
+          .from('activity_logs')
+          .insert({
+            user_id: user.id,
+            username: user.username,
+            activity_type: 'login',
+            details: 'User logged out'
+          })
+          .then(() => {
+            console.log('Logout activity logged');
+          })
+          .catch(error => {
+            console.error('Failed to log logout activity', error);
+          });
+      } catch (error) {
+        console.error('Failed to log logout activity', error);
+      }
+    }
+    
+    // Proceed with normal logout
+    basicLogout();
+  };
 
   return {
     user,

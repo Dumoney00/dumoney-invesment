@@ -7,7 +7,8 @@ import { DashboardOverview } from "@/components/admin/DashboardOverview";
 import { TransactionsTable } from "@/components/admin/TransactionsTable";
 import { ReferralAgentsChart } from "@/components/admin/ReferralAgentsChart";
 import { ActiveUsersOverview } from "@/components/admin/ActiveUsersOverview";
-import { useAuth } from "@/contexts/AuthContext";
+import { ActivityLogs } from "@/components/admin/ActivityLogs";
+import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const AdminDashboard = () => {
@@ -97,6 +98,8 @@ const AdminDashboard = () => {
                   <ActiveUsersOverview />
                 </div>
                 
+                <ActivityLogs />
+                
                 <TransactionsTable />
               </>
             )}
@@ -125,7 +128,7 @@ const AdminDashboard = () => {
             {currentTab === "activity" && (
               <>
                 <h1 className="text-2xl font-bold text-gray-100">User Activity</h1>
-                <ActiveUsersOverview />
+                <ActivityLogs />
               </>
             )}
             

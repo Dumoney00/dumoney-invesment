@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { findUserByEmailOrPhone } from "@/utils/authUtils";
 import { toast } from "@/hooks/use-toast";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm: React.FC = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');

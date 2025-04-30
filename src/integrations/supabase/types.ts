@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          activity_type: string
+          amount: number | null
+          created_at: string
+          details: string | null
+          id: string
+          ip_address: string | null
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          activity_type: string
+          amount?: number | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          ip_address?: string | null
+          user_id?: string | null
+          username: string
+        }
+        Update: {
+          activity_type?: string
+          amount?: number | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          ip_address?: string | null
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           created_at: string | null
@@ -24,6 +65,202 @@ export type Database = {
           created_at?: string | null
           email?: string
           id?: string
+        }
+        Relationships: []
+      }
+      bank_details: {
+        Row: {
+          account_holder_name: string
+          account_number: string
+          created_at: string
+          id: string
+          ifsc_code: string
+          upi_id: string | null
+          user_id: string
+        }
+        Insert: {
+          account_holder_name: string
+          account_number: string
+          created_at?: string
+          id?: string
+          ifsc_code: string
+          upi_id?: string | null
+          user_id: string
+        }
+        Update: {
+          account_holder_name?: string
+          account_number?: string
+          created_at?: string
+          id?: string
+          ifsc_code?: string
+          upi_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_details_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      owned_products: {
+        Row: {
+          cycle_days: number
+          id: string
+          product_id: number
+          purchase_date: string
+          user_id: string
+        }
+        Insert: {
+          cycle_days: number
+          id?: string
+          product_id: number
+          purchase_date?: string
+          user_id: string
+        }
+        Update: {
+          cycle_days?: number
+          id?: string
+          product_id?: number
+          purchase_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owned_products_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          approval_timestamp: string | null
+          approved_by: string | null
+          bank_details_id: string | null
+          details: string | null
+          id: string
+          product_id: number | null
+          product_name: string | null
+          status: string
+          timestamp: string
+          type: string
+          user_id: string
+          withdrawal_time: string | null
+        }
+        Insert: {
+          amount: number
+          approval_timestamp?: string | null
+          approved_by?: string | null
+          bank_details_id?: string | null
+          details?: string | null
+          id?: string
+          product_id?: number | null
+          product_name?: string | null
+          status: string
+          timestamp?: string
+          type: string
+          user_id: string
+          withdrawal_time?: string | null
+        }
+        Update: {
+          amount?: number
+          approval_timestamp?: string | null
+          approved_by?: string | null
+          bank_details_id?: string | null
+          details?: string | null
+          id?: string
+          product_id?: number | null
+          product_name?: string | null
+          status?: string
+          timestamp?: string
+          type?: string
+          user_id?: string
+          withdrawal_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_bank_details_id_fkey"
+            columns: ["bank_details_id"]
+            isOneToOne: false
+            referencedRelation: "bank_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          balance: number
+          created_at: string
+          daily_income: number
+          email: string
+          id: string
+          investment_quantity: number
+          is_admin: boolean
+          is_blocked: boolean
+          last_income_collection: string | null
+          level: number | null
+          phone: string | null
+          referral_code: string | null
+          referral_status: string | null
+          referred_by: string | null
+          total_deposit: number
+          total_withdraw: number
+          username: string
+          withdrawal_balance: number
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          daily_income?: number
+          email: string
+          id: string
+          investment_quantity?: number
+          is_admin?: boolean
+          is_blocked?: boolean
+          last_income_collection?: string | null
+          level?: number | null
+          phone?: string | null
+          referral_code?: string | null
+          referral_status?: string | null
+          referred_by?: string | null
+          total_deposit?: number
+          total_withdraw?: number
+          username: string
+          withdrawal_balance?: number
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          daily_income?: number
+          email?: string
+          id?: string
+          investment_quantity?: number
+          is_admin?: boolean
+          is_blocked?: boolean
+          last_income_collection?: string | null
+          level?: number | null
+          phone?: string | null
+          referral_code?: string | null
+          referral_status?: string | null
+          referred_by?: string | null
+          total_deposit?: number
+          total_withdraw?: number
+          username?: string
+          withdrawal_balance?: number
         }
         Relationships: []
       }
