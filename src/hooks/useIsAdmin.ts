@@ -15,7 +15,6 @@ export const useIsAdmin = (email: string | undefined) => {
       }
 
       try {
-        // First, check the admin_users table
         const { data, error } = await supabase
           .from('admin_users')
           .select('id')
@@ -26,18 +25,7 @@ export const useIsAdmin = (email: string | undefined) => {
           console.error('Error checking admin status:', error);
           setIsAdmin(false);
         } else {
-          // Check if an entry was found
           setIsAdmin(!!data);
-          
-          // If this is the predefined admin email, ensure it exists in admin_users
-          if (email === 'dvenkatkaka001@gmail.com' && !data) {
-            // Insert the email into admin_users if not already there
-            await supabase
-              .from('admin_users')
-              .insert({ email: 'dvenkatkaka001@gmail.com' });
-              
-            setIsAdmin(true);
-          }
         }
       } catch (error) {
         console.error('Error checking admin status:', error);

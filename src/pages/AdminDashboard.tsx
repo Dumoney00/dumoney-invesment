@@ -5,23 +5,17 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DashboardOverview } from "@/components/admin/DashboardOverview";
 import { TransactionsTable } from "@/components/admin/TransactionsTable";
-import { UsersTable } from "@/components/admin/UsersTable";
 import { ReferralAgentsChart } from "@/components/admin/ReferralAgentsChart";
 import { ActiveUsersOverview } from "@/components/admin/ActiveUsersOverview";
-import { useSupabaseAuth } from "@/contexts/SupabaseAuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
-import { Database, Loader2 } from "lucide-react";
-import { triggerDataMigration } from "@/utils/dataMigration";
-import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
-  const { user, isAdmin } = useSupabaseAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [currentTab, setCurrentTab] = useState<string>("dashboard");
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const [isMigrating, setIsMigrating] = useState(false);
   const isMobile = useIsMobile();
   
   useEffect(() => {
@@ -34,87 +28,7 @@ const AdminDashboard = () => {
     }
   }, [location.search]);
   
-  useEffect(() => {
-    // Ensure our admin user exists
-    const ensureAdminExists = async () => {
-      // Check if this admin email is already in the admin_users table
-      const { data: adminData } = await supabase
-        .from('admin_users')
-        .select('email')
-        .eq('email', 'dvenkatkaka001@gmail.com')
-        .maybeSingle();
-      
-      // If not, add it
-      if (!adminData) {
-        await supabase
-          .from('admin_users')
-          .insert({ email: 'dvenkatkaka001@gmail.com' });
-      }
-
-      // Try to find if this user already exists in auth
-      // Changed to correct API parameters - using page params instead of filters
-      const { data: usersList } = await supabase.auth.admin.listUsers({
-        page: 1,
-        perPage: 10
-      });
-      
-      // Check if the admin user exists in the list
-      // Type casting to any to avoid TypeScript errors with the response structure
-      const adminUser = usersList?.users?.find((u: any) => u.email === 'dvenkatkaka001@gmail.com');
-
-      // If the user doesn't exist in auth, create them
-      if (!adminUser) {
-        // Create the admin user in auth
-        try {
-          const { data, error } = await supabase.auth.admin.createUser({
-            email: 'dvenkatkaka001@gmail.com',
-            password: 'Nidasameer0@',
-            email_confirm: true, // Auto-confirm email
-            user_metadata: {
-              username: 'Admin',
-              is_admin: true
-            }
-          });
-          
-          if (error) {
-            console.error("Error creating admin user:", error);
-          } else if (data && data.user) {
-            // Ensure user is also in the users table
-            const { error: userInsertError } = await supabase
-              .from('users')
-              .insert({
-                id: data.user.id,
-                username: 'Admin',
-                email: 'dvenkatkaka001@gmail.com',
-                is_admin: true,
-                balance: 0,
-                withdrawal_balance: 0,
-                total_deposit: 0,
-                total_withdraw: 0,
-                daily_income: 0,
-                investment_quantity: 0
-              });
-              
-            if (userInsertError) {
-              console.error("Error inserting admin into users table:", userInsertError);
-            }
-          }
-        } catch (error) {
-          console.error("Error in admin user creation:", error);
-        }
-      }
-    };
-    
-    // Only run this once on component mount
-    ensureAdminExists();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  
-  const handleMigrateData = async () => {
-    setIsMigrating(true);
-    await triggerDataMigration();
-    setIsMigrating(false);
-  };
+  const isAdmin = true;
   
   if (!isAdmin) {
     return (
@@ -175,35 +89,15 @@ const AdminDashboard = () => {
           <div className="max-w-7xl mx-auto space-y-6">
             {currentTab === "dashboard" && (
               <>
-                <div className="flex justify-between items-center">
-                  <h1 className="text-xl md:text-2xl font-bold text-gray-100">Admin Dashboard</h1>
-                  <Button
-                    variant="outline"
-                    onClick={handleMigrateData}
-                    disabled={isMigrating}
-                    className="flex items-center gap-2 bg-amber-500/20 text-amber-400 border-amber-500/30 hover:bg-amber-500 hover:text-white"
-                  >
-                    {isMigrating ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Migrating Data...
-                      </>
-                    ) : (
-                      <>
-                        <Database className="h-4 w-4" />
-                        Migrate Data to Supabase
-                      </>
-                    )}
-                  </Button>
-                </div>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-100">Admin Dashboard</h1>
                 <DashboardOverview />
-                
-                <TransactionsTable />
                 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                   <ReferralAgentsChart />
                   <ActiveUsersOverview />
                 </div>
+                
+                <TransactionsTable />
               </>
             )}
             
@@ -215,10 +109,10 @@ const AdminDashboard = () => {
             )}
             
             {currentTab === "users" && (
-              <>
+              <div>
                 <h1 className="text-2xl font-bold text-gray-100">User Management</h1>
-                <UsersTable />
-              </>
+                <p className="text-gray-400 mt-4">Full user management features coming soon.</p>
+              </div>
             )}
             
             {currentTab === "referrals" && (

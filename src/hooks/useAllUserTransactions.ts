@@ -1,8 +1,6 @@
 
 import { useEffect, useState } from 'react';
 import { TransactionRecord, User } from '@/types/auth';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 
 export const useAllUserTransactions = () => {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
@@ -10,71 +8,56 @@ export const useAllUserTransactions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = () => {
     try {
-      setLoading(true);
+      // Get all users from localStorage
+      const storedUsers = localStorage.getItem('investmentUsers');
+      const currentUser = localStorage.getItem('investmentUser');
       
-      // Fetch all users from Supabase
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('*');
+      let allUsers: User[] = [];
       
-      if (usersError) throw usersError;
+      // Parse stored users if available
+      if (storedUsers) {
+        allUsers = JSON.parse(storedUsers);
+      }
       
-      // Fetch all transactions from Supabase
-      const { data: transactionsData, error: transactionsError } = await supabase
-        .from('transactions')
-        .select(`
-          *,
-          users:user_id (username)
-        `)
-        .order('timestamp', { ascending: false });
+      // Add current user if available and not already in the list
+      if (currentUser) {
+        const parsedUser = JSON.parse(currentUser) as User;
+        if (!allUsers.some(u => u.id === parsedUser.id)) {
+          allUsers.push(parsedUser);
+        }
+      }
       
-      if (transactionsError) throw transactionsError;
+      // Set users state
+      setUsers(allUsers);
       
-      // Format users data to match our User type
-      const formattedUsers: User[] = usersData.map((user: any) => ({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        balance: user.balance,
-        withdrawalBalance: user.withdrawal_balance,
-        totalDeposit: user.total_deposit,
-        totalWithdraw: user.total_withdraw,
-        dailyIncome: user.daily_income,
-        investmentQuantity: user.investment_quantity,
-        ownedProducts: [], // Empty array as default
-        transactions: [], // Empty array as default
-        lastIncomeCollection: user.last_income_collection,
-        isAdmin: user.is_admin,
-        isBlocked: user.is_blocked,
-        referralCode: user.referral_code,
-        referralStatus: user.referral_status as "pending" | "approved" | undefined,
-        referredBy: user.referred_by,
-        level: user.level
-      }));
+      // Extract all transactions with user information
+      const allTransactions: TransactionRecord[] = [];
       
-      // Format transactions data to match our TransactionRecord type
-      const formattedTransactions: TransactionRecord[] = transactionsData.map((transaction: any) => ({
-        id: transaction.id,
-        type: transaction.type as any,
-        amount: transaction.amount,
-        timestamp: transaction.timestamp,
-        status: transaction.status as any,
-        details: transaction.details,
-        userId: transaction.user_id,
-        userName: transaction.users?.username || 'Unknown User',
-        withdrawalTime: transaction.withdrawal_time,
-        approvedBy: transaction.approved_by,
-        approvalTimestamp: transaction.approval_timestamp,
-        productId: transaction.product_id,
-        productName: transaction.product_name
-      }));
+      allUsers.forEach(user => {
+        if (user.transactions && user.transactions.length > 0) {
+          // Add user information to each transaction
+          const userTransactions = user.transactions.map(transaction => ({
+            ...transaction,
+            userId: user.id,
+            userName: user.username
+          }));
+          allTransactions.push(...userTransactions);
+        }
+      });
       
-      setUsers(formattedUsers);
-      setTransactions(formattedTransactions);
+      // Sort transactions by timestamp, newest first
+      const sortedTransactions = allTransactions.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      
+      setTransactions(sortedTransactions);
       setLoading(false);
+      
+      // Debug log to verify data
+      console.log('Fetched users:', allUsers);
+      console.log('Fetched transactions:', sortedTransactions);
     } catch (err) {
       console.error("Error fetching data:", err);
       setError(err instanceof Error ? err : new Error('Failed to fetch data'));
@@ -85,36 +68,26 @@ export const useAllUserTransactions = () => {
   useEffect(() => {
     fetchData();
     
-    // Set up real-time subscription for users table
-    const usersSubscription = supabase
-      .channel('public:users')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'users' }, 
-        () => {
-          console.log('Users table changed, refreshing data');
-          fetchData();
-        }
-      )
-      .subscribe();
+    // Set up a storage event listener for real-time updates
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'investmentUsers' || event.key === 'investmentUser') {
+        console.log('Storage changed, refreshing data');
+        fetchData();
+      }
+    };
+
+    // Listen for storage changes
+    window.addEventListener('storage', handleStorageChange);
     
-    // Set up real-time subscription for transactions table
-    const transactionsSubscription = supabase
-      .channel('public:transactions')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'transactions' }, 
-        () => {
-          console.log('Transactions table changed, refreshing data');
-          fetchData();
-        }
-      )
-      .subscribe();
+    // Set up a refresh interval to check for new data every 2 seconds
+    const intervalId = setInterval(fetchData, 2000);
     
-    // Clean up subscriptions on component unmount
+    // Clean up listeners on component unmount
     return () => {
-      supabase.removeChannel(usersSubscription);
-      supabase.removeChannel(transactionsSubscription);
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
     };
   }, []);
   
-  return { transactions, users, loading, error, refreshData: fetchData };
+  return { transactions, users, loading, error };
 };
