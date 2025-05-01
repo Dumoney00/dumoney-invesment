@@ -22,6 +22,7 @@ interface ActivityFeedProps {
   className?: string;
   showHeader?: boolean;
   showBankDetails?: boolean;
+  filteredType?: Activity['type'] | 'all';
 }
 
 const mapTransactionToActivity = (transaction: TransactionRecord): Activity => {
@@ -87,9 +88,15 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
   activities, 
   className,
   showHeader = true,
-  showBankDetails = false
+  showBankDetails = false,
+  filteredType = 'all'
 }) => {
-  if (activities.length === 0) {
+  // Filter activities if a specific type is requested
+  const filteredActivities = filteredType === 'all' 
+    ? activities 
+    : activities.filter(activity => activity.type === filteredType);
+  
+  if (filteredActivities.length === 0) {
     return (
       <div className={cn("text-center py-8", className)}>
         <p className="text-gray-400">No activities to display yet</p>
@@ -104,7 +111,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
       )}
       
       <div className="space-y-4">
-        {activities.map(activity => (
+        {filteredActivities.map(activity => (
           <div 
             key={activity.id} 
             className="bg-[#222222] p-4 rounded-lg hover:bg-[#2a2a2a] transition-colors"

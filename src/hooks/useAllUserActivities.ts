@@ -3,8 +3,17 @@ import { useState, useEffect } from 'react';
 import { TransactionRecord, User } from '@/types/auth';
 import { Activity, mapTransactionToActivity } from '@/components/home/ActivityFeed';
 
+export interface ActivityStats {
+  todayDeposits: number;
+  todayWithdrawals: number;
+}
+
 export const useAllUserActivities = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [stats, setStats] = useState<ActivityStats>({
+    todayDeposits: 0,
+    todayWithdrawals: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -58,6 +67,27 @@ export const useAllUserActivities = () => {
         // Map transactions to activities
         const mappedActivities = sortedTransactions.map(mapTransactionToActivity);
         
+        // Calculate today's stats
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const todayTransactions = filteredTransactions.filter(
+          transaction => new Date(transaction.timestamp) >= today
+        );
+
+        const todayDeposits = todayTransactions
+          .filter(t => t.type === 'deposit')
+          .reduce((sum, t) => sum + t.amount, 0);
+          
+        const todayWithdrawals = todayTransactions
+          .filter(t => t.type === 'withdraw')
+          .reduce((sum, t) => sum + t.amount, 0);
+
+        setStats({
+          todayDeposits,
+          todayWithdrawals
+        });
+        
         setActivities(mappedActivities);
         setLoading(false);
       } catch (err) {
@@ -89,5 +119,5 @@ export const useAllUserActivities = () => {
     };
   }, []);
   
-  return { activities, loading, error };
+  return { activities, stats, loading, error };
 };

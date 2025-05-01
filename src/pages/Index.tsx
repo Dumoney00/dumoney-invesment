@@ -16,11 +16,12 @@ import SortSelector from '@/components/products/SortSelector';
 import ViewToggle, { ViewMode } from '@/components/home/ViewToggle';
 import { investmentData } from '@/data/investments';
 import ActivityFeed, { mapTransactionToActivity } from '@/components/home/ActivityFeed';
+import ActivityStatsSummary from '@/components/home/ActivityStatsSummary';
 import LiveStockChart from '@/components/home/LiveStockChart';
 import { useAllUserActivities } from '@/hooks/useAllUserActivities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Activity, Users } from "lucide-react";
+import { Activity, Users, ArrowDown, ArrowUp, IndianRupee } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
@@ -32,8 +33,9 @@ const Index: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const { activities: allUserActivities, loading: activitiesLoading } = useAllUserActivities();
+  const { activities: allUserActivities, stats: activityStats, loading: activitiesLoading } = useAllUserActivities();
   const [showActivitiesDrawer, setShowActivitiesDrawer] = useState(false);
+  const [activityFilter, setActivityFilter] = useState<'all' | 'deposit' | 'withdraw' | 'investment'>('all');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -146,6 +148,9 @@ const Index: React.FC = () => {
               </DrawerClose>
             </div>
             
+            {/* Activity Stats */}
+            <ActivityStatsSummary stats={activityStats} />
+            
             <Card className="bg-[#111111] border-gray-800 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-center text-lg text-gray-300">Live Activity Feed</CardTitle>
@@ -156,19 +161,40 @@ const Index: React.FC = () => {
                     <TabsTrigger value="all" className="flex-1">All Users</TabsTrigger>
                     <TabsTrigger value="my" className="flex-1">My Activities</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="all" className="max-h-[60vh] overflow-auto">
-                    {activitiesLoading ? (
-                      <div className="text-center py-8">
-                        <p className="text-gray-400">Loading activities...</p>
-                      </div>
-                    ) : (
-                      <ActivityFeed 
-                        activities={allUserActivities.slice(0, 20)}
-                        showHeader={false}
-                        showBankDetails={true}
-                      />
-                    )}
+                  
+                  <TabsContent value="all">
+                    {/* Activity Type Filter */}
+                    <Tabs defaultValue={activityFilter} onValueChange={(v) => setActivityFilter(v as any)} className="w-full mb-4">
+                      <TabsList className="w-full bg-[#191919] grid grid-cols-4">
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="deposit" className="flex items-center justify-center gap-1">
+                          <ArrowDown className="h-3 w-3" /> Deposits
+                        </TabsTrigger>
+                        <TabsTrigger value="withdraw" className="flex items-center justify-center gap-1">
+                          <ArrowUp className="h-3 w-3" /> Withdrawals
+                        </TabsTrigger>
+                        <TabsTrigger value="investment" className="flex items-center justify-center gap-1">
+                          <IndianRupee className="h-3 w-3" /> Purchases
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    
+                    <div className="max-h-[50vh] overflow-auto">
+                      {activitiesLoading ? (
+                        <div className="text-center py-8">
+                          <p className="text-gray-400">Loading activities...</p>
+                        </div>
+                      ) : (
+                        <ActivityFeed 
+                          activities={allUserActivities.slice(0, 20)}
+                          showHeader={false}
+                          showBankDetails={true}
+                          filteredType={activityFilter === 'all' ? 'all' : activityFilter}
+                        />
+                      )}
+                    </div>
                   </TabsContent>
+                  
                   <TabsContent value="my" className="max-h-[60vh] overflow-auto">
                     <ActivityFeed 
                       activities={userActivities.slice(0, 10)}
