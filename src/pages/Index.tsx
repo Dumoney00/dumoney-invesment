@@ -17,6 +17,8 @@ import ViewToggle, { ViewMode } from '@/components/home/ViewToggle';
 import { investmentData } from '@/data/investments';
 import ActivityFeed, { mapTransactionToActivity } from '@/components/home/ActivityFeed';
 import LiveStockChart from '@/components/home/LiveStockChart';
+import { useAllUserActivities } from '@/hooks/useAllUserActivities';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -26,6 +28,7 @@ const Index: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const { activities: allUserActivities, loading: activitiesLoading } = useAllUserActivities();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -67,7 +70,7 @@ const Index: React.FC = () => {
       }
     });
 
-  const activities = user?.transactions 
+  const userActivities = user?.transactions 
     ? user.transactions.map(transaction => mapTransactionToActivity({
         ...transaction,
         userName: user.username
@@ -117,10 +120,32 @@ const Index: React.FC = () => {
       </div>
       
       <div className="p-4 mt-6">
-        <ActivityFeed 
-          activities={activities.slice(0, 5)}
-          showHeader={true}
-        />
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="w-full bg-[#333333] mb-4">
+            <TabsTrigger value="all" className="flex-1">All Activities</TabsTrigger>
+            <TabsTrigger value="my" className="flex-1">My Activities</TabsTrigger>
+          </TabsList>
+          <TabsContent value="all">
+            <h2 className="text-center text-gray-400 mb-4 text-lg">— Latest User Activities —</h2>
+            {activitiesLoading ? (
+              <div className="text-center py-8">
+                <p className="text-gray-400">Loading activities...</p>
+              </div>
+            ) : (
+              <ActivityFeed 
+                activities={allUserActivities.slice(0, 10)}
+                showHeader={false}
+                showBankDetails={true}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value="my">
+            <ActivityFeed 
+              activities={userActivities.slice(0, 5)}
+              showHeader={true}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
       
       <div className="px-4 mb-20">
