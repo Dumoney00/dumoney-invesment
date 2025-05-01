@@ -47,7 +47,7 @@ export const useAllUserActivities = () => {
         
         // Filter transactions to show only deposits, withdrawals, and purchases
         const filteredTransactions = allTransactions.filter(
-          transaction => ['deposit', 'withdraw', 'purchase'].includes(transaction.type)
+          transaction => ['deposit', 'withdraw', 'purchase', 'sale', 'dailyIncome', 'referralBonus'].includes(transaction.type)
         );
         
         // Sort transactions by timestamp, newest first
@@ -69,12 +69,23 @@ export const useAllUserActivities = () => {
 
     fetchActivities();
     
-    // Set up a refresh interval to check for new activities every 5 seconds
-    const intervalId = setInterval(fetchActivities, 5000);
+    // Set up a refresh interval to check for new activities every 3 seconds for more real-time updates
+    const intervalId = setInterval(fetchActivities, 3000);
     
-    // Clean up intervals on component unmount
+    // Add storage event listener for real-time updates across tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'investmentUsers' || event.key === 'investmentUser') {
+        console.log('User data changed in another tab, refreshing activities');
+        fetchActivities();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Clean up intervals and event listeners on component unmount
     return () => {
       clearInterval(intervalId);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
   

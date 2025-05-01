@@ -56,6 +56,30 @@ const mapTransactionToActivity = (transaction: TransactionRecord): Activity => {
   };
 };
 
+// Format time to be more readable and show relative time
+const formatTimeAgo = (timestamp: string): string => {
+  const now = new Date();
+  const activityTime = new Date(timestamp);
+  const diffInSeconds = Math.floor((now.getTime() - activityTime.getTime()) / 1000);
+  
+  if (diffInSeconds < 60) {
+    return 'just now';
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    if (days < 7) {
+      return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    } else {
+      return activityTime.toLocaleDateString();
+    }
+  }
+};
+
 // Export this function to be used by other components
 export { mapTransactionToActivity };
 
@@ -83,7 +107,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
         {activities.map(activity => (
           <div 
             key={activity.id} 
-            className="bg-[#222222] p-4 rounded-lg"
+            className="bg-[#222222] p-4 rounded-lg hover:bg-[#2a2a2a] transition-colors"
           >
             <div className="flex items-center mb-2">
               <div className="h-10 w-10 rounded-full bg-investment-gold/20 flex items-center justify-center mr-4">
@@ -98,7 +122,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                   </span>
                 </div>
                 <span className="text-gray-400 text-xs">
-                  {new Date(activity.timestamp).toLocaleString()}
+                  {formatTimeAgo(activity.timestamp)}
                 </span>
               </div>
               <div className="h-12 w-12">

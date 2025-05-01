@@ -19,6 +19,10 @@ import ActivityFeed, { mapTransactionToActivity } from '@/components/home/Activi
 import LiveStockChart from '@/components/home/LiveStockChart';
 import { useAllUserActivities } from '@/hooks/useAllUserActivities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Activity, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -29,6 +33,7 @@ const Index: React.FC = () => {
   const [sortBy, setSortBy] = useState('default');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const { activities: allUserActivities, loading: activitiesLoading } = useAllUserActivities();
+  const [showActivitiesDrawer, setShowActivitiesDrawer] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -119,34 +124,63 @@ const Index: React.FC = () => {
         )}
       </div>
       
-      <div className="p-4 mt-6">
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="w-full bg-[#333333] mb-4">
-            <TabsTrigger value="all" className="flex-1">All Activities</TabsTrigger>
-            <TabsTrigger value="my" className="flex-1">My Activities</TabsTrigger>
-          </TabsList>
-          <TabsContent value="all">
-            <h2 className="text-center text-gray-400 mb-4 text-lg">— Latest User Activities —</h2>
-            {activitiesLoading ? (
-              <div className="text-center py-8">
-                <p className="text-gray-400">Loading activities...</p>
-              </div>
-            ) : (
-              <ActivityFeed 
-                activities={allUserActivities.slice(0, 10)}
-                showHeader={false}
-                showBankDetails={true}
-              />
-            )}
-          </TabsContent>
-          <TabsContent value="my">
-            <ActivityFeed 
-              activities={userActivities.slice(0, 5)}
-              showHeader={true}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+      {/* User Activities Button - Fixed at bottom right */}
+      <Drawer open={showActivitiesDrawer} onOpenChange={setShowActivitiesDrawer}>
+        <DrawerTrigger asChild>
+          <Button
+            className="fixed bottom-20 right-4 z-40 rounded-full h-14 w-14 p-0 shadow-lg bg-investment-gold hover:bg-investment-gold/90"
+            aria-label="View all user activities"
+          >
+            <Activity size={24} />
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="bg-black border-t border-gray-800 max-h-[90vh]">
+          <div className="p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <Users size={20} />
+                User Activities
+              </h2>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="sm">Close</Button>
+              </DrawerClose>
+            </div>
+            
+            <Card className="bg-[#111111] border-gray-800 shadow-md">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-center text-lg text-gray-300">Live Activity Feed</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="all" className="w-full">
+                  <TabsList className="w-full bg-[#222222] mb-4">
+                    <TabsTrigger value="all" className="flex-1">All Users</TabsTrigger>
+                    <TabsTrigger value="my" className="flex-1">My Activities</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="all" className="max-h-[60vh] overflow-auto">
+                    {activitiesLoading ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-400">Loading activities...</p>
+                      </div>
+                    ) : (
+                      <ActivityFeed 
+                        activities={allUserActivities.slice(0, 20)}
+                        showHeader={false}
+                        showBankDetails={true}
+                      />
+                    )}
+                  </TabsContent>
+                  <TabsContent value="my" className="max-h-[60vh] overflow-auto">
+                    <ActivityFeed 
+                      activities={userActivities.slice(0, 10)}
+                      showHeader={false}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+        </DrawerContent>
+      </Drawer>
       
       <div className="px-4 mb-20">
         <LiveStockChart />
