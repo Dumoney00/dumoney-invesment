@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,8 +10,10 @@ import AccountSummary from '@/components/home/AccountSummary';
 import PromoBanner from '@/components/home/PromoBanner';
 import QuickActions from '@/components/home/QuickActions';
 import ProductsGrid from '@/components/products/ProductsGrid';
+import ProductsList from '@/components/products/ProductsList';
 import SearchBar from '@/components/products/SearchBar';
 import SortSelector from '@/components/products/SortSelector';
+import ViewToggle, { ViewMode } from '@/components/home/ViewToggle';
 import { investmentData } from '@/data/investments';
 import ActivityFeed, { mapTransactionToActivity } from '@/components/home/ActivityFeed';
 import LiveStockChart from '@/components/home/LiveStockChart';
@@ -22,6 +25,7 @@ const Index: React.FC = () => {
   const [showProductDetails, setShowProductDetails] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -88,14 +92,28 @@ const Index: React.FC = () => {
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
         />
-        <SortSelector
-          value={sortBy}
-          onChange={setSortBy}
-        />
-        <ProductsGrid 
-          products={filteredProducts}
-          onProductPurchase={handleProductPurchase}
-        />
+        <div className="flex justify-between items-center mb-4">
+          <SortSelector
+            value={sortBy}
+            onChange={setSortBy}
+          />
+          <ViewToggle 
+            viewMode={viewMode}
+            onViewChange={setViewMode}
+          />
+        </div>
+        
+        {viewMode === 'grid' ? (
+          <ProductsGrid 
+            products={filteredProducts}
+            onProductPurchase={handleProductPurchase}
+          />
+        ) : (
+          <ProductsList 
+            products={filteredProducts}
+            onProductPurchase={handleProductPurchase}
+          />
+        )}
       </div>
       
       <div className="p-4 mt-6">

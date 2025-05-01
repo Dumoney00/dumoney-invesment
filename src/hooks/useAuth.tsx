@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useBasicAuth } from './useBasicAuth';
-import { AuthService } from "@/types/auth";
+import { AuthService } from "@/types/auth-service";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useAuth = (): AuthService => {
