@@ -2,7 +2,6 @@
 import React from 'react';
 import { useBasicAuth } from './useBasicAuth';
 import { AuthService } from "@/types/auth-service";
-import { showToast } from '@/utils/toastUtils';
 import { supabase } from "@/integrations/supabase/client";
 
 export const useAuth = (): AuthService => {
@@ -75,7 +74,7 @@ export const useAuth = (): AuthService => {
     // Log activity before logout (if user is authenticated)
     if (user) {
       try {
-        // Use async/await pattern with try/catch instead of promise.catch()
+        // Use async/await pattern with try/catch
         (async () => {
           try {
             await supabase

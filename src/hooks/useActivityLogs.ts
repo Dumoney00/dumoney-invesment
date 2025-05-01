@@ -1,7 +1,6 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { showToast } from "@/utils/toastUtils";
 import { User } from "@/types/auth";
 
 export interface ActivityLog {
@@ -16,36 +15,7 @@ export interface ActivityLog {
 }
 
 export const useActivityLogs = (user: User | null) => {
-  const [activities, setActivities] = useState<ActivityLog[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Fetch all activities (for admin only)
-  const fetchAllActivities = async (limit = 100) => {
-    try {
-      if (!user?.isAdmin) {
-        throw new Error("Unauthorized: Admin access required");
-      }
-      
-      setLoading(true);
-      
-      const { data, error } = await supabase
-        .from('activity_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit);
-      
-      if (error) throw error;
-      
-      setActivities(data as ActivityLog[]);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch activities';
-      setError(errorMessage);
-      console.error('Error fetching activities:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Log a new activity
   const logActivity = async (
@@ -86,35 +56,8 @@ export const useActivityLogs = (user: User | null) => {
     }
   };
 
-  // Setup realtime subscription (for admin)
-  const setupRealtimeSubscription = () => {
-    if (!user?.isAdmin) return () => {};
-    
-    const channel = supabase
-      .channel('activity_logs_changes')
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'activity_logs' 
-        }, 
-        (payload) => {
-          setActivities(prev => [payload.new as ActivityLog, ...prev]);
-        }
-      )
-      .subscribe();
-      
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
-
   return {
-    activities,
-    loading,
     error,
-    fetchAllActivities,
-    logActivity,
-    setupRealtimeSubscription
+    logActivity
   };
 };
