@@ -3,6 +3,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { AuthContextType } from '@/types/auth';
 import { useAuthProvider } from '@/hooks/useAuthProvider';
 
+// Create the context with undefined as initial value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {

@@ -1,7 +1,7 @@
 
-import React from 'react';
+import { useState } from 'react';
 import { useBasicAuth } from './useBasicAuth';
-import { AuthService } from "@/types/auth-service";
+import { AuthService } from "@/types/auth";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useAuth = (): AuthService => {
@@ -73,32 +73,27 @@ export const useAuth = (): AuthService => {
   const logout = () => {
     // Log activity before logout (if user is authenticated)
     if (user) {
-      try {
-        // Use async/await pattern with try/catch
-        (async () => {
-          try {
-            await supabase
-              .from('activity_logs')
-              .insert({
-                user_id: user.id,
-                username: user.username,
-                activity_type: 'logout',
-                details: 'User logged out',
-                ip_address: await fetchIpAddress() // Get IP address for location tracking
-              });
-            
-            console.log('Logout activity logged');
-          } catch (error) {
-            console.error('Failed to log logout activity', error);
-          }
+      // Use async/await pattern with try/catch
+      (async () => {
+        try {
+          await supabase
+            .from('activity_logs')
+            .insert({
+              user_id: user.id,
+              username: user.username,
+              activity_type: 'logout',
+              details: 'User logged out',
+              ip_address: await fetchIpAddress() // Get IP address for location tracking
+            });
           
-          // Proceed with normal logout after logging activity (success or failure)
-          basicLogout();
-        })();
-      } catch (error) {
-        console.error('Failed to initiate logout activity logging', error);
-        basicLogout(); // Still logout even if activity logging fails
-      }
+          console.log('Logout activity logged');
+        } catch (error) {
+          console.error('Failed to log logout activity', error);
+        }
+        
+        // Proceed with normal logout after logging activity (success or failure)
+        basicLogout();
+      })();
     } else {
       // If no user, just perform the logout
       basicLogout();
