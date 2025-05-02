@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowDown, ArrowUp, IndianRupee, Users } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { mapTransactionToActivity } from '@/components/home/ActivityFeed';
+import { toast } from '@/components/ui/use-toast';
 
 const Activities: React.FC = () => {
   const { user } = useAuth();
@@ -21,6 +22,16 @@ const Activities: React.FC = () => {
         userName: user.username
       }))
     : [];
+
+  // Check if we have any activities when loaded
+  React.useEffect(() => {
+    if (!activitiesLoading && allUserActivities.length === 0) {
+      toast({
+        title: "No activities found",
+        description: "Waiting for activities from all users to appear",
+      });
+    }
+  }, [activitiesLoading, allUserActivities]);
 
   return (
     <div className="min-h-screen bg-black pb-24">
@@ -70,7 +81,7 @@ const Activities: React.FC = () => {
                     </div>
                   ) : (
                     <ActivityFeed 
-                      activities={allUserActivities.slice(0, 30)}
+                      activities={allUserActivities}
                       showHeader={false}
                       showBankDetails={true}
                       filteredType={activityFilter === 'all' ? 'all' : activityFilter}
@@ -81,7 +92,7 @@ const Activities: React.FC = () => {
               
               <TabsContent value="my" className="max-h-[60vh] overflow-auto">
                 <ActivityFeed 
-                  activities={userActivities.slice(0, 20)}
+                  activities={userActivities}
                   showHeader={false}
                   showBankDetails={true}
                 />
