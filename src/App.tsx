@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Agent from "./pages/Agent";
+import Activities from "./pages/Activities";
 import Investing from "./pages/Investing";
 import Profile from "./pages/Profile";
 import Account from "./pages/Account";
@@ -27,6 +28,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/activities" element={<Activities />} />
             <Route path="/agent" element={<Agent />} />
             <Route path="/investing" element={<Investing />} />
             <Route path="/profile" element={<Profile />} />
