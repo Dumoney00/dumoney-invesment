@@ -6,6 +6,7 @@ import { TransactionRecord, TransactionType } from '@/types/auth';
 export interface Activity {
   id: string;
   username: string;
+  userId: string; // Added userId
   amount: number;
   type: 'deposit' | 'withdraw' | 'investment' | 'referral' | 'sale' | 'dailyIncome' | 'referralBonus';
   timestamp: string;
@@ -15,6 +16,11 @@ export interface Activity {
     accountHolderName: string;
   };
   productName?: string;
+  deviceInfo?: {
+    type?: string;
+    os?: string;
+    location?: string;
+  };
 }
 
 interface ActivityFeedProps {
@@ -23,6 +29,7 @@ interface ActivityFeedProps {
   showHeader?: boolean;
   showBankDetails?: boolean;
   filteredType?: Activity['type'] | 'all';
+  filteredUserId?: string | 'all'; // Added user filter
 }
 
 const mapTransactionToActivity = (transaction: TransactionRecord): Activity => {
@@ -49,11 +56,17 @@ const mapTransactionToActivity = (transaction: TransactionRecord): Activity => {
   return {
     id: transaction.id,
     username: transaction.userName || 'Anonymous',
+    userId: transaction.userId || 'unknown',
     amount: transaction.amount,
     type: activityType,
     timestamp: transaction.timestamp,
     bankDetails: transaction.bankDetails,
-    productName: transaction.productName
+    productName: transaction.productName,
+    deviceInfo: transaction.deviceInfo || {
+      type: transaction.deviceType || 'Unknown',
+      os: transaction.deviceOS || 'Unknown',
+      location: transaction.deviceLocation
+    }
   };
 };
 
@@ -89,12 +102,19 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
   className,
   showHeader = true,
   showBankDetails = false,
-  filteredType = 'all'
+  filteredType = 'all',
+  filteredUserId = 'all'
 }) => {
   // Filter activities if a specific type is requested
-  const filteredActivities = filteredType === 'all' 
-    ? activities 
-    : activities.filter(activity => activity.type === filteredType);
+  let filteredActivities = activities;
+  
+  if (filteredType !== 'all') {
+    filteredActivities = filteredActivities.filter(activity => activity.type === filteredType);
+  }
+  
+  if (filteredUserId !== 'all') {
+    filteredActivities = filteredActivities.filter(activity => activity.userId === filteredUserId);
+  }
   
   if (filteredActivities.length === 0) {
     return (
@@ -121,7 +141,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
                 <span className="text-investment-gold text-2xl">✓</span>
               </div>
               <div className="flex-1">
-                <p className="text-white font-medium">{activity.username}</p>
+                <div className="flex items-center gap-1">
+                  <p className="text-white font-medium">{activity.username}</p>
+                  <span className="text-xs text-gray-400">({activity.userId.substring(0, 8)})</span>
+                </div>
                 <div className="flex items-center">
                   <span className="text-investment-gold text-lg">₹{activity.amount.toLocaleString()}</span>
                   <span className="text-sm ml-2 text-gray-400">
@@ -150,29 +173,38 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
             </div>
             
             {/* Additional details section */}
-            {(showBankDetails || activity.productName) && (
-              <div className="mt-3 pt-2 border-t border-gray-700">
-                {activity.productName && (
-                  <p className="text-sm text-gray-300">
-                    <span className="text-gray-400">Product:</span> {activity.productName}
-                  </p>
-                )}
-                
-                {showBankDetails && activity.bankDetails && (activity.type === 'deposit' || activity.type === 'withdraw') && (
-                  <div className="mt-1 text-xs text-gray-300">
-                    <p>
-                      <span className="text-gray-400">Account Holder:</span> {activity.bankDetails.accountHolderName}
-                    </p>
-                    <p>
-                      <span className="text-gray-400">Account:</span> {activity.bankDetails.accountNumber.slice(0, 4)}****{activity.bankDetails.accountNumber.slice(-4)}
-                    </p>
-                    <p>
-                      <span className="text-gray-400">IFSC:</span> {activity.bankDetails.ifscCode}
-                    </p>
+            <div className="mt-3 pt-2 border-t border-gray-700">
+              {activity.deviceInfo && (
+                <div className="mb-2 text-xs text-gray-300">
+                  <p className="text-gray-400">Device Info</p>
+                  <div className="flex gap-3 mt-1">
+                    <span>Type: {activity.deviceInfo.type || 'Unknown'}</span>
+                    <span>OS: {activity.deviceInfo.os || 'Unknown'}</span>
+                    {activity.deviceInfo.location && <span>Location: {activity.deviceInfo.location}</span>}
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+              
+              {activity.productName && (
+                <p className="text-sm text-gray-300">
+                  <span className="text-gray-400">Product:</span> {activity.productName}
+                </p>
+              )}
+              
+              {showBankDetails && activity.bankDetails && (activity.type === 'deposit' || activity.type === 'withdraw') && (
+                <div className="mt-1 text-xs text-gray-300">
+                  <p>
+                    <span className="text-gray-400">Account Holder:</span> {activity.bankDetails.accountHolderName}
+                  </p>
+                  <p>
+                    <span className="text-gray-400">Account:</span> {activity.bankDetails.accountNumber.slice(0, 4)}****{activity.bankDetails.accountNumber.slice(-4)}
+                  </p>
+                  <p>
+                    <span className="text-gray-400">IFSC:</span> {activity.bankDetails.ifscCode}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>

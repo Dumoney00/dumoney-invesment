@@ -57,6 +57,14 @@ export interface TransactionRecord {
   approvalTimestamp?: string;
   productId?: number;
   productName?: string;
+  deviceType?: string;
+  deviceOS?: string;
+  deviceLocation?: string;
+  deviceInfo?: {
+    type?: string;
+    os?: string;
+    location?: string;
+  };
 }
 
 export interface AuthContextType {

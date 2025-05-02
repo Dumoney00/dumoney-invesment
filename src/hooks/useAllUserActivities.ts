@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TransactionRecord, User } from '@/types/auth';
 import { Activity, mapTransactionToActivity } from '@/components/home/ActivityFeed';
 import { supabase } from "@/integrations/supabase/client";
@@ -17,10 +17,13 @@ export const useAllUserActivities = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const prevActivitiesRef = useRef<Activity[]>([]);
 
   const fetchActivities = async () => {
     try {
-      setLoading(true);
+      if (loading) {
+        setLoading(true);
+      }
       
       // First try to get activities from Supabase if available
       let allTransactions: TransactionRecord[] = [];
@@ -84,7 +87,16 @@ export const useAllUserActivities = () => {
         todayWithdrawals
       });
       
-      setActivities(mappedActivities);
+      // Compare with previous activities to avoid unnecessary re-renders
+      const prevActivities = prevActivitiesRef.current;
+      const hasChanged = mappedActivities.length !== prevActivities.length || 
+        JSON.stringify(mappedActivities.map(a => a.id)) !== JSON.stringify(prevActivities.map(a => a.id));
+      
+      if (hasChanged) {
+        setActivities(mappedActivities);
+        prevActivitiesRef.current = mappedActivities;
+      }
+      
       setLoading(false);
     } catch (err) {
       console.error("Error fetching activities:", err);
@@ -120,11 +132,24 @@ export const useAllUserActivities = () => {
     allUsers.forEach(user => {
       if (user.transactions && user.transactions.length > 0) {
         // Add user information to each transaction
-        const userTransactions = user.transactions.map(transaction => ({
-          ...transaction,
-          userId: user.id,
-          userName: user.username
-        }));
+        const userTransactions = user.transactions.map(transaction => {
+          // Get device info from local storage if available
+          const deviceInfo = {
+            type: navigator.userAgent.indexOf('Mobile') > -1 ? 'Mobile' : 'Desktop',
+            os: navigator.platform,
+            location: 'Local'
+          };
+          
+          return {
+            ...transaction,
+            userId: user.id,
+            userName: user.username,
+            deviceType: deviceInfo.type,
+            deviceOS: deviceInfo.os,
+            deviceLocation: deviceInfo.location
+          };
+        });
+        
         allTransactions.push(...userTransactions);
       }
     });
@@ -135,8 +160,8 @@ export const useAllUserActivities = () => {
   useEffect(() => {
     fetchActivities();
     
-    // Set up a refresh interval to check for new activities every 3 seconds for more real-time updates
-    const intervalId = setInterval(fetchActivities, 3000);
+    // Set up a refresh interval every 10 seconds (less frequent to reduce blink)
+    const intervalId = setInterval(fetchActivities, 10000);
     
     // Add storage event listener for real-time updates across tabs
     const handleStorageChange = (event: StorageEvent) => {
