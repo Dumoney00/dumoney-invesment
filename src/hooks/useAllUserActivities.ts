@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { TransactionRecord, User } from '@/types/auth';
 import { Activity, mapTransactionToActivity } from '@/components/home/ActivityFeed';
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from '@/components/ui/use-toast';
 
 export interface ActivityStats {
   todayDeposits: number;
@@ -18,14 +19,83 @@ export const useAllUserActivities = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const prevActivitiesRef = useRef<Activity[]>([]);
+  const lastFetchRef = useRef<Date>(new Date());
+  const retryTimeoutRef = useRef<number | null>(null);
 
-  const fetchActivities = async () => {
+  // Function to get device information safely
+  const getDeviceInfo = () => {
     try {
-      if (loading) {
+      return {
+        type: navigator.userAgent.indexOf('Mobile') > -1 ? 'Mobile' : 'Desktop',
+        os: navigator.platform,
+        location: 'Local'
+      };
+    } catch (e) {
+      return { type: 'Unknown', os: 'Unknown', location: 'Unknown' };
+    }
+  };
+  
+  const getTransactionsFromLocalStorage = (): TransactionRecord[] => {
+    // Get all users from localStorage
+    const storedUsers = localStorage.getItem('investmentUsers');
+    const currentUser = localStorage.getItem('investmentUser');
+    
+    let allUsers: User[] = [];
+    
+    // Parse stored users if available
+    if (storedUsers) {
+      allUsers = JSON.parse(storedUsers);
+    }
+    
+    // Add current user if available and not already in the list
+    if (currentUser) {
+      const parsedUser = JSON.parse(currentUser) as User;
+      if (!allUsers.some(u => u.id === parsedUser.id)) {
+        allUsers.push(parsedUser);
+      }
+    }
+    
+    // Extract all transactions with user information
+    const allTransactions: TransactionRecord[] = [];
+    
+    allUsers.forEach(user => {
+      if (user.transactions && user.transactions.length > 0) {
+        // Add user information to each transaction
+        const userTransactions = user.transactions.map(transaction => {
+          const deviceInfo = getDeviceInfo();
+          
+          return {
+            ...transaction,
+            userId: user.id,
+            userName: user.username,
+            deviceType: deviceInfo.type,
+            deviceOS: deviceInfo.os,
+            deviceLocation: deviceInfo.location
+          };
+        });
+        
+        allTransactions.push(...userTransactions);
+      }
+    });
+    
+    return allTransactions;
+  };
+
+  const fetchActivities = async (forceRefresh = false) => {
+    try {
+      // If it's been less than 3 seconds since last fetch and not forced, skip
+      const now = new Date();
+      if (!forceRefresh && 
+          now.getTime() - lastFetchRef.current.getTime() < 3000) {
+        return;
+      }
+      
+      lastFetchRef.current = now;
+      
+      if (!loading && !forceRefresh) {
         setLoading(true);
       }
       
-      // First try to get activities from Supabase if available
       let allTransactions: TransactionRecord[] = [];
       
       try {
@@ -37,12 +107,22 @@ export const useAllUserActivities = () => {
           
         if (supabaseError) {
           console.error("Error fetching from Supabase:", supabaseError);
-          // Fall back to localStorage if Supabase fails
-          allTransactions = getTransactionsFromLocalStorage();
+          // Don't fall back to localStorage on every error, retry Supabase first
+          if (supabaseError.code === '42P17') {
+            // This is the infinite recursion error, let's handle it differently
+            console.log("Handling infinite recursion error, using localStorage instead");
+            allTransactions = getTransactionsFromLocalStorage();
+            
+            // Schedule a retry after 5 seconds
+            if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+            retryTimeoutRef.current = setTimeout(() => fetchActivities(true), 5000) as unknown as number;
+          } else {
+            throw supabaseError;
+          }
         } else if (supabaseTransactions && supabaseTransactions.length > 0) {
           // Use Supabase data if available
           allTransactions = supabaseTransactions as TransactionRecord[];
-          console.log("Fetched transactions from Supabase:", allTransactions.length);
+          console.log("Successfully fetched transactions from Supabase:", allTransactions.length);
         } else {
           // Fall back to localStorage if no data in Supabase
           allTransactions = getTransactionsFromLocalStorage();
@@ -89,85 +169,44 @@ export const useAllUserActivities = () => {
       
       // Compare with previous activities to avoid unnecessary re-renders
       const prevActivities = prevActivitiesRef.current;
-      const hasChanged = mappedActivities.length !== prevActivities.length || 
-        JSON.stringify(mappedActivities.map(a => a.id)) !== JSON.stringify(prevActivities.map(a => a.id));
       
-      if (hasChanged) {
+      if (mappedActivities.length !== prevActivities.length || 
+          JSON.stringify(mappedActivities.map(a => a.id)) !== JSON.stringify(prevActivities.map(a => a.id))) {
         setActivities(mappedActivities);
         prevActivitiesRef.current = mappedActivities;
       }
+      
+      if (error) setError(null); // Clear any previous errors
       
       setLoading(false);
     } catch (err) {
       console.error("Error fetching activities:", err);
       setError(err instanceof Error ? err : new Error('Failed to fetch activities'));
       setLoading(false);
-    }
-  };
-  
-  // Helper function to get transactions from localStorage
-  const getTransactionsFromLocalStorage = (): TransactionRecord[] => {
-    // Get all users from localStorage
-    const storedUsers = localStorage.getItem('investmentUsers');
-    const currentUser = localStorage.getItem('investmentUser');
-    
-    let allUsers: User[] = [];
-    
-    // Parse stored users if available
-    if (storedUsers) {
-      allUsers = JSON.parse(storedUsers);
-    }
-    
-    // Add current user if available and not already in the list
-    if (currentUser) {
-      const parsedUser = JSON.parse(currentUser) as User;
-      if (!allUsers.some(u => u.id === parsedUser.id)) {
-        allUsers.push(parsedUser);
-      }
-    }
-    
-    // Extract all transactions with user information
-    const allTransactions: TransactionRecord[] = [];
-    
-    allUsers.forEach(user => {
-      if (user.transactions && user.transactions.length > 0) {
-        // Add user information to each transaction
-        const userTransactions = user.transactions.map(transaction => {
-          // Get device info from local storage if available
-          const deviceInfo = {
-            type: navigator.userAgent.indexOf('Mobile') > -1 ? 'Mobile' : 'Desktop',
-            os: navigator.platform,
-            location: 'Local'
-          };
-          
-          return {
-            ...transaction,
-            userId: user.id,
-            userName: user.username,
-            deviceType: deviceInfo.type,
-            deviceOS: deviceInfo.os,
-            deviceLocation: deviceInfo.location
-          };
+      
+      // Show error notification only on forced refreshes or initial load
+      if (forceRefresh) {
+        toast({
+          title: "Error fetching activities",
+          description: "Please try again later",
+          variant: "destructive"
         });
-        
-        allTransactions.push(...userTransactions);
       }
-    });
-    
-    return allTransactions;
+    }
   };
 
   useEffect(() => {
-    fetchActivities();
+    // Initial fetch
+    fetchActivities(true);
     
-    // Set up a refresh interval every 10 seconds (less frequent to reduce blink)
-    const intervalId = setInterval(fetchActivities, 10000);
+    // Set up a refresh interval every 5 seconds (less frequent to reduce blink)
+    const intervalId = setInterval(() => fetchActivities(), 5000);
     
     // Add storage event listener for real-time updates across tabs
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === 'investmentUsers' || event.key === 'investmentUser') {
         console.log('User data changed in another tab, refreshing activities');
-        fetchActivities();
+        fetchActivities(true);
       }
     };
     
@@ -178,21 +217,47 @@ export const useAllUserActivities = () => {
         event: '*', 
         schema: 'public',
         table: 'transactions' 
-      }, () => {
-        console.log('Supabase realtime update received, refreshing activities');
-        fetchActivities();
+      }, (payload) => {
+        console.log('Supabase realtime update received:', payload);
+        fetchActivities(true);
       })
-      .subscribe();
+      .subscribe(status => {
+        console.log('Supabase channel status:', status);
+        
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to realtime updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Error subscribing to realtime updates');
+          
+          // If we can't subscribe to realtime updates, increase the polling frequency
+          clearInterval(intervalId);
+          const fastIntervalId = setInterval(() => fetchActivities(), 3000);
+          
+          return () => clearInterval(fastIntervalId);
+        }
+      });
     
     window.addEventListener('storage', handleStorageChange);
+    
+    // Manual refresh method accessible to components
+    const manualRefresh = () => {
+      fetchActivities(true);
+    };
     
     // Clean up intervals and event listeners on component unmount
     return () => {
       clearInterval(intervalId);
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
       window.removeEventListener('storage', handleStorageChange);
       supabase.removeChannel(channel);
     };
   }, []);
   
-  return { activities, stats, loading, error };
+  return { 
+    activities, 
+    stats, 
+    loading, 
+    error, 
+    refresh: () => fetchActivities(true) 
+  };
 };

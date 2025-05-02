@@ -6,7 +6,7 @@ import ActivityFeed from '@/components/home/ActivityFeed';
 import ActivityStatsSummary from '@/components/home/ActivityStatsSummary';
 import { useAllUserActivities } from '@/hooks/useAllUserActivities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowDown, ArrowUp, CalendarRange, Filter, IndianRupee, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarRange, Filter, RefreshCcw, Users } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { mapTransactionToActivity } from '@/components/home/ActivityFeed';
 import { toast } from '@/components/ui/use-toast';
@@ -18,11 +18,12 @@ import { format } from "date-fns";
 
 const Activities: React.FC = () => {
   const { user } = useAuth();
-  const { activities: allUserActivities, stats: activityStats, loading: activitiesLoading } = useAllUserActivities();
+  const { activities: allUserActivities, stats: activityStats, loading: activitiesLoading, refresh } = useAllUserActivities();
   const [activityFilter, setActivityFilter] = useState<'all' | 'deposit' | 'withdraw' | 'investment'>('all');
   const [userFilter, setUserFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<{start: Date | null, end: Date | null}>({start: null, end: null});
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'mobile' | 'desktop'>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const userActivities = user?.transactions 
     ? user.transactions.map(transaction => mapTransactionToActivity({
@@ -50,11 +51,17 @@ const Activities: React.FC = () => {
     return allUserActivities.filter(activity => {
       const activityDate = new Date(activity.timestamp);
       if (dateRange.start && dateRange.end) {
-        return activityDate >= dateRange.start && activityDate <= dateRange.end;
+        // Set end date to end of day for inclusive filtering
+        const endOfDay = new Date(dateRange.end);
+        endOfDay.setHours(23, 59, 59, 999);
+        return activityDate >= dateRange.start && activityDate <= endOfDay;
       } else if (dateRange.start) {
         return activityDate >= dateRange.start;
       } else if (dateRange.end) {
-        return activityDate <= dateRange.end;
+        // Set end date to end of day for inclusive filtering
+        const endOfDay = new Date(dateRange.end);
+        endOfDay.setHours(23, 59, 59, 999);
+        return activityDate <= endOfDay;
       }
       return true;
     });
@@ -86,6 +93,15 @@ const Activities: React.FC = () => {
   const resetDateFilter = () => {
     setDateRange({start: null, end: null});
   };
+  
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refresh();
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen bg-black pb-24">
@@ -102,7 +118,19 @@ const Activities: React.FC = () => {
         
         <Card className="bg-[#111111] border-gray-800 shadow-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-center text-lg text-gray-300">Live Activity Feed</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-lg text-gray-300">Live Activity Feed</CardTitle>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="h-8 w-8 p-0" 
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+              >
+                <RefreshCcw size={18} className={`text-investment-gold ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="sr-only">Refresh</span>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all" className="w-full">
@@ -181,9 +209,6 @@ const Activities: React.FC = () => {
                       <div className="p-3 border-t border-gray-700 flex justify-between">
                         <Button variant="outline" size="sm" onClick={resetDateFilter}>
                           Reset
-                        </Button>
-                        <Button size="sm" onClick={() => {}}>
-                          Apply
                         </Button>
                       </div>
                     </PopoverContent>
