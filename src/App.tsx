@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Index from './pages/Index';
@@ -7,7 +8,8 @@ import Auth from './pages/Auth';
 import Deposit from './pages/Deposit';
 import Withdraw from './pages/Withdraw';
 import Admin from './pages/Admin';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import Activities from './pages/Activities';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from "@/components/ui/toaster"
 
@@ -28,6 +30,7 @@ function App() {
             <Route path="/deposit" element={<Deposit />} />
             <Route path="/withdraw" element={<Withdraw />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/activities" element={<Activities />} />
           </Routes>
           <MigrationInitiator />
           <Toaster />
