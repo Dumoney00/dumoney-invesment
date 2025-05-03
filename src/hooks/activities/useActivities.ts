@@ -1,12 +1,11 @@
-
 import { useState, useEffect, useRef } from 'react';
-import { Activity, mapTransactionToActivity } from '@/components/home/ActivityFeed';
+import { Activity } from '@/types/activity';
 import { TransactionRecord } from '@/types/auth';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from '@/components/ui/use-toast';
 import { getTransactionsFromSupabase } from './activityService';
 import { calculateActivityStats, activitiesHaveChanged } from './activityUtils';
-import { ACTIVITY_REFRESH_INTERVAL, ACTIVITY_MIN_REFRESH_DELAY } from './activityConstants';
+import { ACTIVITY_REFRESH_INTERVAL, ACTIVITY_MIN_REFRESH_DELAY, ACTIVITY_QUICK_REFRESH_INTERVAL } from './activityConstants';
 
 export interface ActivityStats {
   todayDeposits: number;
