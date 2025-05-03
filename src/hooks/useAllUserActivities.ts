@@ -1,6 +1,5 @@
-
 import { useState, useEffect, useRef } from 'react';
-import { TransactionRecord, User } from '@/types/auth';
+import { TransactionRecord } from '@/types/auth';
 import { Activity, mapTransactionToActivity } from '@/components/home/ActivityFeed';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from '@/components/ui/use-toast';
@@ -35,12 +34,61 @@ export const useAllUserActivities = () => {
     }
   };
   
+  const getTransactionsFromSupabase = async (): Promise<TransactionRecord[]> => {
+    try {
+      const { data: transactions, error } = await supabase
+        .from('transactions')
+        .select(`
+          *,
+          users:user_id (username)
+        `)
+        .order('timestamp', { ascending: false });
+        
+      if (error) {
+        throw error;
+      }
+      
+      if (!transactions || transactions.length === 0) {
+        return [];
+      }
+      
+      // Map the Supabase result to our TransactionRecord format
+      return transactions.map(t => {
+        const deviceInfo = getDeviceInfo();
+        
+        return {
+          id: t.id,
+          type: t.type as any,
+          amount: t.amount,
+          timestamp: t.timestamp,
+          status: t.status as any,
+          details: t.details,
+          userId: t.user_id,
+          userName: t.users?.username || 'Unknown',
+          deviceType: deviceInfo.type,
+          deviceOS: deviceInfo.os,
+          deviceLocation: deviceInfo.location,
+          withdrawalTime: t.withdrawal_time,
+          approvedBy: t.approved_by,
+          approvalTimestamp: t.approval_timestamp,
+          productId: t.product_id,
+          productName: t.product_name
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching from Supabase:", error);
+      // Fall back to localStorage
+      return getTransactionsFromLocalStorage();
+    }
+  };
+  
+  // Keep the localStorage function as fallback
   const getTransactionsFromLocalStorage = (): TransactionRecord[] => {
     // Get all users from localStorage
     const storedUsers = localStorage.getItem('investmentUsers');
     const currentUser = localStorage.getItem('investmentUser');
     
-    let allUsers: User[] = [];
+    let allUsers = [];
     
     // Parse stored users if available
     if (storedUsers) {
@@ -49,7 +97,7 @@ export const useAllUserActivities = () => {
     
     // Add current user if available and not already in the list
     if (currentUser) {
-      const parsedUser = JSON.parse(currentUser) as User;
+      const parsedUser = JSON.parse(currentUser);
       if (!allUsers.some(u => u.id === parsedUser.id)) {
         allUsers.push(parsedUser);
       }
@@ -96,42 +144,8 @@ export const useAllUserActivities = () => {
         setLoading(true);
       }
       
-      let allTransactions: TransactionRecord[] = [];
-      
-      try {
-        // Try to fetch from Supabase first
-        const { data: supabaseTransactions, error: supabaseError } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('timestamp', { ascending: false });
-          
-        if (supabaseError) {
-          console.error("Error fetching from Supabase:", supabaseError);
-          // Don't fall back to localStorage on every error, retry Supabase first
-          if (supabaseError.code === '42P17') {
-            // This is the infinite recursion error, let's handle it differently
-            console.log("Handling infinite recursion error, using localStorage instead");
-            allTransactions = getTransactionsFromLocalStorage();
-            
-            // Schedule a retry after 5 seconds
-            if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
-            retryTimeoutRef.current = setTimeout(() => fetchActivities(true), 5000) as unknown as number;
-          } else {
-            throw supabaseError;
-          }
-        } else if (supabaseTransactions && supabaseTransactions.length > 0) {
-          // Use Supabase data if available
-          allTransactions = supabaseTransactions as TransactionRecord[];
-          console.log("Successfully fetched transactions from Supabase:", allTransactions.length);
-        } else {
-          // Fall back to localStorage if no data in Supabase
-          allTransactions = getTransactionsFromLocalStorage();
-        }
-      } catch (e) {
-        console.error("Supabase fetch failed, using localStorage:", e);
-        // Fall back to localStorage
-        allTransactions = getTransactionsFromLocalStorage();
-      }
+      // Try to fetch from Supabase first, fall back to localStorage if needed
+      const allTransactions = await getTransactionsFromSupabase();
       
       // Filter transactions to show only deposits, withdrawals, and purchases
       const filteredTransactions = allTransactions.filter(
@@ -238,11 +252,6 @@ export const useAllUserActivities = () => {
       });
     
     window.addEventListener('storage', handleStorageChange);
-    
-    // Manual refresh method accessible to components
-    const manualRefresh = () => {
-      fetchActivities(true);
-    };
     
     // Clean up intervals and event listeners on component unmount
     return () => {
