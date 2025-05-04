@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ActivityStats } from '@/hooks/useAllUserActivities';
+import { ActivityStats } from '@/hooks/activities/useActivities';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 

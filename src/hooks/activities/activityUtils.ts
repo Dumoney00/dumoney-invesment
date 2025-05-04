@@ -1,6 +1,7 @@
 
-import { Activity } from '@/components/home/ActivityFeed';
+import { Activity } from '@/types/activity';
 import { TransactionRecord } from '@/types/auth';
+import { ActivityStats } from './useActivities';
 
 // Function to get device information safely
 export const getDeviceInfo = () => {
@@ -15,24 +16,45 @@ export const getDeviceInfo = () => {
   }
 };
 
-// Calculate today's statistics from transactions
-export const calculateActivityStats = (filteredTransactions: TransactionRecord[]) => {
+// Calculate statistics from activities
+export const calculateActivityStats = (activities: Activity[]): ActivityStats => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  const todayTransactions = filteredTransactions.filter(
-    transaction => new Date(transaction.timestamp) >= today
+  
+  const todayActivities = activities.filter(
+    activity => new Date(activity.timestamp) >= today
   );
-
-  const todayDeposits = todayTransactions
-    .filter(t => t.type === 'deposit')
-    .reduce((sum, t) => sum + t.amount, 0);
+  
+  const todayDeposits = todayActivities
+    .filter(a => a.type === 'deposit')
+    .reduce((sum, a) => sum + a.amount, 0);
     
-  const todayWithdrawals = todayTransactions
-    .filter(t => t.type === 'withdraw')
-    .reduce((sum, t) => sum + t.amount, 0);
-
+  const todayWithdrawals = todayActivities
+    .filter(a => a.type === 'withdraw')
+    .reduce((sum, a) => sum + a.amount, 0);
+    
+  // Calculate total stats
+  const uniqueUserIds = new Set(activities.map(a => a.userId));
+  
+  const deposits = activities.filter(a => a.type === 'deposit');
+  const withdrawals = activities.filter(a => a.type === 'withdraw');
+  const investments = activities.filter(a => a.type === 'investment');
+  
   return {
+    totalUsers: uniqueUserIds.size,
+    totalAmount: activities.reduce((sum, a) => sum + a.amount, 0),
+    deposits: {
+      count: deposits.length,
+      amount: deposits.reduce((sum, a) => sum + a.amount, 0)
+    },
+    withdrawals: {
+      count: withdrawals.length,
+      amount: withdrawals.reduce((sum, a) => sum + a.amount, 0)
+    },
+    investments: {
+      count: investments.length,
+      amount: investments.reduce((sum, a) => sum + a.amount, 0)
+    },
     todayDeposits,
     todayWithdrawals
   };

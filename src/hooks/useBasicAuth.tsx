@@ -1,116 +1,71 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { User } from "@/types/auth";
-import { createMockUser, loadUserFromStorage, saveUserToStorage } from "@/utils/authUtils";
-import { showToast } from "@/utils/toastUtils";
 
 export const useBasicAuth = () => {
-  const [user, setUser] = useState<User | null>(loadUserFromStorage());
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!user);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
-  const saveUser = (updatedUser: User | null) => {
-    setUser(updatedUser);
-    saveUserToStorage(updatedUser);
-    setIsAuthenticated(!!updatedUser);
+  const saveUser = (userData: User) => {
+    setUser(userData);
+    setIsAuthenticated(true);
   };
 
-  const login = async (emailOrPhone: string, password: string) => {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Get all users from localStorage to check credentials
-      const storedUsers = localStorage.getItem('investmentUsers');
-      const users = storedUsers ? JSON.parse(storedUsers) : [];
-      
-      // Check if user exists with provided email or phone
-      const foundUser = users.find((u: User) => 
-        u.email === emailOrPhone || u.phone === emailOrPhone
-      );
-      
-      if (foundUser && password) {
-        saveUser(foundUser);
-        showToast("Login Successful", "Welcome back to your investment dashboard");
-        return true;
-      }
-      
-      showToast("Login Failed", "Invalid credentials", "destructive");
-      return false;
-    } catch (error) {
-      showToast("Login Failed", "Invalid credentials", "destructive");
-      return false;
+  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
+    const storedUsers = localStorage.getItem('investmentUsers');
+    const users = storedUsers ? JSON.parse(storedUsers) : [];
+
+    const foundUser = users.find((u: any) => u.email === email && u.password === password);
+
+    if (foundUser) {
+      saveUser(foundUser);
+      localStorage.setItem('investmentUser', JSON.stringify(foundUser));
+      return { success: true };
+    } else {
+      return { success: false, message: 'Invalid credentials' };
     }
   };
 
-  const register = async (
-    username: string, 
-    email: string, 
-    phone: string, 
-    password: string,
-    referralCode?: string
-  ) => {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Check if phone or email already exists
-      const storedUsers = localStorage.getItem('investmentUsers');
-      const users = storedUsers ? JSON.parse(storedUsers) : [];
-      
-      const existingUser = users.find((u: User) => 
-        u.email === email || u.phone === phone
-      );
-      
-      if (existingUser) {
-        showToast(
-          "Registration Failed",
-          "An account with this email or phone number already exists",
-          "destructive"
-        );
-        return false;
-      }
-      
-      const mockUser = createMockUser(username, email, phone);
-      
-      // If referral code is provided, validate and store it as pending
-      if (referralCode) {
-        mockUser.referralCode = referralCode;
-        mockUser.referralStatus = 'pending'; // Will be updated to 'approved' after first purchase
-      }
-      
-      saveUser(mockUser);
-      
-      // Update users array in localStorage
-      users.push(mockUser);
-      localStorage.setItem('investmentUsers', JSON.stringify(users));
-      
-      showToast("Registration Successful", "Your account has been created");
-      return true;
-    } catch (error) {
-      showToast("Registration Failed", "Could not create your account", "destructive");
-      return false;
+  const register = async (username: string, email: string, password: string, phone?: string): Promise<{
+    success: boolean;
+    message?: string;
+  }> => {
+    const storedUsers = localStorage.getItem('investmentUsers');
+    let users = storedUsers ? JSON.parse(storedUsers) : [];
+
+    if (users.find((u: any) => u.email === email)) {
+      return { success: false, message: 'Email already registered' };
     }
+
+    const newUser: User = {
+      id: Math.random().toString(36).substring(2, 15),
+      username,
+      email,
+      password,
+      phone: phone || '',
+      balance: 0,
+      transactions: [],
+      ownedProducts: [],
+      bankDetails: {
+        accountNumber: '',
+        ifscCode: '',
+        accountHolderName: '',
+        upiId: ''
+      }
+    };
+
+    users.push(newUser);
+    localStorage.setItem('investmentUsers', JSON.stringify(users));
+    saveUser(newUser);
+    localStorage.setItem('investmentUser', JSON.stringify(newUser));
+
+    return { success: true };
   };
 
   const logout = () => {
-    saveUser(null);
+    setUser(null);
+    setIsAuthenticated(false);
     localStorage.removeItem('investmentUser');
-    showToast("Logged Out", "You have been logged out successfully");
   };
 
-  const resetPassword = async (email: string) => {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      return true;
-    } catch (error) {
-      return false;
-    }
-  };
-
-  return {
-    user,
-    isAuthenticated,
-    saveUser,
-    login,
-    register,
-    logout,
-    resetPassword
-  };
+  return { isAuthenticated, user, saveUser, login, register, logout };
 };

@@ -3,10 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Activity } from '@/types/activity';
 import { mapTransactionToActivity } from '@/types/activity';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  generateActivityStats, 
-  generateRandomUserActivities
-} from './activityUtils';
+import { calculateActivityStats, activitiesHaveChanged } from './activityUtils';
 import { 
   ACTIVITY_REFRESH_INTERVAL, 
   ACTIVITY_QUICK_REFRESH_INTERVAL 
@@ -19,6 +16,8 @@ export interface ActivityStats {
   deposits: { count: number; amount: number };
   withdrawals: { count: number; amount: number };
   investments: { count: number; amount: number };
+  todayDeposits: number;
+  todayWithdrawals: number;
 }
 
 export const useActivities = () => {
@@ -30,6 +29,8 @@ export const useActivities = () => {
     deposits: { count: 0, amount: 0 },
     withdrawals: { count: 0, amount: 0 },
     investments: { count: 0, amount: 0 },
+    todayDeposits: 0,
+    todayWithdrawals: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -54,13 +55,15 @@ export const useActivities = () => {
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
         
-        setActivities(allActivities as Activity[]);
-        setStats(generateActivityStats(allActivities as Activity[]));
-        return allActivities as Activity[];
+        setActivities(allActivities);
+        const activityStats = calculateActivityStats(allActivities);
+        setStats(activityStats);
+        return allActivities;
       } else {
-        setActivities(fetchedActivities as Activity[]);
-        setStats(generateActivityStats(fetchedActivities as Activity[]));
-        return fetchedActivities as Activity[];
+        setActivities(fetchedActivities);
+        const activityStats = calculateActivityStats(fetchedActivities);
+        setStats(activityStats);
+        return fetchedActivities;
       }
     } catch (error) {
       console.error("Error fetching activities:", error);
