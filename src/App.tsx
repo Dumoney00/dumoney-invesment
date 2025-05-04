@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Index from './pages/Index';
 import Investing from './pages/Investing';
 import Profile from './pages/Profile';
@@ -8,6 +8,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from "@/components/ui/toaster"
 import Activities from './pages/Activities';
+import Agent from './pages/Agent';
+import Account from './pages/Account';
+import ChangePassword from './pages/ChangePassword';
+import NotFound from './pages/NotFound';
 
 import MigrationInitiator from './components/migration/MigrationInitiator';
 
@@ -23,6 +27,10 @@ function App() {
             <Route path="/investing" element={<Investing />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/activities" element={<Activities />} />
+            <Route path="/agent" element={<Agent />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
           <MigrationInitiator />
           <Toaster />

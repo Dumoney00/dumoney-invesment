@@ -1,149 +1,86 @@
-import { useState, useEffect, useRef } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { Activity } from '@/types/activity';
-import { TransactionRecord } from '@/types/auth';
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from '@/components/ui/use-toast';
-import { getTransactionsFromSupabase } from './activityService';
-import { calculateActivityStats, activitiesHaveChanged } from './activityUtils';
-import { ACTIVITY_REFRESH_INTERVAL, ACTIVITY_MIN_REFRESH_DELAY, ACTIVITY_QUICK_REFRESH_INTERVAL } from './activityConstants';
+import { mapTransactionToActivity } from '@/types/activity';
+import { useAuth } from '@/contexts/AuthContext';
+import { 
+  generateActivityStats, 
+  generateRandomUserActivities
+} from './activityUtils';
+import { 
+  ACTIVITY_REFRESH_INTERVAL, 
+  ACTIVITY_QUICK_REFRESH_INTERVAL 
+} from './activityConstants';
+import { fetchActivities } from './activityService';
 
 export interface ActivityStats {
-  todayDeposits: number;
-  todayWithdrawals: number;
+  totalUsers: number;
+  totalAmount: number;
+  deposits: { count: number; amount: number };
+  withdrawals: { count: number; amount: number };
+  investments: { count: number; amount: number };
 }
 
 export const useActivities = () => {
+  const { user } = useAuth();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [stats, setStats] = useState<ActivityStats>({
-    todayDeposits: 0,
-    todayWithdrawals: 0
+    totalUsers: 0,
+    totalAmount: 0,
+    deposits: { count: 0, amount: 0 },
+    withdrawals: { count: 0, amount: 0 },
+    investments: { count: 0, amount: 0 },
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const prevActivitiesRef = useRef<Activity[]>([]);
-  const lastFetchRef = useRef<Date>(new Date());
-  const retryTimeoutRef = useRef<number | null>(null);
 
-  const fetchActivities = async (forceRefresh = false) => {
+  // Function to refresh activities
+  const refresh = useCallback(async () => {
     try {
-      // If it's been less than min delay since last fetch and not forced, skip
-      const now = new Date();
-      if (!forceRefresh && 
-          now.getTime() - lastFetchRef.current.getTime() < ACTIVITY_MIN_REFRESH_DELAY) {
-        return;
-      }
-      
-      lastFetchRef.current = now;
-      
-      if (!loading && !forceRefresh) {
-        setLoading(true);
-      }
-      
-      // Try to fetch from Supabase first, fall back to localStorage if needed
-      const allTransactions = await getTransactionsFromSupabase();
-      
-      // Filter transactions to show only deposits, withdrawals, and purchases
-      const filteredTransactions = allTransactions.filter(
-        transaction => ['deposit', 'withdraw', 'purchase', 'sale', 'dailyIncome', 'referralBonus'].includes(transaction.type)
-      );
-      
-      // Sort transactions by timestamp, newest first
-      const sortedTransactions = filteredTransactions.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
+      setLoading(true);
+      const fetchedActivities = await fetchActivities();
 
-      // Map transactions to activities
-      const mappedActivities = sortedTransactions.map(mapTransactionToActivity);
-      
-      // Calculate today's stats
-      const activityStats = calculateActivityStats(filteredTransactions);
-      setStats(activityStats);
-      
-      // Compare with previous activities to avoid unnecessary re-renders
-      const prevActivities = prevActivitiesRef.current;
-      
-      if (activitiesHaveChanged(mappedActivities, prevActivities)) {
-        setActivities(mappedActivities);
-        prevActivitiesRef.current = mappedActivities;
-      }
-      
-      if (error) setError(null); // Clear any previous errors
-      
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching activities:", err);
-      setError(err instanceof Error ? err : new Error('Failed to fetch activities'));
-      setLoading(false);
-      
-      // Show error notification only on forced refreshes or initial load
-      if (forceRefresh) {
-        toast({
-          title: "Error fetching activities",
-          description: "Please try again later",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
-  useEffect(() => {
-    // Initial fetch
-    fetchActivities(true);
-    
-    // Set up a refresh interval
-    const intervalId = setInterval(() => fetchActivities(), ACTIVITY_REFRESH_INTERVAL);
-    
-    // Add storage event listener for real-time updates across tabs
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'investmentUsers' || event.key === 'investmentUser') {
-        console.log('User data changed in another tab, refreshing activities');
-        fetchActivities(true);
-      }
-    };
-    
-    // Listen for realtime updates from Supabase
-    const channel = supabase
-      .channel('public:transactions')
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public',
-        table: 'transactions' 
-      }, (payload) => {
-        console.log('Supabase realtime update received:', payload);
-        fetchActivities(true);
-      })
-      .subscribe(status => {
-        console.log('Supabase channel status:', status);
+      // Add user's own transactions if they exist
+      if (user && user.transactions && user.transactions.length > 0) {
+        const userActivities = user.transactions.map(transaction => 
+          mapTransactionToActivity({
+            ...transaction,
+            userName: user.username || 'Anonymous',
+            userId: user.id
+          })
+        );
         
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to realtime updates');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('Error subscribing to realtime updates');
-          
-          // If we can't subscribe to realtime updates, increase the polling frequency
-          clearInterval(intervalId);
-          const fastIntervalId = setInterval(() => fetchActivities(), ACTIVITY_QUICK_REFRESH_INTERVAL);
-          
-          return () => clearInterval(fastIntervalId);
-        }
-      });
+        // Merge and sort all activities by timestamp
+        const allActivities = [...fetchedActivities, ...userActivities].sort((a, b) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        
+        setActivities(allActivities as Activity[]);
+        setStats(generateActivityStats(allActivities as Activity[]));
+        return allActivities as Activity[];
+      } else {
+        setActivities(fetchedActivities as Activity[]);
+        setStats(generateActivityStats(fetchedActivities as Activity[]));
+        return fetchedActivities as Activity[];
+      }
+    } catch (error) {
+      console.error("Error fetching activities:", error);
+      return [] as Activity[];
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Initial load
+  useEffect(() => {
+    refresh();
     
-    window.addEventListener('storage', handleStorageChange);
+    // Set up regular refresh interval
+    const intervalId = setInterval(refresh, ACTIVITY_REFRESH_INTERVAL);
     
-    // Clean up intervals and event listeners on component unmount
     return () => {
       clearInterval(intervalId);
-      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
-      window.removeEventListener('storage', handleStorageChange);
-      supabase.removeChannel(channel);
     };
-  }, []);
-  
-  return { 
-    activities, 
-    stats, 
-    loading, 
-    error, 
-    refresh: () => fetchActivities(true) 
-  };
+  }, [refresh]);
+
+  return { activities, stats, loading, refresh };
 };
