@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 
@@ -16,7 +16,23 @@ const IncomeCollection: React.FC<IncomeCollectionProps> = ({
   lastIncomeTime,
   onCollect
 }) => {
-  const handleCollect = () => {
+  // Automatically collect income when component mounts if conditions are met
+  useEffect(() => {
+    const now = Date.now();
+    
+    if (isAuthenticated && totalDailyIncome > 0 && 
+        (!lastIncomeTime || (now - lastIncomeTime) > 24 * 60 * 60 * 1000)) {
+      console.log("Auto-collecting daily income");
+      onCollect();
+      toast({
+        title: "Daily Income Collected",
+        description: `₹${totalDailyIncome.toFixed(2)} has been added to your withdrawal wallet`,
+        variant: "default"
+      });
+    }
+  }, [isAuthenticated, totalDailyIncome, lastIncomeTime, onCollect]);
+  
+  const handleManualCollect = () => {
     const now = Date.now();
     
     if (!lastIncomeTime || (now - lastIncomeTime) > 24 * 60 * 60 * 1000) {
@@ -51,7 +67,7 @@ const IncomeCollection: React.FC<IncomeCollectionProps> = ({
   return (
     <Button 
       className="w-full bg-investment-gold hover:bg-investment-gold/90 py-6 mb-6"
-      onClick={handleCollect}
+      onClick={handleManualCollect}
     >
       Collect Daily Income
     </Button>
