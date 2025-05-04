@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { AuthContextType } from "@/types/auth";
 import { useAuth } from './useAuth';
-import { useUserTransactions } from './useUserTransactions';
+import { useUserTransactions } from './transactions/useUserTransactions';
 
 export const useAuthProvider = (): AuthContextType => {
   const { 
