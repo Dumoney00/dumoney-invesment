@@ -67,6 +67,7 @@ export interface TransactionRecord {
     os?: string;
     location?: string;
   };
+  username?: string; // Adding username field for Activity compatibility
 }
 
 export interface AuthContextType {

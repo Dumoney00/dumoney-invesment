@@ -1,124 +1,160 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { TransactionRecord } from '@/types/auth';
-import { getDeviceInfo } from './activityUtils';
-import { Activity, mapTransactionToActivity } from '@/types/activity';
+import { Activity, ActivitySummary, ActivityType } from '@/types/activity';
+import { User, TransactionRecord } from '@/types/auth';
+import { supabase } from '@/integrations/supabase/client';
+import { formatRelativeTime } from '@/utils/timeUtils';
+import { mapTransactionToActivityType, mapTransactionTypeToIcon } from './activityUtils';
 
-// Function to fetch transactions from Supabase
-export const getTransactionsFromSupabase = async (): Promise<TransactionRecord[]> => {
+// Fetch activity logs from Supabase
+const getActivityLogsFromSupabase = async (userId: string | undefined): Promise<Activity[]> => {
+  if (!userId) return [];
+
   try {
-    const { data: transactions, error } = await supabase
-      .from('transactions')
-      .select(`
-        *,
-        users:user_id (username)
-      `)
-      .order('timestamp', { ascending: false });
-      
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
     if (error) {
-      throw error;
-    }
-    
-    if (!transactions || transactions.length === 0) {
+      console.error('Error fetching activity logs:', error);
       return [];
     }
-    
-    // Map the Supabase result to our TransactionRecord format
-    return transactions.map(t => {
-      const deviceInfo = getDeviceInfo();
-      
-      return {
-        id: t.id,
-        type: t.type as any,
-        amount: t.amount,
-        timestamp: t.timestamp,
-        status: t.status as any,
-        details: t.details,
-        userId: t.user_id,
-        userName: t.users?.username || 'Unknown',
-        deviceType: deviceInfo.type,
-        deviceOS: deviceInfo.os,
-        deviceLocation: deviceInfo.location,
-        withdrawalTime: t.withdrawal_time,
-        approvedBy: t.approved_by,
-        approvalTimestamp: t.approval_timestamp,
-        productId: t.product_id,
-        productName: t.product_name
-      };
-    });
+
+    // Map to Activity format
+    return data.map((log): Activity => ({
+      id: log.id,
+      type: log.activity_type as ActivityType,
+      username: log.username || '',
+      timestamp: log.created_at,
+      details: log.details || '',
+      amount: log.amount || undefined,
+      iconName: mapTransactionTypeToIcon(log.activity_type),
+      relativeTime: formatRelativeTime(new Date(log.created_at)),
+      status: 'completed'
+    }));
   } catch (error) {
-    console.error("Error fetching from Supabase:", error);
-    // Fall back to localStorage
-    return getTransactionsFromLocalStorage();
+    console.error('Error in getActivityLogsFromSupabase:', error);
+    return [];
   }
 };
 
-// Function to fetch transactions from localStorage (fallback)
-export const getTransactionsFromLocalStorage = (): TransactionRecord[] => {
-  // Get all users from localStorage
-  const storedUsers = localStorage.getItem('investmentUsers');
-  const currentUser = localStorage.getItem('investmentUser');
-  
-  let allUsers = [];
-  
-  // Parse stored users if available
-  if (storedUsers) {
-    allUsers = JSON.parse(storedUsers);
-  }
-  
-  // Add current user if available and not already in the list
-  if (currentUser) {
-    const parsedUser = JSON.parse(currentUser);
-    if (!allUsers.some(u => u.id === parsedUser.id)) {
-      allUsers.push(parsedUser);
+// Fetch transactions from Supabase
+const getTransactionsFromSupabase = async (userId: string | undefined): Promise<Activity[]> => {
+  if (!userId) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('timestamp', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching from Supabase:', error);
+      return [];
     }
+
+    // Map to Activity format
+    return data.map((tx): Activity => ({
+      id: tx.id,
+      type: mapTransactionToActivityType(tx.type),
+      username: tx.username || '',
+      timestamp: tx.timestamp,
+      details: tx.details || '',
+      amount: tx.amount,
+      iconName: mapTransactionTypeToIcon(tx.type),
+      relativeTime: formatRelativeTime(new Date(tx.timestamp)),
+      status: tx.status
+    }));
+  } catch (error) {
+    console.error('Error in getTransactionsFromSupabase:', error);
+    return [];
   }
-  
-  // Extract all transactions with user information
-  const allTransactions: TransactionRecord[] = [];
-  
-  allUsers.forEach(user => {
-    if (user.transactions && user.transactions.length > 0) {
-      // Add user information to each transaction
-      const userTransactions = user.transactions.map(transaction => {
-        const deviceInfo = getDeviceInfo();
-        
-        return {
-          ...transaction,
-          userId: user.id,
-          userName: user.username,
-          deviceType: deviceInfo.type,
-          deviceOS: deviceInfo.os,
-          deviceLocation: deviceInfo.location
-        };
-      });
-      
-      allTransactions.push(...userTransactions);
+};
+
+// Get activities from local storage transactions
+const getActivitiesFromLocalStorage = (user: User | null): Activity[] => {
+  if (!user || !user.transactions || user.transactions.length === 0) return [];
+
+  return user.transactions.map((tx: TransactionRecord): Activity => ({
+    id: tx.id,
+    type: mapTransactionToActivityType(tx.type),
+    username: tx.username || user.username,
+    timestamp: tx.timestamp,
+    details: tx.details || '',
+    amount: tx.amount,
+    iconName: mapTransactionTypeToIcon(tx.type),
+    relativeTime: formatRelativeTime(new Date(tx.timestamp)),
+    status: tx.status
+  }));
+};
+
+// Get activity statistics
+export const getActivityStats = (activities: Activity[]): ActivitySummary => {
+  const stats: ActivitySummary = {
+    totalDeposits: 0,
+    totalWithdraws: 0,
+    totalProducts: 0,
+    lastActive: '',
+  };
+
+  if (!activities.length) return stats;
+
+  // Get last activity timestamp
+  const sortedActivities = [...activities].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+  stats.lastActive = sortedActivities[0].relativeTime;
+
+  // Count activities by type
+  activities.forEach((activity) => {
+    switch (activity.type) {
+      case 'deposit':
+        stats.totalDeposits++;
+        break;
+      case 'withdraw':
+        stats.totalWithdraws++;
+        break;
+      case 'purchase':
+        stats.totalProducts++;
+        break;
+      default:
+        break;
     }
   });
-  
-  return allTransactions;
+
+  return stats;
 };
 
-// Main function to fetch activities that's used by useActivities hook
-export const fetchActivities = async (): Promise<Activity[]> => {
+// Main function to fetch all activities
+export const fetchActivities = async (user: User | null): Promise<Activity[]> => {
   try {
-    // Try to get from Supabase first
-    const transactions = await getTransactionsFromSupabase();
-    
-    if (transactions.length === 0) {
-      // Fall back to localStorage if no Supabase data
-      const localTransactions = getTransactionsFromLocalStorage();
-      // Map transactions to activities
-      return localTransactions.map(mapTransactionToActivity);
+    let mergedActivities: Activity[] = [];
+
+    // Get activities from Supabase
+    if (user) {
+      // Try to get activity logs
+      const activityLogs = await getActivityLogsFromSupabase(user.id);
+      mergedActivities = [...mergedActivities, ...activityLogs];
+
+      // Try to get transaction records
+      const transactionActivities = await getTransactionsFromSupabase(user.id);
+      mergedActivities = [...mergedActivities, ...transactionActivities];
     }
-    
-    // Map transactions to activities
-    return transactions.map(mapTransactionToActivity);
+
+    // Fallback to localStorage if no Supabase data or in offline mode
+    if (mergedActivities.length === 0 && user) {
+      const localActivities = getActivitiesFromLocalStorage(user);
+      mergedActivities = [...mergedActivities, ...localActivities];
+    }
+
+    // Sort by timestamp (newest first)
+    return mergedActivities.sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
   } catch (error) {
-    console.error("Error fetching activities:", error);
-    // Always fall back to localStorage on error
-    const localTransactions = getTransactionsFromLocalStorage();
-    return localTransactions.map(mapTransactionToActivity);
+    console.error('Error fetching activities:', error);
+    return [];
   }
 };

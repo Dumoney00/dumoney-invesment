@@ -1,70 +1,84 @@
 
-import { Activity } from '@/types/activity';
-import { TransactionRecord } from '@/types/auth';
-import { ActivityStats } from './useActivities';
+import { 
+  CreditCard, 
+  DollarSign, 
+  ShoppingBag, 
+  Info, 
+  LogIn, 
+  LogOut,
+  UserPlus,
+  Settings,
+  Award
+} from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
+import { ActivityType } from '@/types/activity';
 
-// Function to get device information safely
-export const getDeviceInfo = () => {
-  try {
-    return {
-      type: navigator.userAgent.indexOf('Mobile') > -1 ? 'Mobile' : 'Desktop',
-      os: navigator.platform,
-      location: 'Local'
-    };
-  } catch (e) {
-    return { type: 'Unknown', os: 'Unknown', location: 'Unknown' };
+// Convert transaction type to activity type
+export const mapTransactionToActivityType = (type: string): ActivityType => {
+  switch (type) {
+    case 'deposit': return 'deposit';
+    case 'withdraw': return 'withdraw';
+    case 'purchase': return 'purchase';
+    case 'sale': return 'sale';
+    case 'dailyIncome': return 'income';
+    case 'referralBonus': return 'referral';
+    default: return 'other';
   }
 };
 
-// Calculate statistics from activities
-export const calculateActivityStats = (activities: Activity[]): ActivityStats => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const todayActivities = activities.filter(
-    activity => new Date(activity.timestamp) >= today
-  );
-  
-  const todayDeposits = todayActivities
-    .filter(a => a.type === 'deposit')
-    .reduce((sum, a) => sum + a.amount, 0);
-    
-  const todayWithdrawals = todayActivities
-    .filter(a => a.type === 'withdraw')
-    .reduce((sum, a) => sum + a.amount, 0);
-    
-  // Calculate total stats
-  const uniqueUserIds = new Set(activities.map(a => a.userId));
-  
-  const deposits = activities.filter(a => a.type === 'deposit');
-  const withdrawals = activities.filter(a => a.type === 'withdraw');
-  const investments = activities.filter(a => a.type === 'investment');
-  
-  return {
-    totalUsers: uniqueUserIds.size,
-    totalAmount: activities.reduce((sum, a) => sum + a.amount, 0),
-    deposits: {
-      count: deposits.length,
-      amount: deposits.reduce((sum, a) => sum + a.amount, 0)
-    },
-    withdrawals: {
-      count: withdrawals.length,
-      amount: withdrawals.reduce((sum, a) => sum + a.amount, 0)
-    },
-    investments: {
-      count: investments.length,
-      amount: investments.reduce((sum, a) => sum + a.amount, 0)
-    },
-    todayDeposits,
-    todayWithdrawals
-  };
+// Map transaction types to icons
+export const mapTransactionTypeToIcon = (type: string): LucideIcon => {
+  switch (type) {
+    case 'deposit':
+      return CreditCard;
+    case 'withdraw':
+      return DollarSign;
+    case 'purchase':
+    case 'sale':
+      return ShoppingBag;
+    case 'dailyIncome':
+    case 'income':
+      return Award;
+    case 'referralBonus':
+    case 'referral':
+      return Award;
+    case 'login':
+      return LogIn;
+    case 'logout':
+      return LogOut;
+    case 'register':
+      return UserPlus;
+    case 'profile_update':
+      return Settings;
+    default:
+      return Info;
+  }
 };
 
-// Compare activities arrays to see if they've changed
-export const activitiesHaveChanged = (
-  newActivities: Activity[], 
-  prevActivities: Activity[]
-) => {
-  return newActivities.length !== prevActivities.length || 
-    JSON.stringify(newActivities.map(a => a.id)) !== JSON.stringify(prevActivities.map(a => a.id));
+// Get activity description
+export const getActivityDescription = (type: ActivityType, details?: string): string => {
+  if (details) return details;
+
+  switch (type) {
+    case 'deposit':
+      return 'Deposit to account';
+    case 'withdraw':
+      return 'Withdrawal from account';
+    case 'purchase':
+      return 'Product purchased';
+    case 'sale':
+      return 'Product sold';
+    case 'income':
+      return 'Daily income earned';
+    case 'referral':
+      return 'Referral bonus earned';
+    case 'login':
+      return 'User logged in';
+    case 'logout':
+      return 'User logged out';
+    case 'register':
+      return 'New account created';
+    default:
+      return 'Activity recorded';
+  }
 };

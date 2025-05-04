@@ -12,6 +12,7 @@ import Agent from './pages/Agent';
 import Account from './pages/Account';
 import ChangePassword from './pages/ChangePassword';
 import NotFound from './pages/NotFound';
+import Auth from './pages/Auth';
 
 import MigrationInitiator from './components/migration/MigrationInitiator';
 
@@ -30,6 +31,7 @@ function App() {
             <Route path="/agent" element={<Agent />} />
             <Route path="/account" element={<Account />} />
             <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <MigrationInitiator />
