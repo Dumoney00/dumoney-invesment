@@ -20,7 +20,7 @@ export const mapTransactionToActivityType = (type: string): ActivityType => {
     case 'withdraw': return 'withdraw';
     case 'purchase': return 'purchase';
     case 'sale': return 'sale';
-    case 'dailyIncome': return 'income';
+    case 'dailyIncome': return 'dailyIncome';
     case 'referralBonus': return 'referral';
     default: return 'other';
   }
@@ -65,12 +65,14 @@ export const getActivityDescription = (type: ActivityType, details?: string): st
     case 'withdraw':
       return 'Withdrawal from account';
     case 'purchase':
+    case 'investment':
       return 'Product purchased';
     case 'sale':
       return 'Product sold';
-    case 'income':
+    case 'dailyIncome':
       return 'Daily income earned';
     case 'referral':
+    case 'referralBonus':
       return 'Referral bonus earned';
     case 'login':
       return 'User logged in';

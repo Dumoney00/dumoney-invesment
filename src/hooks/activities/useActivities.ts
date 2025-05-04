@@ -9,6 +9,8 @@ export interface ActivityStats {
   totalWithdraws: number;
   totalProducts: number;
   lastActive: string;
+  todayDeposits: number;
+  todayWithdrawals: number;
 }
 
 export const useActivities = () => {
@@ -18,31 +20,34 @@ export const useActivities = () => {
     totalWithdraws: 0,
     totalProducts: 0,
     lastActive: '',
+    todayDeposits: 0,
+    todayWithdrawals: 0,
   });
   const [loading, setLoading] = useState<boolean>(true);
   const { user } = useAuth();
 
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      const activitiesData = await fetchActivities(user);
+      setActivities(activitiesData);
+      setStats(getActivityStats(activitiesData));
+    } catch (error) {
+      console.error('Error loading activities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch activities when user changes
   useEffect(() => {
-    const loadActivities = async () => {
-      setLoading(true);
-      try {
-        const activitiesData = await fetchActivities(user);
-        setActivities(activitiesData);
-        setStats(getActivityStats(activitiesData));
-      } catch (error) {
-        console.error('Error loading activities:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadActivities();
+    refresh();
   }, [user]);
 
   return {
     activities,
     stats,
     loading,
+    refresh,
   };
 };

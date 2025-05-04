@@ -1,13 +1,16 @@
 
 import { TransactionRecord } from '@/types/auth';
 
+export type ActivityType = 'deposit' | 'withdraw' | 'investment' | 'referral' | 'sale' | 'dailyIncome' | 'referralBonus' | 'purchase' | 'login' | 'logout' | 'register' | 'other';
+
 export interface Activity {
   id: string;
   username: string;
   userId: string;
   amount: number;
-  type: 'deposit' | 'withdraw' | 'investment' | 'referral' | 'sale' | 'dailyIncome' | 'referralBonus';
+  type: ActivityType;
   timestamp: string;
+  details?: string;
   bankDetails?: {
     accountNumber: string;
     ifscCode: string;
@@ -19,12 +22,24 @@ export interface Activity {
     os?: string;
     location?: string;
   };
+  relativeTime?: string;
+  status?: string;
+  iconName?: any;
+}
+
+export interface ActivitySummary {
+  totalDeposits: number;
+  totalWithdraws: number;
+  totalProducts: number;
+  lastActive: string;
+  todayDeposits?: number;
+  todayWithdrawals?: number;
 }
 
 // Map transaction to activity
 export const mapTransactionToActivity = (transaction: TransactionRecord): Activity => {
   // Map transaction type to activity type
-  let activityType: Activity['type'];
+  let activityType: ActivityType;
   
   switch (transaction.type) {
     case 'purchase':
@@ -40,7 +55,7 @@ export const mapTransactionToActivity = (transaction: TransactionRecord): Activi
       activityType = 'sale';
       break;
     default:
-      activityType = transaction.type as Activity['type'];
+      activityType = transaction.type as ActivityType;
   }
   
   return {
@@ -56,6 +71,7 @@ export const mapTransactionToActivity = (transaction: TransactionRecord): Activi
       type: transaction.deviceType || 'Unknown',
       os: transaction.deviceOS || 'Unknown',
       location: transaction.deviceLocation
-    }
+    },
+    status: transaction.status
   };
 };

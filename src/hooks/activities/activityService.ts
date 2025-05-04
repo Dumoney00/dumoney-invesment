@@ -1,8 +1,8 @@
 
-import { Activity, ActivitySummary, ActivityType } from '@/types/activity';
+import { Activity, ActivityType, ActivitySummary } from '@/types/activity';
 import { User, TransactionRecord } from '@/types/auth';
 import { supabase } from '@/integrations/supabase/client';
-import { formatRelativeTime } from '@/utils/timeUtils';
+import { formatTimeAgo, formatRelativeTime } from '@/utils/timeUtils';
 import { mapTransactionToActivityType, mapTransactionTypeToIcon } from './activityUtils';
 
 // Fetch activity logs from Supabase
@@ -26,9 +26,10 @@ const getActivityLogsFromSupabase = async (userId: string | undefined): Promise<
       id: log.id,
       type: log.activity_type as ActivityType,
       username: log.username || '',
+      userId: log.user_id || '',
       timestamp: log.created_at,
       details: log.details || '',
-      amount: log.amount || undefined,
+      amount: log.amount || 0,
       iconName: mapTransactionTypeToIcon(log.activity_type),
       relativeTime: formatRelativeTime(new Date(log.created_at)),
       status: 'completed'
@@ -59,10 +60,11 @@ const getTransactionsFromSupabase = async (userId: string | undefined): Promise<
     return data.map((tx): Activity => ({
       id: tx.id,
       type: mapTransactionToActivityType(tx.type),
-      username: tx.username || '',
+      username: tx.approved_by || 'System',
+      userId: tx.user_id || '',
       timestamp: tx.timestamp,
       details: tx.details || '',
-      amount: tx.amount,
+      amount: tx.amount || 0,
       iconName: mapTransactionTypeToIcon(tx.type),
       relativeTime: formatRelativeTime(new Date(tx.timestamp)),
       status: tx.status
@@ -81,6 +83,7 @@ const getActivitiesFromLocalStorage = (user: User | null): Activity[] => {
     id: tx.id,
     type: mapTransactionToActivityType(tx.type),
     username: tx.username || user.username,
+    userId: tx.userId || user.id,
     timestamp: tx.timestamp,
     details: tx.details || '',
     amount: tx.amount,
@@ -97,6 +100,8 @@ export const getActivityStats = (activities: Activity[]): ActivitySummary => {
     totalWithdraws: 0,
     totalProducts: 0,
     lastActive: '',
+    todayDeposits: 0,
+    todayWithdrawals: 0,
   };
 
   if (!activities.length) return stats;
@@ -105,17 +110,26 @@ export const getActivityStats = (activities: Activity[]): ActivitySummary => {
   const sortedActivities = [...activities].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
-  stats.lastActive = sortedActivities[0].relativeTime;
+  stats.lastActive = sortedActivities[0].relativeTime || formatTimeAgo(sortedActivities[0].timestamp);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   // Count activities by type
   activities.forEach((activity) => {
+    const activityDate = new Date(activity.timestamp);
+    const isToday = activityDate >= today;
+
     switch (activity.type) {
       case 'deposit':
         stats.totalDeposits++;
+        if (isToday) stats.todayDeposits!++;
         break;
       case 'withdraw':
         stats.totalWithdraws++;
+        if (isToday) stats.todayWithdrawals!++;
         break;
+      case 'investment':
       case 'purchase':
         stats.totalProducts++;
         break;
