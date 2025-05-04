@@ -1,44 +1,12 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Activity, ActivitySummary } from '@/types/activity';
-import { fetchActivities, getActivityStats } from './activityService';
+import { ActivityHookResult } from './types';
+import { useFetchActivities } from './useFetchActivities';
 
-// Make this consistent with ActivitySummary in types
-export interface ActivityStats {
-  totalDeposits: number;
-  totalWithdraws: number;
-  totalProducts: number;
-  lastActive: string;
-  todayDeposits: number;
-  todayWithdrawals: number;
-}
-
-export const useActivities = () => {
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [stats, setStats] = useState<ActivityStats>({
-    totalDeposits: 0,
-    totalWithdraws: 0,
-    totalProducts: 0,
-    lastActive: '',
-    todayDeposits: 0,
-    todayWithdrawals: 0,
-  });
-  const [loading, setLoading] = useState<boolean>(true);
+export const useActivities = (): ActivityHookResult => {
   const { user } = useAuth();
-
-  const refresh = async () => {
-    setLoading(true);
-    try {
-      const activitiesData = await fetchActivities(user);
-      setActivities(activitiesData);
-      setStats(getActivityStats(activitiesData) as ActivityStats);
-    } catch (error) {
-      console.error('Error loading activities:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { activities, stats, loading, refresh } = useFetchActivities(user);
 
   // Fetch activities when user changes
   useEffect(() => {
@@ -52,3 +20,6 @@ export const useActivities = () => {
     refresh,
   };
 };
+
+// Export the ActivityStats type for backward compatibility
+export type { ActivityStats } from './types';

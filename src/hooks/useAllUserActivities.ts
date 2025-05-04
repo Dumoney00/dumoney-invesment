@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Activity } from '@/types/activity';
-import { ActivityStats } from '@/hooks/activities/useActivities';
+import { ActivityStats } from '@/hooks/activities/types';
 import { fetchActivities, getActivityStats } from '@/hooks/activities/activityService';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
