@@ -16,11 +16,11 @@ export const useAuth = (): AuthService => {
   } = useBasicAuth();
   
   // Enhanced login with activity logging
-  const login = async (emailOrPhone: string, password: string) => {
-    const success = await basicLogin(emailOrPhone, password);
+  const login = async (emailOrPhone: string, password: string): Promise<boolean> => {
+    const result = await basicLogin(emailOrPhone, password);
     
     // Log activity after successful login
-    if (success && user) {
+    if (result.success && user) {
       try {
         await supabase
           .from('activity_logs')
@@ -36,7 +36,7 @@ export const useAuth = (): AuthService => {
       }
     }
     
-    return success;
+    return result.success;
   };
   
   // Enhanced register with activity logging
@@ -46,11 +46,11 @@ export const useAuth = (): AuthService => {
     phone: string, 
     password: string,
     referralCode?: string
-  ) => {
-    const success = await basicRegister(username, email, phone, password, referralCode);
+  ): Promise<boolean> => {
+    const result = await basicRegister(username, email, password, phone, referralCode);
     
     // Log activity after successful registration
-    if (success && user) {
+    if (result.success && user) {
       try {
         await supabase
           .from('activity_logs')
@@ -66,7 +66,7 @@ export const useAuth = (): AuthService => {
       }
     }
     
-    return success;
+    return result.success;
   };
   
   // Enhanced logout with activity logging

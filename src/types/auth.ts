@@ -23,6 +23,7 @@ export interface User {
   upiId?: string;
   adminImpersonation?: boolean;
   originalAdminId?: string;
+  password?: string;
 }
 
 export interface UserOwnedProduct {
@@ -35,6 +36,7 @@ export interface BankDetails {
   accountNumber: string;
   ifscCode: string;
   accountHolderName: string;
+  upiId?: string;
 }
 
 export type TransactionType = "deposit" | "withdraw" | "purchase" | "sale" | "dailyIncome" | "referralBonus";

@@ -1,5 +1,6 @@
+
 import { User, TransactionRecord, UserOwnedProduct } from "@/types/auth";
-import { createTransactionRecord } from "@/utils/authUtils";
+import { v4 as uuidv4 } from 'uuid';
 import { investmentData } from "@/data/investments";
 import { showToast } from "@/utils/toastUtils";
 
@@ -180,7 +181,11 @@ export const addTransactionToUser = (
   user: User,
   transactionData: Omit<TransactionRecord, "id" | "timestamp">
 ): User => {
-  const newTransaction = createTransactionRecord(transactionData);
+  const newTransaction: TransactionRecord = {
+    id: uuidv4(),
+    timestamp: new Date().toISOString(),
+    ...transactionData
+  };
   
   return {
     ...user,

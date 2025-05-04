@@ -56,7 +56,7 @@ export const useAuthProvider = (): AuthContextType => {
     updateUserDeposit,
     updateUserWithdraw,
     addOwnedProduct,
-    sellOwnedProduct: sellOwnedProduct as (productId: number, sellPrice: number) => boolean, // Type assertion to fix promise issue
+    sellOwnedProduct: sellOwnedProduct as unknown as (productId: number, sellPrice: number) => boolean,
     updateUserProfile,
     resetPassword,
     addTransaction

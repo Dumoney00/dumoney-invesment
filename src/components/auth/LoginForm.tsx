@@ -36,7 +36,20 @@ const LoginForm: React.FC = () => {
       const success = await login(emailOrPhone, password);
       if (success) {
         navigate('/');
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid credentials",
+          variant: "destructive"
+        });
       }
+    } catch (error) {
+      toast({
+        title: "Login Error",
+        description: "An error occurred during login",
+        variant: "destructive"
+      });
+      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }

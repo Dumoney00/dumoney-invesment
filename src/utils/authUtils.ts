@@ -1,3 +1,8 @@
+
+import { User, TransactionRecord } from "@/types/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { v4 as uuidv4 } from 'uuid';
+
 export const fetchUserFromSupabase = async (userId: string) => {
   try {
     const { data: userData, error } = await supabase
@@ -24,10 +29,9 @@ export const fetchUserFromSupabase = async (userId: string) => {
         
       if (ownedProducts) {
         user.ownedProducts = ownedProducts.map(p => ({
-          id: p.id,
           productId: p.product_id,
-          cycleTimeRemaining: p.cycle_days,
-          purchaseDate: p.purchase_date
+          purchaseDate: p.purchase_date,
+          cycleDays: p.cycle_days
         }));
       }
       
@@ -64,13 +68,20 @@ export const mapDbUserToAppUser = (dbUser: any): any => {
     email: dbUser.email,
     phone: dbUser.phone,
     balance: dbUser.balance,
+    withdrawalBalance: dbUser.withdrawal_balance || 0,
+    totalDeposit: dbUser.total_deposit || 0,
+    totalWithdraw: dbUser.total_withdraw || 0,
+    dailyIncome: dbUser.daily_income || 0,
+    investmentQuantity: dbUser.investment_quantity || 0,
     profilePicture: dbUser.profile_picture || '',
     ownedProducts: [],
     transactions: [],
     bankDetails: null,
     referralCode: dbUser.referral_code,
     referredBy: dbUser.referred_by,
-    password: ''
+    password: '',
+    isAdmin: dbUser.is_admin || false,
+    isBlocked: dbUser.is_blocked || false
   };
 };
 
@@ -152,6 +163,29 @@ export const migrateLocalStorageToSupabase = async (localUser: any) => {
     }
   } catch (error) {
     console.error("Migration error:", error);
+    return null;
+  }
+};
+
+// Add the missing functions
+export const createTransactionRecord = (transactionData: Omit<TransactionRecord, "id" | "timestamp">): TransactionRecord => {
+  return {
+    id: uuidv4(),
+    timestamp: new Date().toISOString(),
+    ...transactionData
+  };
+};
+
+// Add function to find user by email or phone
+export const findUserByEmailOrPhone = (emailOrPhone: string): User | null => {
+  try {
+    const storedUsers = localStorage.getItem('investmentUsers');
+    if (!storedUsers) return null;
+    
+    const users = JSON.parse(storedUsers);
+    return users.find((u: any) => u.email === emailOrPhone || u.phone === emailOrPhone) || null;
+  } catch (error) {
+    console.error("Error finding user:", error);
     return null;
   }
 };

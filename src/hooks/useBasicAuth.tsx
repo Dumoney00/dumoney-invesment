@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { User } from "@/types/auth";
 
@@ -25,7 +26,7 @@ export const useBasicAuth = () => {
     }
   };
 
-  const register = async (username: string, email: string, password: string, phone?: string): Promise<{
+  const register = async (username: string, email: string, password: string, phone?: string, referralCode?: string): Promise<{
     success: boolean;
     message?: string;
   }> => {
@@ -43,13 +44,17 @@ export const useBasicAuth = () => {
       password,
       phone: phone || '',
       balance: 0,
+      withdrawalBalance: 0,
+      totalDeposit: 0,
+      totalWithdraw: 0,
+      dailyIncome: 0,
+      investmentQuantity: 0,
       transactions: [],
       ownedProducts: [],
       bankDetails: {
         accountNumber: '',
         ifscCode: '',
-        accountHolderName: '',
-        upiId: ''
+        accountHolderName: ''
       }
     };
 
@@ -67,5 +72,21 @@ export const useBasicAuth = () => {
     localStorage.removeItem('investmentUser');
   };
 
-  return { isAuthenticated, user, saveUser, login, register, logout };
+  const resetPassword = async (email: string): Promise<boolean> => {
+    const storedUsers = localStorage.getItem('investmentUsers');
+    if (!storedUsers) return false;
+    
+    let users = JSON.parse(storedUsers);
+    const userIndex = users.findIndex((u: any) => u.email === email);
+    
+    if (userIndex === -1) return false;
+    
+    // In a real app, we'd send an email. For now, just reset to a default password
+    users[userIndex].password = 'resetpassword';
+    localStorage.setItem('investmentUsers', JSON.stringify(users));
+    
+    return true;
+  };
+
+  return { isAuthenticated, user, saveUser, login, register, logout, resetPassword };
 };

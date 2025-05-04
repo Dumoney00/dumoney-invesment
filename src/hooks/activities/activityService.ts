@@ -1,7 +1,8 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { TransactionRecord } from '@/types/auth';
 import { getDeviceInfo } from './activityUtils';
-import { Activity } from '@/types/activity';
+import { Activity, mapTransactionToActivity } from '@/types/activity';
 
 // Function to fetch transactions from Supabase
 export const getTransactionsFromSupabase = async (): Promise<TransactionRecord[]> => {
@@ -107,13 +108,17 @@ export const fetchActivities = async (): Promise<Activity[]> => {
     
     if (transactions.length === 0) {
       // Fall back to localStorage if no Supabase data
-      return getTransactionsFromLocalStorage();
+      const localTransactions = getTransactionsFromLocalStorage();
+      // Map transactions to activities
+      return localTransactions.map(mapTransactionToActivity);
     }
     
-    return transactions;
+    // Map transactions to activities
+    return transactions.map(mapTransactionToActivity);
   } catch (error) {
     console.error("Error fetching activities:", error);
     // Always fall back to localStorage on error
-    return getTransactionsFromLocalStorage();
+    const localTransactions = getTransactionsFromLocalStorage();
+    return localTransactions.map(mapTransactionToActivity);
   }
 };
