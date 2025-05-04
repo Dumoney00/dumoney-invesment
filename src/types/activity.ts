@@ -27,13 +27,14 @@ export interface Activity {
   iconName?: any;
 }
 
+// Make both interfaces consistent with required properties
 export interface ActivitySummary {
   totalDeposits: number;
   totalWithdraws: number;
   totalProducts: number;
   lastActive: string;
-  todayDeposits?: number;
-  todayWithdrawals?: number;
+  todayDeposits: number;
+  todayWithdrawals: number;
 }
 
 // Map transaction to activity
@@ -65,6 +66,7 @@ export const mapTransactionToActivity = (transaction: TransactionRecord): Activi
     amount: transaction.amount,
     type: activityType,
     timestamp: transaction.timestamp,
+    details: transaction.details,
     bankDetails: transaction.bankDetails,
     productName: transaction.productName,
     deviceInfo: transaction.deviceInfo || {

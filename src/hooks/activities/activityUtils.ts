@@ -56,9 +56,7 @@ export const mapTransactionTypeToIcon = (type: string): LucideIcon => {
 };
 
 // Get activity description
-export const getActivityDescription = (type: ActivityType, details?: string): string => {
-  if (details) return details;
-
+export const getActivityDescription = (type: ActivityType): string => {
   switch (type) {
     case 'deposit':
       return 'Deposit to account';

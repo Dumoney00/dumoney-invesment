@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Activity } from '@/types/activity';
+import { Activity, ActivitySummary } from '@/types/activity';
 import { fetchActivities, getActivityStats } from './activityService';
 
+// Make this consistent with ActivitySummary in types
 export interface ActivityStats {
   totalDeposits: number;
   totalWithdraws: number;
@@ -31,7 +32,7 @@ export const useActivities = () => {
     try {
       const activitiesData = await fetchActivities(user);
       setActivities(activitiesData);
-      setStats(getActivityStats(activitiesData));
+      setStats(getActivityStats(activitiesData) as ActivityStats);
     } catch (error) {
       console.error('Error loading activities:', error);
     } finally {

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Index from './pages/Index';
@@ -15,30 +14,34 @@ import NotFound from './pages/NotFound';
 import Auth from './pages/Auth';
 
 import MigrationInitiator from './components/migration/MigrationInitiator';
+import CloudMigration from '@/components/migration/CloudMigration';
 
 const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <div className="app">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/investing" element={<Investing />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/activities" element={<Activities />} />
-            <Route path="/agent" element={<Agent />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/change-password" element={<ChangePassword />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <MigrationInitiator />
-          <Toaster />
-        </div>
-      </AuthProvider>
-    </QueryClientProvider>
+    <div className="relative">
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <div className="app">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/investing" element={<Investing />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/activities" element={<Activities />} />
+              <Route path="/agent" element={<Agent />} />
+              <Route path="/account" element={<Account />} />
+              <Route path="/change-password" element={<ChangePassword />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <MigrationInitiator />
+            <CloudMigration />
+            <Toaster />
+          </div>
+        </AuthProvider>
+      </QueryClientProvider>
+    </div>
   );
 }
 

@@ -90,7 +90,7 @@ export const useAllUserActivities = () => {
       );
 
       setActivities(allActivities);
-      setStats(getActivityStats(allActivities));
+      setStats(getActivityStats(allActivities) as ActivityStats);
     } catch (error) {
       console.error('Error in fetchAllActivities:', error);
     } finally {
