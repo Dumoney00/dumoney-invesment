@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 import Index from './pages/Index';
@@ -13,7 +14,6 @@ import ChangePassword from './pages/ChangePassword';
 import NotFound from './pages/NotFound';
 import Auth from './pages/Auth';
 
-import MigrationInitiator from './components/migration/MigrationInitiator';
 import CloudMigration from '@/components/migration/CloudMigration';
 
 const queryClient = new QueryClient();
@@ -35,7 +35,6 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <MigrationInitiator />
             <CloudMigration />
             <Toaster />
           </div>
