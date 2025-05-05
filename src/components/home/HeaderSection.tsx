@@ -5,14 +5,14 @@ import { Wallet } from "lucide-react";
 
 const HeaderSection: React.FC = () => {
   const { user } = useAuth();
-  const [balance, setBalance] = useState(user?.balance || 0);
-  const [withdrawalBalance, setWithdrawalBalance] = useState(user?.withdrawalBalance || 0);
+  const [balance, setBalance] = useState<number>(0);
+  const [withdrawalBalance, setWithdrawalBalance] = useState<number>(0);
   
   // Update balances whenever user changes
   useEffect(() => {
     if (user) {
-      setBalance(user.balance);
-      setWithdrawalBalance(user.withdrawalBalance);
+      setBalance(user.balance || 0);
+      setWithdrawalBalance(user.withdrawalBalance || 0);
     }
   }, [user]);
 

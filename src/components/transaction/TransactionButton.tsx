@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 interface TransactionButtonProps {
   isProcessing: boolean;
   isDeposit: boolean;
-  isWithdrawalTime?: boolean; // Made optional
+  isWithdrawalTime?: boolean;
 }
 
 const TransactionButton: React.FC<TransactionButtonProps> = ({ 
@@ -17,7 +17,7 @@ const TransactionButton: React.FC<TransactionButtonProps> = ({
     <Button
       type="submit"
       className="w-full bg-investment-gold hover:bg-investment-gold/90 py-6 text-lg"
-      disabled={isProcessing}
+      disabled={isProcessing || (!isDeposit && !isWithdrawalTime)}
     >
       {isProcessing 
         ? "Processing..." 
