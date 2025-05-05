@@ -22,10 +22,21 @@ const AccountSummary: React.FC<AccountSummaryProps> = ({ user }) => {
     }
   }, [user]);
 
+  const handleWalletClick = () => {
+    navigate('/deposit');
+  };
+
+  const handleEarningsClick = () => {
+    navigate('/withdraw');
+  };
+
   return (
     <div className="grid grid-cols-1 gap-4 p-4">
       <div className="bg-[#222222] rounded-xl p-4">
-        <div className="flex justify-between items-center mb-3">
+        <div 
+          className="flex justify-between items-center mb-3 cursor-pointer" 
+          onClick={handleWalletClick}
+        >
           <div className="flex items-center gap-2">
             <Wallet className="text-investment-gold" />
             <h2 className="text-white font-medium">Deposit Wallet</h2>
@@ -35,7 +46,10 @@ const AccountSummary: React.FC<AccountSummaryProps> = ({ user }) => {
           </span>
         </div>
         
-        <div className="flex justify-between items-center mb-4">
+        <div 
+          className="flex justify-between items-center mb-4 cursor-pointer"
+          onClick={handleEarningsClick}
+        >
           <div className="flex items-center gap-2">
             <Coins className="text-green-400" />
             <h2 className="text-white font-medium">Earnings Wallet</h2>

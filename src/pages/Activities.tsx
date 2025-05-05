@@ -7,7 +7,7 @@ import { mapTransactionToActivity } from '@/types/activity';
 import ActivityStatsSummary from '@/components/home/ActivityStatsSummary';
 import { useAllUserActivities } from '@/hooks/useAllUserActivities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowDown, ArrowUp, CalendarRange, Filter, RefreshCcw, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, CalendarRange, Filter, RefreshCcw, Users, Bell } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 
 const Activities: React.FC = () => {
   const { user } = useAuth();
@@ -24,6 +25,8 @@ const Activities: React.FC = () => {
   const [dateRange, setDateRange] = useState<{start: Date | null, end: Date | null}>({start: null, end: null});
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'mobile' | 'desktop'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasNewActivity, setHasNewActivity] = useState(false);
+  const [activityCount, setActivityCount] = useState(0);
   
   const userActivities = user?.transactions 
     ? user.transactions.map(transaction => mapTransactionToActivity({
@@ -32,6 +35,17 @@ const Activities: React.FC = () => {
         userId: user.id
       }))
     : [];
+
+  // Check for new activities
+  useEffect(() => {
+    if (activityCount > 0 && allUserActivities.length > activityCount) {
+      setHasNewActivity(true);
+      // Play notification sound
+      const audio = new Audio('/notification.mp3');
+      audio.play().catch(e => console.log('Audio play failed:', e));
+    }
+    setActivityCount(allUserActivities.length);
+  }, [allUserActivities.length]);
 
   // Get unique users for filtering
   const uniqueUsers = React.useMemo(() => {
@@ -98,6 +112,7 @@ const Activities: React.FC = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await refresh();
+    setHasNewActivity(false);
     setTimeout(() => {
       setIsRefreshing(false);
     }, 1000);
@@ -108,9 +123,18 @@ const Activities: React.FC = () => {
       <div className="pt-4 px-4 pb-20">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-white text-2xl font-bold">Activities</h1>
-          <div className="flex items-center">
-            <Users size={18} className="text-investment-gold mr-2" />
+          <div className="flex items-center gap-2">
+            <Users size={18} className="text-investment-gold" />
             <span className="text-sm text-investment-gold">User Activities</span>
+            {hasNewActivity && (
+              <div className="relative">
+                <Bell size={18} className="text-investment-gold" />
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-investment-gold opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-investment-gold"></span>
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -119,7 +143,14 @@ const Activities: React.FC = () => {
         <Card className="bg-[#111111] border-gray-800 shadow-md">
           <CardHeader className="pb-2">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-lg text-gray-300">Live Activity Feed</CardTitle>
+              <CardTitle className="text-lg text-gray-300 flex items-center gap-2">
+                Live Activity Feed
+                {hasNewActivity && (
+                  <Badge variant="outline" className="bg-green-600/20 text-green-400 border-green-500/30 animate-pulse">
+                    New
+                  </Badge>
+                )}
+              </CardTitle>
               <Button 
                 size="sm" 
                 variant="ghost" 

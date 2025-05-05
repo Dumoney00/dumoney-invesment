@@ -80,8 +80,44 @@ export const useAllUserActivities = () => {
           allActivities = [...allActivities, ...logActivities];
         }
       } else {
-        // Fetch activities only for the current user
-        allActivities = await fetchActivities(currentUser);
+        // First fetch user's own activities
+        const userActivities = await fetchActivities(currentUser);
+        allActivities = [...allActivities, ...userActivities];
+        
+        // Then fetch all public activities from all users
+        const { data: publicActivityData, error: publicActivityError } = await supabase
+          .from('transactions')
+          .select('*')
+          .order('timestamp', { ascending: false })
+          .limit(50);
+        
+        if (publicActivityError) {
+          console.error('Error fetching public activities:', publicActivityError);
+        } else if (publicActivityData) {
+          // Map transaction data to activities
+          const publicActivities: Activity[] = publicActivityData.map((tx: any) => ({
+            id: tx.id,
+            type: tx.type === 'purchase' ? 'investment' : tx.type,
+            username: tx.approved_by || 'User',
+            userId: tx.user_id,
+            timestamp: tx.timestamp,
+            details: tx.details || '',
+            amount: tx.amount,
+            status: tx.status,
+            relativeTime: '',
+            productName: tx.product_name
+          }));
+          
+          // Combine and remove duplicates
+          const combinedActivities = [...allActivities];
+          publicActivities.forEach(activity => {
+            if (!combinedActivities.some(a => a.id === activity.id)) {
+              combinedActivities.push(activity);
+            }
+          });
+          
+          allActivities = combinedActivities;
+        }
       }
 
       // Sort by timestamp (newest first)
@@ -101,7 +137,7 @@ export const useAllUserActivities = () => {
   useEffect(() => {
     fetchAllActivities();
     
-    // Subscribe to real-time updates if available
+    // Subscribe to real-time updates
     const transactionsChannel = supabase
       .channel('transactions-changes')
       .on('postgres_changes', {
@@ -109,7 +145,7 @@ export const useAllUserActivities = () => {
         schema: 'public',
         table: 'transactions'
       }, () => {
-        // Refresh data when changes occur
+        console.log('Transaction change detected!');
         fetchAllActivities();
       })
       .subscribe();
@@ -121,14 +157,20 @@ export const useAllUserActivities = () => {
         schema: 'public',
         table: 'activity_logs'
       }, () => {
-        // Refresh data when changes occur
+        console.log('Activity log change detected!');
         fetchAllActivities();
       })
       .subscribe();
 
+    // Set up a regular refresh interval
+    const refreshInterval = setInterval(() => {
+      fetchAllActivities();
+    }, 15000); // Refresh every 15 seconds
+
     return () => {
       supabase.removeChannel(transactionsChannel);
       supabase.removeChannel(activitiesChannel);
+      clearInterval(refreshInterval);
     };
   }, [currentUser]);
 

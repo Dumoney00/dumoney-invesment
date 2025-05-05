@@ -6,8 +6,9 @@ import { useAllUserActivities } from '@/hooks/useAllUserActivities';
 
 const Navigation: React.FC = () => {
   const location = useLocation();
-  const { activities } = useAllUserActivities();
+  const { activities, refresh } = useAllUserActivities();
   const [hasNewActivity, setHasNewActivity] = useState(false);
+  const [activityCount, setActivityCount] = useState(0);
   
   const navItems = [
     { label: 'Home', icon: Home, path: '/' },
@@ -17,43 +18,26 @@ const Navigation: React.FC = () => {
     { label: 'Mine', icon: User, path: '/profile' },
   ];
 
-  // Check for new activities every few seconds
+  // Check for new activities
   useEffect(() => {
-    let lastActivity = activities.length > 0 ? new Date(activities[0].timestamp) : new Date();
-    
-    // Initial check
-    if (activities.length > 0) {
+    if (activityCount > 0 && activities.length > activityCount) {
       setHasNewActivity(true);
-      
-      // Reset notification if user is on activities page
-      if (location.pathname === '/activities') {
-        setHasNewActivity(false);
-      }
     }
     
-    // Check for new activities
-    const checkNewActivities = () => {
-      if (activities.length === 0) return;
-      
-      const newestActivity = new Date(activities[0].timestamp);
-      
-      // If there's a new activity and user is not on activities page
-      if (newestActivity > lastActivity && location.pathname !== '/activities') {
-        setHasNewActivity(true);
-      }
-      
-      lastActivity = newestActivity;
-    };
+    setActivityCount(activities.length);
     
-    const timer = setInterval(checkNewActivities, 3000);
-    
-    // Reset notification when visiting activities page
+    // Reset notification if user is on activities page
     if (location.pathname === '/activities') {
       setHasNewActivity(false);
     }
     
-    return () => clearInterval(timer);
-  }, [activities, location.pathname]);
+    // Set up regular refresh to check for new activities
+    const refreshInterval = setInterval(() => {
+      refresh();
+    }, 10000); // Check every 10 seconds
+    
+    return () => clearInterval(refreshInterval);
+  }, [activities.length, location.pathname, refresh]);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#222222] border-t border-gray-800 max-w-md mx-auto">
@@ -67,7 +51,10 @@ const Navigation: React.FC = () => {
             <div className="relative">
               <item.icon size={24} />
               {item.path === '/activities' && hasNewActivity && (
-                <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-investment-gold animate-pulse"></span>
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-investment-gold opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-investment-gold"></span>
+                </span>
               )}
             </div>
             <span>

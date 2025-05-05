@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,6 +14,7 @@ import MarqueeInfo from '@/components/transaction/MarqueeInfo';
 import TransactionButton from '@/components/transaction/TransactionButton';
 import TransactionIcon from '@/components/transaction/TransactionIcon';
 import { TransactionFormValues } from '@/components/transaction/types';
+import { supabase } from '@/integrations/supabase/client';
 
 // Define preset amounts for the transaction form
 const presetAmounts = [100, 500, 1000, 5000, 10000, 50000];
@@ -50,6 +52,9 @@ const Transaction: React.FC = () => {
     currentDay >= 1 && 
     currentDay <= 5;
   
+  // For demo purposes, always allow withdrawal
+  const allowWithdrawal = true;
+  
   const form = useForm<TransactionFormValues>({
     defaultValues: {
       amount: 100
@@ -72,7 +77,7 @@ const Transaction: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       if (isDeposit) {
-        updateUserDeposit(values.amount);
+        await updateUserDeposit(values.amount);
         setCurrentBalance(prev => prev + values.amount);
         
         toast({
@@ -82,7 +87,7 @@ const Transaction: React.FC = () => {
       } else {
         // Check withdrawal wallet balance
         if (user && user.withdrawalBalance >= values.amount) {
-          updateUserWithdraw(values.amount);
+          await updateUserWithdraw(values.amount);
           setWithdrawalBalance(prev => prev - values.amount);
           
           toast({
@@ -140,7 +145,7 @@ const Transaction: React.FC = () => {
             </div>
           )}
           
-          <WithdrawalTimeInfo isDeposit={isDeposit} isWithdrawalTime={isWithdrawalTime} />
+          <WithdrawalTimeInfo isDeposit={isDeposit} isWithdrawalTime={allowWithdrawal} />
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleTransaction)} className="space-y-6">
@@ -149,7 +154,7 @@ const Transaction: React.FC = () => {
               <TransactionButton 
                 isProcessing={isProcessing} 
                 isDeposit={isDeposit} 
-                isWithdrawalTime={isWithdrawalTime}
+                isWithdrawalTime={allowWithdrawal}
               />
             </form>
           </Form>
