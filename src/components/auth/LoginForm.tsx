@@ -1,99 +1,110 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm, SubmitHandler } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { LogIn } from 'lucide-react';
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from 'react-router-dom';
-import { findUserByEmailOrPhone } from "@/utils/authUtils";
-import { toast } from "@/hooks/use-toast";
+import { useAuth } from '@/contexts/AuthContext';
+import { showToast } from '@/utils/toastUtils';
+
+const loginFormSchema = z.object({
+  email: z.string().email({
+    message: "Please enter a valid email address."
+  }),
+  password: z.string().min(1, {
+    message: "Password is required."
+  }),
+});
+
+type LoginFormData = z.infer<typeof loginFormSchema>;
 
 const LoginForm: React.FC = () => {
-  const [emailOrPhone, setEmailOrPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
+  
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
+  const handleSubmit: SubmitHandler<LoginFormData> = async (data) => {
     try {
-      // Check if user exists with given email or phone
-      const existingUser = findUserByEmailOrPhone(emailOrPhone);
-      if (!existingUser) {
-        toast({
-          title: "Login Failed",
-          description: "No account found with this email or phone number",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      const success = await login(emailOrPhone, password);
+      setLoading(true);
+      setError(null);
+      
+      const success = await login(data.email, data.password);
+      
       if (success) {
+        showToast("Login successful", "Welcome back to DUMONEY INVEST!", "default");
         navigate('/');
       } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid credentials",
-          variant: "destructive"
-        });
+        setError("Invalid email or password");
+        showToast("Login failed", "Invalid email or password. Please try again.", "destructive");
       }
     } catch (error) {
-      toast({
-        title: "Login Error",
-        description: "An error occurred during login",
-        variant: "destructive"
-      });
       console.error("Login error:", error);
+      setError("An unexpected error occurred. Please try again.");
+      showToast("Login error", "An unexpected error occurred. Please try again.", "destructive");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="emailOrPhone" className="text-gray-300 mb-1 block">
-          Email or Phone
-        </label>
-        <Input
-          id="emailOrPhone"
-          placeholder="Enter your email or phone"
-          value={emailOrPhone}
-          onChange={(e) => setEmailOrPhone(e.target.value)}
-          required
-          className="bg-[#222222] border-gray-700 text-white"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+        
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your email" type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-      
-      <div>
-        <label htmlFor="password" className="text-gray-300 mb-1 block">
-          Password
-        </label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="bg-[#222222] border-gray-700 text-white"
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="Enter your password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
-
-      <Button 
-        type="submit" 
-        className="w-full bg-investment-gold hover:bg-investment-gold/90"
-        disabled={isLoading}
-      >
-        {isLoading ? "Processing..." : "Login"}
-      </Button>
-    </form>
+        <Button type="submit" disabled={loading} className="w-full bg-investment-gold hover:bg-investment-gold/90">
+          {loading ? "Logging in..." : "Login"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 

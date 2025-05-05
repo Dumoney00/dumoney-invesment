@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -14,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
+import { showToast } from '@/utils/toastUtils';
 
 const registerFormSchema = z.object({
   username: z.string().min(2, {
@@ -35,6 +37,7 @@ type RegisterFormData = z.infer<typeof registerFormSchema>;
 
 const RegisterForm = () => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { register } = useAuth();
   
@@ -50,24 +53,43 @@ const RegisterForm = () => {
   });
 
   const handleSubmit: SubmitHandler<RegisterFormData> = async (data) => {
-    setLoading(true);
-    const success = await register(
-      data.username,
-      data.email,
-      data.phone,
-      data.password,
-      data.referralCode || undefined
-    );
-    
-    if (success) {
-      navigate('/');
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await register(
+        data.username,
+        data.email,
+        data.phone,
+        data.password,
+        data.referralCode || undefined
+      );
+      
+      if (result) {
+        showToast("Registration successful", "Welcome to DUMONEY INVEST! You've been signed in.", "default");
+        navigate('/');
+      } else {
+        setError("Registration failed. Please try again.");
+        showToast("Registration failed", "Please check your information and try again.", "destructive");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setError("An unexpected error occurred. Please try again.");
+      showToast("Registration error", "An unexpected error occurred. Please try again.", "destructive");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-md text-sm">
+            {error}
+          </div>
+        )}
+        
         <FormField
           control={form.control}
           name="username"
@@ -88,7 +110,7 @@ const RegisterForm = () => {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your email" {...field} />
+                <Input placeholder="Enter your email" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -133,7 +155,7 @@ const RegisterForm = () => {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={loading} className="w-full">
+        <Button type="submit" disabled={loading} className="w-full bg-investment-gold hover:bg-investment-gold/90">
           {loading ? "Registering..." : "Register"}
         </Button>
       </form>
