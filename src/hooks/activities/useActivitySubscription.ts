@@ -3,7 +3,7 @@ import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Activity } from '@/types/activity';
-import { ACTIVITY_REFRESH_INTERVAL } from './activityConstants';
+import { ACTIVITY_REFRESH_INTERVAL, ACTIVITY_QUICK_REFRESH_INTERVAL } from './activityConstants';
 
 export const useActivitySubscription = (
   activities: Activity[],
@@ -44,9 +44,11 @@ export const useActivitySubscription = (
 
   // Setup real-time subscription
   useEffect(() => {
+    console.log('Setting up real-time subscriptions for activities');
+    
     // Set up real-time subscriptions for transactions and activity logs
     const transactionsChannel = supabase
-      .channel('transactions-changes')
+      .channel('public:transactions')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -60,7 +62,7 @@ export const useActivitySubscription = (
       });
 
     const activitiesChannel = supabase
-      .channel('activity-logs-changes')
+      .channel('public:activity_logs')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -73,15 +75,27 @@ export const useActivitySubscription = (
         console.log('Activity logs subscription status:', status);
       });
 
+    // Do an immediate refresh when component mounts
+    fetchAllActivities();
+
     // Set up a regular refresh interval as a fallback
     const refreshInterval = setInterval(() => {
+      console.log('Running scheduled activity refresh');
       fetchAllActivities();
     }, ACTIVITY_REFRESH_INTERVAL);
 
+    // Set up a more frequent refresh for quick updates
+    const quickRefreshInterval = setInterval(() => {
+      console.log('Running quick activity check');
+      fetchAllActivities();
+    }, ACTIVITY_QUICK_REFRESH_INTERVAL);
+
     return () => {
+      console.log('Cleaning up activity subscriptions');
       supabase.removeChannel(transactionsChannel);
       supabase.removeChannel(activitiesChannel);
       clearInterval(refreshInterval);
+      clearInterval(quickRefreshInterval);
     };
   }, [fetchAllActivities]);
   

@@ -21,123 +21,81 @@ export const useAllActivitiesFetcher = (currentUser: User | null) => {
   const fetchAllActivities = useCallback(async () => {
     setLoading(true);
     try {
+      console.log('Fetching all activities, currentUser:', currentUser?.id);
       // For admin users, fetch activities for all users from Supabase
       let allActivities: Activity[] = [];
 
-      if (currentUser?.isAdmin) {
-        // Fetch all transactions
-        const { data: transactionData, error: transactionError } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('timestamp', { ascending: false });
-
-        if (transactionError) {
-          console.error('Error fetching all transactions:', transactionError);
-        } else if (transactionData) {
-          // Map transaction data to activities
-          const transactionActivities: Activity[] = transactionData.map((tx: any) => ({
-            id: tx.id,
-            type: tx.type === 'purchase' ? 'investment' : tx.type,
-            username: tx.approved_by || 'System',
-            userId: tx.user_id,
-            timestamp: tx.timestamp,
-            details: tx.details || '',
-            amount: tx.amount,
-            status: tx.status,
-            relativeTime: '',
-            bankDetails: tx.bank_details_id ? {
-              accountNumber: 'xxxx',
-              ifscCode: 'xxxx',
-              accountHolderName: 'xxxx'
-            } : undefined,
-            productName: tx.product_name
-          }));
-          allActivities = [...allActivities, ...transactionActivities];
-        }
-
-        // Fetch all activity logs
-        const { data: activityData, error: activityError } = await supabase
-          .from('activity_logs')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (activityError) {
-          console.error('Error fetching all activity logs:', activityError);
-        } else if (activityData) {
-          // Map activity logs to activities
-          const logActivities: Activity[] = activityData.map((log: any) => ({
-            id: log.id,
-            type: log.activity_type,
-            username: log.username,
-            userId: log.user_id,
-            timestamp: log.created_at,
-            details: log.details || '',
-            amount: log.amount || 0,
-            status: 'completed',
-            relativeTime: ''
-          }));
-          allActivities = [...allActivities, ...logActivities];
-        }
-      } else {
-        // First fetch user's own activities
-        const { data: userActivitiesData, error: userActivitiesError } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('user_id', currentUser?.id)
-          .order('timestamp', { ascending: false });
-          
-        if (userActivitiesError) {
-          console.error('Error fetching user activities:', userActivitiesError);
-        } else if (userActivitiesData) {
-          const userActivities: Activity[] = userActivitiesData.map((tx: any) => ({
-            id: tx.id,
-            type: tx.type === 'purchase' ? 'investment' : tx.type,
-            username: currentUser?.username || 'User',
-            userId: tx.user_id,
-            timestamp: tx.timestamp,
-            details: tx.details || '',
-            amount: tx.amount,
-            status: tx.status,
-            relativeTime: '',
-            productName: tx.product_name
-          }));
-          allActivities = [...allActivities, ...userActivities];
-        }
+      // First fetch transactions (for all users, but limit scope if not admin)
+      const transactionQuery = supabase
+        .from('transactions')
+        .select('*')
+        .order('timestamp', { ascending: false });
+      
+      // Only filter by user_id if not an admin user
+      if (!currentUser?.isAdmin) {
+        // Still fetch all transactions but limit to more recent ones for non-admins
+        // This ensures we see everyone's public activity
+        transactionQuery.limit(100);
+      }
         
-        // Then fetch all public activities from all users
-        const { data: publicActivityData, error: publicActivityError } = await supabase
-          .from('transactions')
-          .select('*')
-          .order('timestamp', { ascending: false })
-          .limit(50);
+      const { data: transactionData, error: transactionError } = await transactionQuery;
+
+      if (transactionError) {
+        console.error('Error fetching all transactions:', transactionError);
+      } else if (transactionData) {
+        console.log(`Fetched ${transactionData.length} transactions`);
+        // Map transaction data to activities
+        const transactionActivities: Activity[] = transactionData.map((tx: any) => ({
+          id: tx.id,
+          type: tx.type === 'purchase' ? 'investment' : tx.type,
+          username: tx.approved_by || 'System',
+          userId: tx.user_id,
+          timestamp: tx.timestamp,
+          details: tx.details || '',
+          amount: tx.amount,
+          status: tx.status,
+          relativeTime: '',
+          bankDetails: tx.bank_details_id ? {
+            accountNumber: 'xxxx',
+            ifscCode: 'xxxx',
+            accountHolderName: 'xxxx'
+          } : undefined,
+          productName: tx.product_name
+        }));
+        allActivities = [...allActivities, ...transactionActivities];
+      }
+
+      // Now fetch activity logs
+      const activityQuery = supabase
+        .from('activity_logs')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      // Only filter by user_id if not an admin user
+      if (!currentUser?.isAdmin) {
+        // Still fetch all activity logs but limit to more recent ones for non-admins
+        activityQuery.limit(100);
+      }
         
-        if (publicActivityError) {
-          console.error('Error fetching public activities:', publicActivityError);
-        } else if (publicActivityData) {
-          // Map transaction data to activities
-          const publicActivities: Activity[] = publicActivityData.map((tx: any) => ({
-            id: tx.id,
-            type: tx.type === 'purchase' ? 'investment' : tx.type,
-            username: tx.approved_by || 'User',
-            userId: tx.user_id,
-            timestamp: tx.timestamp,
-            details: tx.details || '',
-            amount: tx.amount,
-            status: tx.status,
-            relativeTime: '',
-            productName: tx.product_name
-          }));
-          
-          // Combine and remove duplicates
-          const combinedActivities = [...allActivities];
-          publicActivities.forEach(activity => {
-            if (!combinedActivities.some(a => a.id === activity.id)) {
-              combinedActivities.push(activity);
-            }
-          });
-          
-          allActivities = combinedActivities;
-        }
+      const { data: activityData, error: activityError } = await activityQuery;
+
+      if (activityError) {
+        console.error('Error fetching all activity logs:', activityError);
+      } else if (activityData) {
+        console.log(`Fetched ${activityData.length} activity logs`);
+        // Map activity logs to activities
+        const logActivities: Activity[] = activityData.map((log: any) => ({
+          id: log.id,
+          type: log.activity_type,
+          username: log.username,
+          userId: log.user_id,
+          timestamp: log.created_at,
+          details: log.details || '',
+          amount: log.amount || 0,
+          status: 'completed',
+          relativeTime: ''
+        }));
+        allActivities = [...allActivities, ...logActivities];
       }
 
       // Sort by timestamp (newest first)
@@ -145,6 +103,7 @@ export const useAllActivitiesFetcher = (currentUser: User | null) => {
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 
+      console.log(`Total activities after fetch: ${allActivities.length}`);
       setActivities(allActivities);
       setStats(getActivityStats(allActivities) as ActivityStats);
       return allActivities;
