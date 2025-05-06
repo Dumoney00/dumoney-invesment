@@ -1,10 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Activity } from '@/types/activity';
 import { ActivityStats } from '@/hooks/activities/types';
 import { fetchActivities, getActivityStats } from '@/hooks/activities/activityService';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/components/ui/use-toast';
 
 export const useAllUserActivities = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -20,7 +21,7 @@ export const useAllUserActivities = () => {
   const [hasNewActivity, setHasNewActivity] = useState(false);
   const { user: currentUser } = useAuth();
 
-  const fetchAllActivities = async () => {
+  const fetchAllActivities = useCallback(async () => {
     setLoading(true);
     try {
       // For admin users, fetch activities for all users from Supabase
@@ -139,6 +140,13 @@ export const useAllUserActivities = () => {
             try {
               const audio = new Audio('/notification.mp3');
               audio.play().catch(e => console.log('Audio play failed:', e));
+              
+              // Show toast notification
+              toast({
+                title: "New Activity",
+                description: "New user activity detected",
+                variant: "default",
+              });
             } catch (error) {
               console.error('Failed to play notification sound:', error);
             }
@@ -153,14 +161,14 @@ export const useAllUserActivities = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activities, currentUser, loading]);
 
   useEffect(() => {
     fetchAllActivities();
     
     // Set up real-time subscriptions for transactions and activity logs
     const transactionsChannel = supabase
-      .channel('public:transactions')
+      .channel('transactions-changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -168,7 +176,6 @@ export const useAllUserActivities = () => {
       }, (payload) => {
         console.log('Real-time transaction change detected:', payload);
         // Instead of refetching all data, we could update the local state more efficiently
-        // But for simplicity and to ensure consistency, we'll refetch all data
         fetchAllActivities();
       })
       .subscribe((status) => {
@@ -176,7 +183,7 @@ export const useAllUserActivities = () => {
       });
 
     const activitiesChannel = supabase
-      .channel('public:activity_logs')
+      .channel('activity-logs-changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -199,7 +206,7 @@ export const useAllUserActivities = () => {
       supabase.removeChannel(activitiesChannel);
       clearInterval(refreshInterval);
     };
-  }, [currentUser]);
+  }, [currentUser, fetchAllActivities]);
 
   const refresh = () => {
     setHasNewActivity(false);

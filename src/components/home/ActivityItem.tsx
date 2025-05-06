@@ -5,6 +5,7 @@ import { Activity } from '@/types/activity';
 import { formatTimeAgo } from '@/utils/timeUtils';
 import { ArrowDown, ArrowUp, ShoppingBag, CreditCard, Clock, Users } from "lucide-react";
 import { cn } from '@/lib/utils';
+import { motion } from "framer-motion";
 
 interface ActivityItemProps {
   activity: Activity;
@@ -57,7 +58,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
 
   const getCardClasses = () => {
     let classes = "bg-[#191919] border-gray-800";
-    if (isNew) classes += " animate-pulse border-green-500/30";
+    if (isNew) classes += " border-green-500/30";
     return classes;
   };
   
@@ -66,9 +67,13 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
       <CardContent className="p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`h-8 w-8 rounded-full ${isNew ? 'bg-green-900/30' : 'bg-black/30'} flex items-center justify-center`}>
+            <motion.div 
+              className={`h-8 w-8 rounded-full ${isNew ? 'bg-green-900/30' : 'bg-black/30'} flex items-center justify-center`}
+              animate={isNew ? { scale: [1, 1.2, 1] } : {}}
+              transition={{ duration: 0.5 }}
+            >
               {getActivityIcon()}
-            </div>
+            </motion.div>
             <div>
               <p className="text-white text-sm">
                 {activity.username}{' '}
@@ -76,9 +81,13 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
                   {activity.type === 'investment' ? 'purchased' : activity.type}
                 </span>
                 {isNew && (
-                  <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">
+                  <motion.span 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="ml-2 text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded"
+                  >
                     New
-                  </span>
+                  </motion.span>
                 )}
               </p>
               <p className="text-gray-400 text-xs">
@@ -105,9 +114,13 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
             </div>
           </div>
           <div className="text-right">
-            <p className={`font-medium ${activity.type === 'deposit' || activity.type === 'dailyIncome' || activity.type === 'referralBonus' ? 'text-green-500' : 'text-amber-500'}`}>
+            <motion.p 
+              className={`font-medium ${activity.type === 'deposit' || activity.type === 'dailyIncome' || activity.type === 'referralBonus' ? 'text-green-500' : 'text-amber-500'}`}
+              animate={isNew ? { scale: [1, 1.1, 1] } : {}}
+              transition={{ duration: 0.5 }}
+            >
               {activity.type === 'deposit' || activity.type === 'dailyIncome' || activity.type === 'referralBonus' ? '+' : '-'}₹{activity.amount.toFixed(2)}
-            </p>
+            </motion.p>
             {activity.status && (
               <span className={`text-xs px-1.5 py-0.5 rounded ${
                 activity.status === 'completed' ? 'bg-green-500/20 text-green-400' : 

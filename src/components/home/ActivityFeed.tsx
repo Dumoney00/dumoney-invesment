@@ -4,6 +4,7 @@ import { Activity } from '@/types/activity';
 import ActivityItem from './ActivityItem';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ActivityFeedProps {
   activities: Activity[];
@@ -11,6 +12,7 @@ interface ActivityFeedProps {
   showBankDetails?: boolean;
   filteredType?: 'all' | 'deposit' | 'withdraw' | 'investment' | 'referralBonus' | 'dailyIncome';
   filteredUserId?: string;
+  maxHeight?: string;
 }
 
 const ActivityFeed: React.FC<ActivityFeedProps> = ({ 
@@ -18,7 +20,8 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
   showHeader = true,
   showBankDetails = false,
   filteredType = 'all',
-  filteredUserId = 'all'
+  filteredUserId = 'all',
+  maxHeight
 }) => {
   const [newActivity, setNewActivity] = useState<boolean>(false);
   const [newActivities, setNewActivities] = useState<Set<string>>(new Set());
@@ -58,6 +61,14 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
       setNewActivity(true);
       setNewActivities(newActivityIds);
       
+      // Play notification sound
+      try {
+        const audio = new Audio('/notification.mp3');
+        audio.play().catch(e => console.log('Audio play failed:', e));
+      } catch (error) {
+        console.error('Failed to play notification sound:', error);
+      }
+      
       // Reset the animation after 5 seconds
       const timer = setTimeout(() => {
         setNewActivity(false);
@@ -95,15 +106,23 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
         </div>
       )}
       
-      <div className="space-y-2">
-        {filteredActivities.map((activity, index) => (
-          <ActivityItem 
-            key={activity.id}
-            activity={activity}
-            showBankDetails={showBankDetails}
-            isNew={newActivities.has(activity.id)}
-          />
-        ))}
+      <div className={`space-y-2 ${maxHeight ? `max-h-[${maxHeight}] overflow-auto` : ''}`}>
+        <AnimatePresence>
+          {filteredActivities.map((activity, index) => (
+            <motion.div 
+              key={activity.id}
+              initial={newActivities.has(activity.id) ? { opacity: 0, y: -20 } : false}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ActivityItem 
+                activity={activity}
+                showBankDetails={showBankDetails}
+                isNew={newActivities.has(activity.id)}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );

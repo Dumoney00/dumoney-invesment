@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Home, Users, BarChart3, User, Activity } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAllUserActivities } from '@/hooks/useAllUserActivities';
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navigation: React.FC = () => {
   const location = useLocation();
@@ -34,18 +35,34 @@ const Navigation: React.FC = () => {
           >
             <div className="relative">
               <item.icon size={24} />
-              {item.path === '/activities' && hasNewActivity && (
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-investment-gold opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-investment-gold"></span>
-                </span>
-              )}
+              <AnimatePresence>
+                {item.path === '/activities' && hasNewActivity && (
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    className="absolute -top-1 -right-1 flex h-3 w-3"
+                  >
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-investment-gold opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-investment-gold"></span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </div>
             <span>
               {item.label}
-              {item.path === '/activities' && hasNewActivity && (
-                <span className="ml-1 text-xs text-investment-gold">•</span>
-              )}
+              <AnimatePresence>
+                {item.path === '/activities' && hasNewActivity && (
+                  <motion.span 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="ml-1 text-xs text-investment-gold"
+                  >
+                    •
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </span>
           </Link>
         ))}

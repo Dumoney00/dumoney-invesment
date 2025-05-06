@@ -22,9 +22,10 @@ import LiveStockChart from '@/components/home/LiveStockChart';
 import { useAllUserActivities } from '@/hooks/useAllUserActivities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Activity, Users, ArrowDown, ArrowUp, IndianRupee } from "lucide-react";
+import { Activity, Users, ArrowDown, ArrowUp, IndianRupee, RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Drawer, DrawerContent, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
+import { motion } from "framer-motion";
 
 const Index: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -34,9 +35,10 @@ const Index: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const { activities: allUserActivities, stats: activityStats, loading: activitiesLoading } = useAllUserActivities();
+  const { activities: allUserActivities, stats: activityStats, loading: activitiesLoading, refresh } = useAllUserActivities();
   const [showActivitiesDrawer, setShowActivitiesDrawer] = useState(false);
   const [activityFilter, setActivityFilter] = useState<'all' | 'deposit' | 'withdraw' | 'investment'>('all');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -84,6 +86,15 @@ const Index: React.FC = () => {
         userName: user.username
       }))
     : [];
+    
+  // Handle manual refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refresh();
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
+  };
 
   return (
     <div className="min-h-screen bg-black pb-24">
@@ -96,6 +107,46 @@ const Index: React.FC = () => {
       </div>
       
       <QuickActions />
+      
+      {/* Live Activity Feed */}
+      <div className="px-4 mb-6">
+        <Card className="bg-[#111111] border-gray-800 shadow-md overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-lg text-gray-300 flex items-center gap-2">
+                <Activity size={18} className="text-investment-gold" />
+                Live Activity Feed
+              </CardTitle>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="h-8 w-8 p-0" 
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+              >
+                <RefreshCcw size={18} className={`text-investment-gold ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-2">
+            <ActivityFeed 
+              activities={allUserActivities.slice(0, 3)} 
+              showHeader={false}
+              maxHeight="150px"
+            />
+            <div className="mt-2 text-center">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs" 
+                onClick={() => navigate('/activities')}
+              >
+                View All Activities
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       
       <div className="px-4">
         <h2 className="text-xl text-white font-medium mb-4">— All Products —</h2>
@@ -130,12 +181,17 @@ const Index: React.FC = () => {
       {/* User Activities Button - Fixed at bottom right */}
       <Drawer open={showActivitiesDrawer} onOpenChange={setShowActivitiesDrawer}>
         <DrawerTrigger asChild>
-          <Button
-            className="fixed bottom-20 right-4 z-40 rounded-full h-14 w-14 p-0 shadow-lg bg-investment-gold hover:bg-investment-gold/90"
-            aria-label="View all user activities"
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Activity size={24} />
-          </Button>
+            <Button
+              className="fixed bottom-20 right-4 z-40 rounded-full h-14 w-14 p-0 shadow-lg bg-investment-gold hover:bg-investment-gold/90"
+              aria-label="View all user activities"
+            >
+              <Activity size={24} />
+            </Button>
+          </motion.div>
         </DrawerTrigger>
         <DrawerContent className="bg-black border-t border-gray-800 max-h-[90vh]">
           <div className="p-4">
