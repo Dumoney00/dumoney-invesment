@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Activity } from '@/types/activity';
 import ActivityItem from './ActivityItem';
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,9 +20,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
   filteredType = 'all',
   filteredUserId = 'all'
 }) => {
-  const [newActivity, setNewActivity] = React.useState<boolean>(false);
-  const [animateIndex, setAnimateIndex] = React.useState<number | null>(null);
+  const [newActivity, setNewActivity] = useState<boolean>(false);
+  const [newActivities, setNewActivities] = useState<Set<string>>(new Set());
   const prevLengthRef = React.useRef(activities.length);
+  const prevActivitiesRef = React.useRef<string[]>([]);
   
   // Filter activities by type if specified
   const filteredActivities = activities.filter(activity => {
@@ -41,21 +42,35 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
   // Check for new activities
   useEffect(() => {
-    if (filteredActivities.length > prevLengthRef.current) {
+    // Create sets of activity IDs
+    const prevActivityIds = new Set(prevActivitiesRef.current);
+    const currentActivityIds = new Set(filteredActivities.map(a => a.id));
+    
+    // Find new activities (in current set but not in previous set)
+    const newActivityIds = new Set<string>();
+    currentActivityIds.forEach(id => {
+      if (!prevActivityIds.has(id)) {
+        newActivityIds.add(id);
+      }
+    });
+    
+    if (newActivityIds.size > 0) {
       setNewActivity(true);
-      setAnimateIndex(0); // Animate the newest activity
+      setNewActivities(newActivityIds);
       
-      // Reset the animation after 3 seconds
+      // Reset the animation after 5 seconds
       const timer = setTimeout(() => {
         setNewActivity(false);
-        setAnimateIndex(null);
-      }, 3000);
+        setNewActivities(new Set());
+      }, 5000);
       
       return () => clearTimeout(timer);
     }
     
+    // Update refs for next comparison
     prevLengthRef.current = filteredActivities.length;
-  }, [filteredActivities.length]);
+    prevActivitiesRef.current = filteredActivities.map(a => a.id);
+  }, [filteredActivities]);
 
   if (filteredActivities.length === 0) {
     return (
@@ -80,14 +95,16 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
         </div>
       )}
       
-      {filteredActivities.map((activity, index) => (
-        <ActivityItem 
-          key={activity.id}
-          activity={activity}
-          showBankDetails={showBankDetails}
-          className={animateIndex === index ? "animate-pulse bg-green-900/20" : ""}
-        />
-      ))}
+      <div className="space-y-2">
+        {filteredActivities.map((activity, index) => (
+          <ActivityItem 
+            key={activity.id}
+            activity={activity}
+            showBankDetails={showBankDetails}
+            isNew={newActivities.has(activity.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 };

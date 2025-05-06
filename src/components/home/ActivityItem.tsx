@@ -10,9 +10,15 @@ interface ActivityItemProps {
   activity: Activity;
   showBankDetails?: boolean;
   className?: string;
+  isNew?: boolean;
 }
 
-const ActivityItem: React.FC<ActivityItemProps> = ({ activity, showBankDetails = false, className }) => {
+const ActivityItem: React.FC<ActivityItemProps> = ({ 
+  activity, 
+  showBankDetails = false, 
+  className = "",
+  isNew = false
+}) => {
   const getActivityIcon = () => {
     switch (activity.type) {
       case 'deposit':
@@ -48,13 +54,19 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, showBankDetails =
         return 'text-gray-300';
     }
   };
+
+  const getCardClasses = () => {
+    let classes = "bg-[#191919] border-gray-800";
+    if (isNew) classes += " animate-pulse border-green-500/30";
+    return classes;
+  };
   
   return (
-    <Card className={cn("bg-[#191919] border-gray-800", className)}>
+    <Card className={cn(getCardClasses(), className)}>
       <CardContent className="p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-black/30 flex items-center justify-center">
+            <div className={`h-8 w-8 rounded-full ${isNew ? 'bg-green-900/30' : 'bg-black/30'} flex items-center justify-center`}>
               {getActivityIcon()}
             </div>
             <div>
@@ -63,6 +75,11 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, showBankDetails =
                 <span className={`${getTypeColor()} text-xs`}>
                   {activity.type === 'investment' ? 'purchased' : activity.type}
                 </span>
+                {isNew && (
+                  <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">
+                    New
+                  </span>
+                )}
               </p>
               <p className="text-gray-400 text-xs">
                 {activity.details || `${activity.type} transaction`}

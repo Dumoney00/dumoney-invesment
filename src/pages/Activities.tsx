@@ -19,14 +19,21 @@ import { Badge } from "@/components/ui/badge";
 
 const Activities: React.FC = () => {
   const { user } = useAuth();
-  const { activities: allUserActivities, stats: activityStats, loading: activitiesLoading, refresh } = useAllUserActivities();
+  const { 
+    activities: allUserActivities, 
+    stats: activityStats, 
+    loading: activitiesLoading, 
+    refresh,
+    hasNewActivity,
+    setHasNewActivity
+  } = useAllUserActivities();
+  
   const [activityFilter, setActivityFilter] = useState<'all' | 'deposit' | 'withdraw' | 'investment'>('all');
   const [userFilter, setUserFilter] = useState<string>('all');
   const [dateRange, setDateRange] = useState<{start: Date | null, end: Date | null}>({start: null, end: null});
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'mobile' | 'desktop'>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [hasNewActivity, setHasNewActivity] = useState(false);
-  const [activityCount, setActivityCount] = useState(0);
+  const [activeTab, setActiveTab] = useState('all');
   
   const userActivities = user?.transactions 
     ? user.transactions.map(transaction => mapTransactionToActivity({
@@ -36,16 +43,11 @@ const Activities: React.FC = () => {
       }))
     : [];
 
-  // Check for new activities
+  // Reset notification when user is actively viewing the activities
   useEffect(() => {
-    if (activityCount > 0 && allUserActivities.length > activityCount) {
-      setHasNewActivity(true);
-      // Play notification sound
-      const audio = new Audio('/notification.mp3');
-      audio.play().catch(e => console.log('Audio play failed:', e));
-    }
-    setActivityCount(allUserActivities.length);
-  }, [allUserActivities.length]);
+    // Clear new activity notification when on this page
+    setHasNewActivity(false);
+  }, []);
 
   // Get unique users for filtering
   const uniqueUsers = React.useMemo(() => {
@@ -112,10 +114,14 @@ const Activities: React.FC = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await refresh();
-    setHasNewActivity(false);
     setTimeout(() => {
       setIsRefreshing(false);
     }, 1000);
+  };
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
   };
 
   return (
@@ -128,7 +134,7 @@ const Activities: React.FC = () => {
             <span className="text-sm text-investment-gold">User Activities</span>
             {hasNewActivity && (
               <div className="relative">
-                <Bell size={18} className="text-investment-gold" />
+                <Bell size={18} className="text-investment-gold animate-pulse" />
                 <span className="absolute -top-1 -right-1 flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-investment-gold opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-investment-gold"></span>
@@ -147,7 +153,7 @@ const Activities: React.FC = () => {
                 Live Activity Feed
                 {hasNewActivity && (
                   <Badge variant="outline" className="bg-green-600/20 text-green-400 border-green-500/30 animate-pulse">
-                    New
+                    New Activity
                   </Badge>
                 )}
               </CardTitle>
@@ -164,7 +170,7 @@ const Activities: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="all" className="w-full">
+            <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="w-full bg-[#222222] mb-4">
                 <TabsTrigger value="all" className="flex-1">All Users</TabsTrigger>
                 <TabsTrigger value="my" className="flex-1">My Activities</TabsTrigger>
@@ -194,8 +200,8 @@ const Activities: React.FC = () => {
                     <SelectContent>
                       <SelectItem value="all">All Users</SelectItem>
                       {uniqueUsers.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name}
+                        <SelectItem key={user.id} value={user.id as string}>
+                          {user.name as string}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -248,8 +254,8 @@ const Activities: React.FC = () => {
                 
                 <div className="max-h-[60vh] overflow-auto">
                   {activitiesLoading ? (
-                    <div className="text-center py-8">
-                      <p className="text-gray-400">Loading activities...</p>
+                    <div className="flex justify-center items-center p-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-investment-gold"></div>
                     </div>
                   ) : (
                     <ActivityFeed 
@@ -264,11 +270,18 @@ const Activities: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="my" className="max-h-[60vh] overflow-auto">
-                <ActivityFeed 
-                  activities={userActivities}
-                  showHeader={false}
-                  showBankDetails={true}
-                />
+                {userActivities.length === 0 ? (
+                  <div className="text-center py-10">
+                    <p className="text-gray-400">No personal activities found</p>
+                    <p className="text-gray-500 text-sm mt-2">Your transactions will appear here</p>
+                  </div>
+                ) : (
+                  <ActivityFeed 
+                    activities={userActivities}
+                    showHeader={false}
+                    showBankDetails={true}
+                  />
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>

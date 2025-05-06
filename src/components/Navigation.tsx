@@ -6,9 +6,7 @@ import { useAllUserActivities } from '@/hooks/useAllUserActivities';
 
 const Navigation: React.FC = () => {
   const location = useLocation();
-  const { activities, refresh } = useAllUserActivities();
-  const [hasNewActivity, setHasNewActivity] = useState(false);
-  const [activityCount, setActivityCount] = useState(0);
+  const { activities, hasNewActivity, setHasNewActivity } = useAllUserActivities();
   
   const navItems = [
     { label: 'Home', icon: Home, path: '/' },
@@ -18,26 +16,12 @@ const Navigation: React.FC = () => {
     { label: 'Mine', icon: User, path: '/profile' },
   ];
 
-  // Check for new activities
+  // Reset notification if user is on activities page
   useEffect(() => {
-    if (activityCount > 0 && activities.length > activityCount) {
-      setHasNewActivity(true);
-    }
-    
-    setActivityCount(activities.length);
-    
-    // Reset notification if user is on activities page
     if (location.pathname === '/activities') {
       setHasNewActivity(false);
     }
-    
-    // Set up regular refresh to check for new activities
-    const refreshInterval = setInterval(() => {
-      refresh();
-    }, 10000); // Check every 10 seconds
-    
-    return () => clearInterval(refreshInterval);
-  }, [activities.length, location.pathname, refresh]);
+  }, [location.pathname, setHasNewActivity]);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#222222] border-t border-gray-800 max-w-md mx-auto">
