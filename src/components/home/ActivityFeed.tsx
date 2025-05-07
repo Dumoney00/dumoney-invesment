@@ -25,10 +25,9 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
 }) => {
   const [newActivity, setNewActivity] = useState<boolean>(false);
   const [newActivities, setNewActivities] = useState<Set<string>>(new Set());
-  const prevLengthRef = React.useRef(activities.length);
   const prevActivitiesRef = React.useRef<string[]>([]);
   
-  // Filter activities by type if specified
+  // Filter activities by type and user ID if specified
   const filteredActivities = activities.filter(activity => {
     // Filter by type if specified
     if (filteredType !== 'all' && activity.type !== filteredType) {
@@ -45,9 +44,11 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
   // Check for new activities
   useEffect(() => {
+    if (!activities || activities.length === 0) return;
+    
     // Create sets of activity IDs
     const prevActivityIds = new Set(prevActivitiesRef.current);
-    const currentActivityIds = new Set(filteredActivities.map(a => a.id));
+    const currentActivityIds = filteredActivities.map(a => a.id);
     
     // Find new activities (in current set but not in previous set)
     const newActivityIds = new Set<string>();
@@ -58,16 +59,9 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
     });
     
     if (newActivityIds.size > 0) {
+      console.log(`${newActivityIds.size} new activities detected in feed`);
       setNewActivity(true);
       setNewActivities(newActivityIds);
-      
-      // Play notification sound
-      try {
-        const audio = new Audio('/notification.mp3');
-        audio.play().catch(e => console.log('Audio play failed:', e));
-      } catch (error) {
-        console.error('Failed to play notification sound:', error);
-      }
       
       // Reset the animation after 5 seconds
       const timer = setTimeout(() => {
@@ -78,10 +72,9 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
       return () => clearTimeout(timer);
     }
     
-    // Update refs for next comparison
-    prevLengthRef.current = filteredActivities.length;
-    prevActivitiesRef.current = filteredActivities.map(a => a.id);
-  }, [filteredActivities]);
+    // Update ref for next comparison
+    prevActivitiesRef.current = currentActivityIds;
+  }, [activities, filteredActivities]);
 
   if (filteredActivities.length === 0) {
     return (
@@ -108,7 +101,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
       
       <div className={`space-y-2 ${maxHeight ? `max-h-[${maxHeight}] overflow-auto` : ''}`}>
         <AnimatePresence>
-          {filteredActivities.map((activity, index) => (
+          {filteredActivities.map((activity) => (
             <motion.div 
               key={activity.id}
               initial={newActivities.has(activity.id) ? { opacity: 0, y: -20 } : false}
