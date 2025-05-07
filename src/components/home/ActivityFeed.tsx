@@ -5,6 +5,7 @@ import ActivityItem from './ActivityItem';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
+import { REALTIME_HIGHLIGHT_DURATION } from '@/hooks/activities/activityConstants';
 
 interface ActivityFeedProps {
   activities: Activity[];
@@ -63,11 +64,11 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
       setNewActivity(true);
       setNewActivities(newActivityIds);
       
-      // Reset the animation after 5 seconds
+      // Reset the animation after duration
       const timer = setTimeout(() => {
         setNewActivity(false);
         setNewActivities(new Set());
-      }, 5000);
+      }, REALTIME_HIGHLIGHT_DURATION);
       
       return () => clearTimeout(timer);
     }

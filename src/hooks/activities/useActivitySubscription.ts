@@ -57,14 +57,14 @@ export const useActivitySubscription = (
       }
     }
     return false;
-  }, [activities, loading, setHasNewActivity, toast]);
+  }, [activities, loading, setHasNewActivity]);
 
   // Setup real-time subscription
   useEffect(() => {
     console.log('Setting up real-time subscriptions for activities');
     isMounted.current = true;
     
-    // Set up real-time subscriptions for transactions and activity logs
+    // Set up real-time subscriptions for transactions
     const transactionsChannel = supabase
       .channel('real-time-transactions')
       .on('postgres_changes', {
@@ -87,6 +87,7 @@ export const useActivitySubscription = (
         console.log('Transactions subscription status:', status);
       });
 
+    // Set up real-time subscriptions for activity logs
     const activitiesChannel = supabase
       .channel('real-time-activity-logs')
       .on('postgres_changes', {

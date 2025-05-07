@@ -6,6 +6,7 @@ import { User } from '@/types/auth';
 import { getActivityStats } from './activityService';
 import { ActivityStats } from './types';
 import { toast } from '@/components/ui/use-toast';
+import { MAX_ACTIVITY_RETRIES } from './activityConstants';
 
 export const useAllActivitiesFetcher = (currentUser: User | null) => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -34,7 +35,7 @@ export const useAllActivitiesFetcher = (currentUser: User | null) => {
 
       // First fetch transactions
       try {
-        // For admin users or regular users, fetch transactions without filtering
+        // For admin users or regular users, fetch all transactions
         const { data: transactionData, error: transactionError } = await supabase
           .from('transactions')
           .select('*')
@@ -116,7 +117,7 @@ export const useAllActivitiesFetcher = (currentUser: User | null) => {
 
       console.log(`Total activities after fetch: ${allActivities.length}`);
       
-      if (allActivities.length === 0 && retryCount < 3) {
+      if (allActivities.length === 0 && retryCount < MAX_ACTIVITY_RETRIES) {
         console.log(`No activities found, retry attempt ${retryCount + 1}`);
         setRetryCount(prev => prev + 1);
       } else {
@@ -138,7 +139,7 @@ export const useAllActivitiesFetcher = (currentUser: User | null) => {
         });
       }
       
-      if (retryCount < 3) {
+      if (retryCount < MAX_ACTIVITY_RETRIES) {
         setRetryCount(prev => prev + 1);
       }
       return [];
@@ -152,7 +153,7 @@ export const useAllActivitiesFetcher = (currentUser: User | null) => {
     fetchAllActivities();
     
     // Set up retry logic if needed
-    if (retryCount > 0 && retryCount < 3) {
+    if (retryCount > 0 && retryCount < MAX_ACTIVITY_RETRIES) {
       const retryTimer = setTimeout(() => {
         console.log(`Retrying activity fetch, attempt ${retryCount}`);
         fetchAllActivities();
