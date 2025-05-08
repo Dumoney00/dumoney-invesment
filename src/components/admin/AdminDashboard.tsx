@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -132,17 +131,44 @@ const AdminDashboard: React.FC = () => {
       
       if (error) {
         console.error("Error fetching admin transaction summary:", error);
-        // Fallback: Try direct fetch with explicit type casting
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('admin_transaction_summary')
-          .select('*');
-          
-        if (fallbackError) {
-          console.error("Fallback error:", fallbackError);
-          return;
-        }
         
-        setStats(fallbackData as TransactionSummary[] || []);
+        // Fallback approach: create a manual summary from transactions
+        console.log("Using fallback approach to generate transaction summary");
+        
+        // Get all users
+        const { data: users } = await supabase.from('users').select('*');
+        
+        if (users) {
+          // Get all transactions
+          const { data: transactions } = await supabase.from('transactions').select('*');
+          
+          if (transactions) {
+            // Manually calculate summary stats for each user
+            const summaryData = users.map(user => {
+              const userTransactions = transactions.filter(t => t.user_id === user.id);
+              const deposits = userTransactions.filter(t => t.type === 'deposit');
+              const withdrawals = userTransactions.filter(t => t.type === 'withdraw');
+              
+              const summary: TransactionSummary = {
+                user_id: user.id,
+                username: user.username,
+                email: user.email,
+                total_deposits: deposits.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0),
+                total_withdrawals: withdrawals.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0),
+                deposit_count: deposits.length,
+                withdrawal_count: withdrawals.length,
+                last_transaction_date: userTransactions.length > 0 ? 
+                  userTransactions.sort((a, b) => 
+                    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+                  )[0].timestamp : null
+              };
+              
+              return summary;
+            });
+            
+            setStats(summaryData);
+          }
+        }
       } else {
         setStats(data as TransactionSummary[] || []);
       }
@@ -166,19 +192,35 @@ const AdminDashboard: React.FC = () => {
         .eq('activity_type', 'login')
         .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
 
-      // Get total deposits and withdrawals
-      const { data: totals, error: totalsError } = await supabase
-        .rpc('get_transaction_totals');
+      // Get total deposits
+      const { data: deposits, error: depositError } = await supabase
+        .from('transactions')
+        .select('amount')
+        .eq('type', 'deposit')
+        .eq('status', 'completed');
+        
+      // Get total withdrawals
+      const { data: withdrawals, error: withdrawalError } = await supabase
+        .from('transactions')
+        .select('amount')
+        .eq('type', 'withdraw')
+        .eq('status', 'completed');
 
-      if (userError || activeError || totalsError) {
+      if (userError || activeError || depositError || withdrawalError) {
         throw new Error("Error fetching summary stats");
       }
+
+      const totalDeposits = deposits ? 
+        deposits.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0) : 0;
+        
+      const totalWithdrawals = withdrawals ? 
+        withdrawals.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0) : 0;
 
       setSummaryStats({
         totalUsers: userCount || 0,
         activeUsers: activeCount || 0,
-        totalDeposits: (totals && totals.total_deposits) || 0,
-        totalWithdrawals: (totals && totals.total_withdrawals) || 0,
+        totalDeposits,
+        totalWithdrawals,
       });
     } catch (error) {
       console.error("Error fetching summary stats:", error);

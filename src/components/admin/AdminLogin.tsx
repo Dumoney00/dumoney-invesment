@@ -19,6 +19,7 @@ interface LoginFormValues {
 
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<LoginFormValues>({
     defaultValues: {
@@ -30,6 +31,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
   const onSubmit = async (values: LoginFormValues) => {
     setLoading(true);
     try {
+      console.log("Attempting admin login with email:", values.email);
+      
       // Sign in with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
@@ -37,12 +40,13 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       });
       
       if (error) {
+        console.error("Sign-in error:", error);
         throw error;
       }
 
-      console.log("Login successful, checking admin status");
+      console.log("Basic login successful, checking admin status");
       
-      // Check if the user is in admin_users table
+      // Check if the email is in admin_users table
       const { data: adminData, error: adminError } = await supabase
         .from('admin_users')
         .select('*')
@@ -50,23 +54,34 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         .maybeSingle();
       
       if (adminError) {
-        console.error("Error checking admin status:", adminError);
+        console.error("Error checking admin_users table:", adminError);
       }
+      
+      console.log("Admin user check result:", adminData);
 
       // If not in admin_users, check is_admin flag in users table
       if (!adminData) {
+        console.log("User not found in admin_users table, checking is_admin flag");
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('is_admin')
           .eq('email', values.email)
           .maybeSingle();
         
-        if (userError || !userData || !userData.is_admin) {
+        if (userError) {
+          console.error("Error checking users table:", userError);
+        }
+        
+        console.log("User record:", userData);
+        
+        if (!userData || !userData.is_admin) {
           console.error("User not found in admin_users and not marked as admin in users table");
           await supabase.auth.signOut();
           throw new Error('Not authorized as admin');
         }
       }
+      
+      console.log("Admin validation successful");
       
       toast({
         title: "Login Successful",
@@ -76,6 +91,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       onLoginSuccess();
     } catch (error: any) {
       console.error("Login error:", error);
+      setError(error.message || "Invalid credentials or not authorized as admin");
       toast({
         title: "Login Failed",
         description: error.message || "Invalid credentials or not authorized as admin",
@@ -101,6 +117,12 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-md text-sm">
+                {error}
+              </div>
+            )}
+            
             <FormField
               control={form.control}
               name="email"
