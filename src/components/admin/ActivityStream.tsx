@@ -79,9 +79,9 @@ export const ActivityStream: React.FC<ActivityStreamProps> = ({
             
             <p className="text-sm text-gray-400 mt-1">
               {activity.details || `Performed ${activity.activity_type} action`}
-              {activity.amount && (
+              {activity.amount !== undefined && activity.amount !== null && (
                 <span className="ml-1 font-mono">
-                  (₹{parseFloat(activity.amount).toLocaleString('en-IN')})
+                  (₹{activity.amount.toString()})
                 </span>
               )}
             </p>

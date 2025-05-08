@@ -21,25 +21,46 @@ const Admin: React.FC = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Check if the user is an admin
-        const { data, error } = await supabase
+        // First check if email is directly in admin_users table
+        const { data: adminData, error: adminError } = await supabase
           .from('admin_users')
           .select('*')
           .eq('email', session.user.email)
           .single();
         
-        if (error) {
-          console.error("Error checking admin status:", error);
-          setIsAuthenticated(true);
-          setIsAdmin(false);
-        } else if (data) {
+        if (!adminError && adminData) {
+          console.log("User found in admin_users table:", adminData);
           setIsAuthenticated(true);
           setIsAdmin(true);
+          toast({
+            title: "Admin Access Granted",
+            description: "Welcome to the admin dashboard"
+          });
+          return;
+        }
+        
+        // If not directly in admin_users, check is_admin flag in users table
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (!userError && userData && userData.is_admin) {
+          console.log("User has admin flag in users table:", userData);
+          setIsAuthenticated(true);
+          setIsAdmin(true);
+          toast({
+            title: "Admin Access Granted",
+            description: "Welcome to the admin dashboard"
+          });
         } else {
+          console.log("User authenticated but not admin:", userData);
           setIsAuthenticated(true);
           setIsAdmin(false);
         }
       } else {
+        console.log("No session found");
         setIsAuthenticated(false);
         setIsAdmin(false);
       }

@@ -126,14 +126,28 @@ const AdminDashboard: React.FC = () => {
 
   // Fetch user stats
   const fetchUserStats = async () => {
-    const { data, error } = await supabase
-      .from('admin_transaction_summary')
-      .select('*');
-
-    if (error) {
-      console.error("Error fetching user stats:", error);
-    } else {
-      setStats(data as TransactionSummary[] || []);
+    try {
+      // Use RPC to fetch data from the view
+      const { data, error } = await supabase.rpc('get_admin_transaction_summary');
+      
+      if (error) {
+        console.error("Error fetching admin transaction summary:", error);
+        // Fallback: Try direct fetch with explicit type casting
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('admin_transaction_summary')
+          .select('*');
+          
+        if (fallbackError) {
+          console.error("Fallback error:", fallbackError);
+          return;
+        }
+        
+        setStats(fallbackData as TransactionSummary[] || []);
+      } else {
+        setStats(data as TransactionSummary[] || []);
+      }
+    } catch (error) {
+      console.error("Error in fetchUserStats:", error);
     }
   };
 
@@ -182,16 +196,16 @@ const AdminDashboard: React.FC = () => {
 
     const dailyData = last30Days.map(date => {
       const dayTransactions = transactions.filter(t => 
-        t.timestamp.split('T')[0] === date
+        t.timestamp && t.timestamp.split('T')[0] === date
       );
       
       const deposits = dayTransactions
         .filter(t => t.type === 'deposit' && t.status === 'completed')
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
         
       const withdrawals = dayTransactions
         .filter(t => t.type === 'withdraw' && t.status === 'completed')
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
         
       return {
         date,

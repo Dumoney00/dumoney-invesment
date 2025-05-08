@@ -39,17 +39,33 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       if (error) {
         throw error;
       }
+
+      console.log("Login successful, checking admin status");
       
       // Check if the user is in admin_users table
       const { data: adminData, error: adminError } = await supabase
         .from('admin_users')
         .select('*')
         .eq('email', values.email)
-        .single();
+        .maybeSingle();
       
-      if (adminError || !adminData) {
-        await supabase.auth.signOut();
-        throw new Error('Not authorized as admin');
+      if (adminError) {
+        console.error("Error checking admin status:", adminError);
+      }
+
+      // If not in admin_users, check is_admin flag in users table
+      if (!adminData) {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('email', values.email)
+          .maybeSingle();
+        
+        if (userError || !userData || !userData.is_admin) {
+          console.error("User not found in admin_users and not marked as admin in users table");
+          await supabase.auth.signOut();
+          throw new Error('Not authorized as admin');
+        }
       }
       
       toast({
@@ -62,7 +78,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLoginSuccess }) => {
       console.error("Login error:", error);
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid credentials",
+        description: error.message || "Invalid credentials or not authorized as admin",
         variant: "destructive"
       });
     } finally {
