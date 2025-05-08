@@ -14,6 +14,7 @@ import ChangePassword from './pages/ChangePassword';
 import NotFound from './pages/NotFound';
 import Auth from './pages/Auth';
 import Transaction from './pages/Transaction';
+import Admin from './pages/Admin';
 
 import CloudMigration from '@/components/migration/CloudMigration';
 
@@ -36,6 +37,7 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/deposit" element={<Transaction />} />
               <Route path="/withdraw" element={<Transaction />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <CloudMigration />
